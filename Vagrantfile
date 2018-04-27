@@ -78,7 +78,7 @@ Vagrant.configure("2") do |config|
 
   echo "Setup repo mirror"
 
-  sed -i "s!http://archive.ubuntu.com!https://mirrors.aliyun.com!g" /etc/apt/sources.list
+  sed -i "s|http://archive.ubuntu.com|https://mirrors.aliyun.com|g" /etc/apt/sources.list
 
   echo "Add postgresql repo"
   echo "deb https://mirrors.tuna.tsinghua.edu.cn/postgresql/repos/apt xenial-pgdg main" | tee /etc/apt/sources.list.d/postgresql.list
@@ -93,14 +93,14 @@ Vagrant.configure("2") do |config|
   apt-get install -y redis-server
   apt-get install -y ruby-sass
 
+  echo "Install py3.6"
+  apt-get install -y python-software-properties
+  add-apt-repository -y ppa:deadsnakes/ppa
+  apt-get update
+  apt-get install -y python3.6
+
   echo "Install python development tools"
   apt-get install -y python3-pip python3-dev bzip2 libbz2-dev libxml2-dev libxslt1-dev zlib1g-dev libffi-dev libssl-dev
-  wget https://www.python.org/ftp/python/3.6.5/Python-3.6.5.tgz
-  tar -zxvf Python-3.6.5.tgz
-  cd Python-3.6.5
-  ./configure
-  make
-  make altinstall
 
   echo "auto store git password for push to http repo"
   git config --global credential.helper store
@@ -109,8 +109,8 @@ Vagrant.configure("2") do |config|
   export repo="https://github.com/waketzheng/letstype"
   wget $repo/raw/master/.vimrc -O /home/vagrant/.vimrc
   wget $repo/raw/master/.switch_source_pipenv.py -O /home/vagrant/.switch_source_pipenv.py
-  wget $repo/raw/master/.bash_aliases -O /home/vagrant/.bash_aliases 
-  wget $repo/raw/master/django_manage.bash -O /etc/bash_completion.d/django_manage.bash 
+  wget $repo/raw/master/.bash_aliases -O /home/vagrant/.bash_aliases
+  wget $repo/raw/master/django_manage.bash -O /etc/bash_completion.d/django_manage.bash
   wget $repo/raw/master/pip_conf.py
   python3 pip_conf.py --user vagrant
   pip3 install pipenv
