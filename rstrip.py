@@ -46,7 +46,6 @@ def main():
     parser.add_argument('-d', '--dir', default='.',
                         help='the directory path(default:.)')
     args, unknown = parser.parse_known_args()
-    print(args, unknown, args.type)
     if args.R:
         files = []
         for r, ds, fs in os.walk(args.dir):
