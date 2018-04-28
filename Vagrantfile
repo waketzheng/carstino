@@ -13,7 +13,7 @@ Vagrant.configure("2") do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://vagrantcloud.com/search.
-  config.vm.box = "ubuntu/xenial"
+  config.vm.box = "ubuntu/bionic64"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -93,11 +93,8 @@ Vagrant.configure("2") do |config|
   apt-get install -y redis-server
   apt-get install -y ruby-sass
 
-  echo "Install py3.6"
+  echo "Install python software properties"
   apt-get install -y python-software-properties
-  add-apt-repository -y ppa:deadsnakes/ppa
-  apt-get update
-  apt-get install -y python3.6
 
   echo "Install python development tools"
   apt-get install -y python3-pip python3-dev bzip2 libbz2-dev libxml2-dev libxslt1-dev zlib1g-dev libffi-dev libssl-dev

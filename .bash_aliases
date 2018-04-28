@@ -10,3 +10,6 @@ alias pii="pipenv install"
 alias poo="pipenv open "
 alias puu="pipenv uninstall "
 alias pcc="pipenv check --style */*.py"
+
+# auto completion for pipenv
+eval "$(pipenv --completion)"
