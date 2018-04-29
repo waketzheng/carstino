@@ -99,18 +99,25 @@ Vagrant.configure("2") do |config|
   echo "Install python development tools"
   apt-get install -y python3-pip python3-dev bzip2 libbz2-dev libxml2-dev libxslt1-dev zlib1g-dev libffi-dev libssl-dev
 
-  echo "auto store git password for push to http repo"
-  git config --global credential.helper store
+  echo "switch pip source to aliyun, then install pipenv"
+  su vagrant -c 'mkdir ~/.pip'
+  su vagrant -c 'echo "
+  [global]
+  index-url = https://mirrors.aliyun.com/pypi/simple/
+  [install]
+  trusted-host = mirrors.aliyun.com
+  ">~/.pip/pip.conf'
+  su vagrant -c 'pip3 install pipenv'
 
-  echo "vim config, aliases, django manage.py command auto complete"
+  echo "Optional: custom vim config, aliases, django manage.py command auto completion"
   export repo="https://github.com/waketzheng/letstype"
-  wget $repo/raw/master/.vimrc -O /home/vagrant/.vimrc
-  wget $repo/raw/master/.switch_source_pipenv.py -O /home/vagrant/.switch_source_pipenv.py
-  wget $repo/raw/master/.bash_aliases -O /home/vagrant/.bash_aliases
+  su vagrant -c 'wget $repo/raw/master/.vimrc -O ~/.vimrc'
+  su vagrant -c 'wget $repo/raw/master/.switch_source_pipenv.py -O ~/.switch_source_pipenv.py'
+  su vagrant -c 'wget $repo/raw/master/.bash_aliases -O ~/.bash_aliases'
   wget $repo/raw/master/django_manage.bash -O /etc/bash_completion.d/django_manage.bash
-  wget $repo/raw/master/pip_conf.py
-  python3 pip_conf.py --user vagrant
-  pip3 install pipenv
+
+  echo "Optional: auto store git password for push to http repo"
+  su vagrant -c 'git config --global credential.helper store'
 
   echo "Setup postgres"
   echo "[postgres] Update listen_address"
