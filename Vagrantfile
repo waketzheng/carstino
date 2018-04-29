@@ -99,7 +99,7 @@ Vagrant.configure("2") do |config|
   echo "Install python development tools"
   apt-get install -y python3-pip python3-dev bzip2 libbz2-dev libxml2-dev libxslt1-dev zlib1g-dev libffi-dev libssl-dev
 
-  echo "switch pip source to aliyun, then install pipenv"
+  echo "switch pip source to aliyun, then install pipenv and ipython"
   su vagrant -c 'mkdir ~/.pip'
   su vagrant -c 'echo "
   [global]
@@ -108,6 +108,7 @@ Vagrant.configure("2") do |config|
   trusted-host = mirrors.aliyun.com
   ">~/.pip/pip.conf'
   su vagrant -c 'pip3 install pipenv'
+  su vagrant -c 'pip3 install ipython'
 
   echo "Optional: custom vim config, aliases, django manage.py command auto completion"
   export repo="https://github.com/waketzheng/letstype"
