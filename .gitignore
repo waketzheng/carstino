@@ -111,3 +111,6 @@ venv.bak/
 
 # sass cache
 .sass-cache/
+
+# vagrant
+.vagrant/
