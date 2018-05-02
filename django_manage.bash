@@ -4,6 +4,6 @@ _mg()
 	COMPREPLY=( $(compgen -W "startapp 0.0.0.0:9000 makemigrations migrate
 			runserver createsuperuser shell collectstatic loaddata
 			dumpdata>db.json sqlmigrate help --database= test
-			" -- $cur) )
+			--settings=concierge.settings.debug" -- $cur) )
 }
 complete -o dirnames -F _mg mg
