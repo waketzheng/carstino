@@ -14,5 +14,8 @@ alias pcc="pipenv check --style */*.py"
 # auto pep8
 alias runpep8="autopep8 -a -a -i *.py"
 
+# trim the space at the right side of every line
+rstrip="~/letstype/rstrip.py"
+
 # auto completion for pipenv
 eval "$(pipenv --completion)"
