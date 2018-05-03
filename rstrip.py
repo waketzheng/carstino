@@ -12,13 +12,12 @@ def rstrip_file(fname, newlines=1):
         if not s:
             raise Exception('Empty file.')
         ss = [line.rstrip() for line in s.rstrip().split('\n')]
-        required = '\n'.join(ss) + '\n'*newlines
+        required = '\n'.join(ss) + '\n' * newlines
         if s == required:
             raise Exception('Already meet requirement.')
         f.seek(0)
         f.truncate()
         f.write(required)
-
 
 
 def is_hidden(dir_or_file):
@@ -36,7 +35,7 @@ def main():
     if not sys.argv[1:]:
         print(__doc__.strip())
         print('\nUsage:')
-        print('{}{} /path/to/file'.format(' '*4, sys.argv[0]))
+        print('{}{} /path/to/file'.format(' ' * 4, sys.argv[0]))
         return
     parser = ArgumentParser()
     parser.add_argument('-R', '-r', action='store_true',

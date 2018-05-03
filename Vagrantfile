@@ -110,6 +110,7 @@ Vagrant.configure("2") do |config|
   su vagrant -c 'pip3 install pipenv'
   python3 -m pip install ipython
   python3 -m pip install django
+  python3 -m pip install autopep8
 
   echo "Optional: custom vim config, aliases, django manage.py command auto completion"
   export repo="https://github.com/waketzheng/letstype"

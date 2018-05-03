@@ -11,5 +11,8 @@ alias poo="pipenv open "
 alias puu="pipenv uninstall "
 alias pcc="pipenv check --style */*.py"
 
+# auto pep8
+alias runpep8="autopep8 -a -a -i *.py"
+
 # auto completion for pipenv
 eval "$(pipenv --completion)"
