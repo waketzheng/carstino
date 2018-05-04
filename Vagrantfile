@@ -107,10 +107,9 @@ Vagrant.configure("2") do |config|
   [install]
   trusted-host = mirrors.aliyun.com
   ">~/.pip/pip.conf'
+  mkdir .pip&&cp /home/vagrant/.pip/pip.conf .pip/
   su vagrant -c 'pip3 install pipenv'
-  python3 -m pip install ipython
-  python3 -m pip install django
-  python3 -m pip install autopep8
+  python3 -m pip install ipython django autopep8 flake8 pylint white
 
   echo "Optional: custom vim config, aliases, django manage.py command auto completion"
   export repo="https://github.com/waketzheng/letstype"
