@@ -10,9 +10,10 @@ GIT_CLONE = 'git clone http://192.168.0.12/wenjie.zheng/ssh.git ~/.ssh/ssh'
 def conf_scripts():
     pa, pb = Path(__file__).parent, Path.home()
     for i in scripts:
+        t = pa / i
         if not (pb / i).exists():
-            os.system(f'cp {pa/i} {pb}')
-            print(f'cp: {pa} -> {pb}/')
+            os.system(f'cp {t} {pb}')
+            print(f'cp: {t} -> {pb}/')
     pri_repo = Path.home() / '.ssh'
     if not pri_repo.exists():
         pri_repo.mkdir()
