@@ -2,9 +2,9 @@
 from pathlib import Path
 
 
-fname = 'Pipfile'
+PIPFILE = 'Pipfile'
 
-aliyun = '''
+ALIYUN = '''
 [[source]]
 url = "https://mirrors.aliyun.com/pypi/simple"
 verify_ssl = true
@@ -12,7 +12,7 @@ name = "aliyun"
 
 '''
 
-douban = '''
+DOUBAN = '''
 [[source]]
 url = "https://pypi.douban.com/simple"
 verify_ssl = true
@@ -20,16 +20,18 @@ name = "douban"
 
 '''
 
+
 def main():
     import sys
-    p = Path(fname)
-    if p.exists():
-        source = douban if 'douban' in sys.argv else aliyun
-        with p.open('r+') as f:
-            s = f.read()
-            f.seek(0)
-            f.truncate()
-            f.write(source.lstrip()+s)
+    p = Path(PIPFILE)
+    if not p.exists():
+        return
+    source = DOUBAN if 'douban' in sys.argv else ALIYUN
+    s = p.read_text()
+    source = source.lstrip()
+    if source not in s:
+        p.write_text(source + s)
+
 
 if __name__ == '__main__':
     main()
