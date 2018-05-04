@@ -117,6 +117,7 @@ Vagrant.configure("2") do |config|
   su vagrant -c 'wget $repo/raw/master/.switch_source_pipenv.py -O ~/.switch_source_pipenv.py'
   su vagrant -c 'wget $repo/raw/master/.bash_aliases -O ~/.bash_aliases'
   wget $repo/raw/master/django_manage.bash -O /etc/bash_completion.d/django_manage.bash
+  apt-get install -y expect
 
   echo "Optional: auto store git password for push to http repo"
   su vagrant -c 'git config --global credential.helper store'
