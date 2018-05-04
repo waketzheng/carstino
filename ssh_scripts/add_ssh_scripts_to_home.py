@@ -14,12 +14,16 @@ def conf_scripts():
         if not (pb / i).exists():
             os.system(f'cp {t} {pb}')
             print(f'cp: {t} -> {pb}/')
-    pri_repo = Path.home() / '.ssh'
-    if not pri_repo.exists():
-        pri_repo.mkdir()
-    pri_repo /= 'ssh'
+    ssh_path = Path.home() / '.ssh'
+    if not ssh_path.exists():
+        ssh_path.mkdir()
+    pri_repo = ssh_path / 'ssh'
     if not pri_repo.exists():
         os.system(GIT_CLONE)
+    pri_key = ssh_path / '213.key'
+    if not pri_key.exists():
+        os.system(f'cp ~/.ssh/ssh/{pri_key.name} {ssh_path}')
+        os.system(f'sudo chmod 400 {pri_key}')
 
 
 if __name__ == '__main__':
