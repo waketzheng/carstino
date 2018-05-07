@@ -22,8 +22,15 @@ def conf_scripts():
         os.system(GIT_CLONE)
     pri_key = ssh_path / '213.key'
     if not pri_key.exists():
-        os.system(f'cp ~/.ssh/ssh/{pri_key.name} {ssh_path}')
+        os.system(f'cp {pri_repo / pri_key.name} {ssh_path}')
         os.system(f'sudo chmod 400 {pri_key}')
+        print(f'cp `{pri_key.name}`: {pri_repo} -> {ssh_path}/')
+    for k in ('id_rsa', 'id_rsa.pub'):
+        ssh_key = ssh_path / k
+        if not ssh_key.exists():
+            os.system(f'cp {pri_repo / ssh_key.name} {ssh_path}')
+            os.system(f'sudo chmod 400 {ssh_key}')
+            print(f'cp `{ssh_key.name}`: {pri_repo} -> {ssh_path}/')
 
 
 if __name__ == '__main__':
