@@ -3,4 +3,5 @@ cp .switch_source_pipenv.py ~   # auto switch source to aliyun when pipenv creat
 cp .vimrc ~   # custom vim
 git config --global credential.helper store  # git push auto fill in username and password after first time
 sudo cp django_manage.bash /etc/bash_completion.d/   # auto complete for command `mg`
+sudo python3 -m pip install -U ipython django pylint flake8 white black  # python modules recommanded by douban dongweiming or the author of pipenv
 source ~/.bashrc

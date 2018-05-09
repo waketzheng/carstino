@@ -1,23 +1,22 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3.6
 """
 rstrip every line of file(s)
 """
 import re
 import os
+from pathlib import Path
 
 
 def rstrip_file(fname, newlines=1):
-    with open(fname, 'r+') as f:
-        s = f.read()
-        if not s:
-            raise Exception('Empty file.')
-        ss = [line.rstrip() for line in s.rstrip().split('\n')]
-        required = '\n'.join(ss) + '\n' * newlines
-        if s == required:
-            raise Exception('Already meet requirement.')
-        f.seek(0)
-        f.truncate()
-        f.write(required)
+    p = Path(fname)
+    s = p.read_text()
+    if not s:
+        raise Exception('Empty file.')
+    ss = [line.rstrip() for line in s.rstrip().split('\n')]
+    required = '\n'.join(ss) + '\n' * newlines
+    if s == required:
+        raise Exception('Already meet requirement.')
+    p.write_text(required)
 
 
 def is_hidden(dir_or_file):
