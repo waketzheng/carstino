@@ -1,5 +1,5 @@
 # python django
-alias mg='python manage.py'
+alias mg='~/.mg.py'
 
 # python pipenv
 alias ve="pipenv shell"
