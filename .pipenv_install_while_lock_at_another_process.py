@@ -13,11 +13,13 @@ def subcmd(cmd):
 
 def main():
     os.system(f'pipenv install --skip-lock {" ".join(sys.argv[1:])}')
-    p = Process(target=os.popen, args=('pipenv lock>/dev/null',))
-    p.start()
+    # p = Process(target=subcmd, args=('pipenv lock &>/dev/null',))
+    # p.start()
     # executor = ProcessPoolExecutor()
     # yield executor.submit(subcmd, 'pipenv lock>/dev/null')
     # executor.submit(subcmd, 'pipenv lock>/dev/null')
+    ProcessPoolExecutor().submit(subcmd, 'pipenv lock')
+
 
 
 if __name__ == '__main__':
