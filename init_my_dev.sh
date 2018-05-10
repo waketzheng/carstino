@@ -1,4 +1,5 @@
 cp .bash_aliases ~   # shortcuts for pipenv and django manage
+cp .pipenv_install_while_lock_at_another_process.py ~  # script to make `pipenv install` faster
 cp .switch_source_pipenv.py ~   # auto switch source to aliyun when pipenv create new env
 cp .mg.py ~  # auto find django `manage.py` and run it at current of its parent directory
 cp .vimrc ~   # custom vim
