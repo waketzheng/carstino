@@ -96,9 +96,9 @@ def main():
     args, unknown = parser.parse_known_args()
     manage_path = configure_settings()
     sys.path.insert(0, str(manage_path.parent))
-    db = get_db(args.a)
-    creat_db(*getconf(db), drop=args.d)
-    os.system(f"python {manage_path} migrate")
+    db = get_db(args.alias)
+    creat_db(*getconf(db), drop=args.delete)
+    os.system(f"python {manage_path} migrate --database={args.alias}")
 
 
 if __name__ == "__main__":
