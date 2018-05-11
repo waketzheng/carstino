@@ -10,12 +10,11 @@ GIT_CLONE = 'git clone http://192.168.0.12/wenjie.zheng/ssh.git ~/.ssh/ssh'
 def auto_install_expect_if_not_exist():
     """Install expect to auto input password for ssh scripts"""
     if not os.popen('which expect').read():
-        # TODO: auto choose the os system
-        if 'ubuntu':
+        if os.popen('which apt').read():
             os.system('sudo apt install -y expect')
-        elif 'centos':
+        elif os.popen('which yum').read():
             os.system('sudo yum install -y expect')
-        elif 'suse':
+        elif os.popen('which zyyper').read():
             os.system('sudo zypper in -y expect')
 
 
