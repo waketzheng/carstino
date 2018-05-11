@@ -16,3 +16,9 @@ alias runpep8="autopep8 -a -a -i *.py"
 
 # trim the space at the right side of every line
 alias rstrip="~/letstype/rstrip.py"
+
+# some useful aliases
+alias cd..="cd .."
+alias ls..="ls .."
+alias cl="clear"
+
