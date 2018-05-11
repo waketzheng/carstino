@@ -5,6 +5,5 @@ cp .mg.py ~  # auto find django `manage.py` and run it at current of its parent 
 cp .vimrc ~   # custom vim
 git config --global credential.helper store  # git push auto fill in username and password after first time
 sudo cp django_manage.bash /etc/bash_completion.d/   # auto complete for command `mg`
-sudo apt install -y expect
 python3 -m pip install -U ipython django pylint flake8 white black  --user  # python modules recommanded by douban dongweiming or the author of pipenv
 source ~/.bashrc

@@ -3,8 +3,20 @@ import os
 from pathlib import Path
 
 
-scripts = ['aliyun', 'gullwing', 'ssh212', 'ssh2123']
+scripts = ['aliyun', 'gullwing', 'romanload', 'ssh212', 'ssh2123']
 GIT_CLONE = 'git clone http://192.168.0.12/wenjie.zheng/ssh.git ~/.ssh/ssh'
+
+
+def auto_install_expect_if_not_exist():
+    """Install expect to auto input password for ssh scripts"""
+    if not os.popen('which expect').read():
+        # TODO: auto choose the os system
+        if 'ubuntu':
+            os.system('sudo apt install -y expect')
+        elif 'centos':
+            os.system('sudo yum install -y expect')
+        elif 'suse':
+            os.system('sudo zypper in -y expect')
 
 
 def conf_scripts():
@@ -14,6 +26,7 @@ def conf_scripts():
         if not (pb / i).exists():
             os.system(f'cp {t} {pb}')
             print(f'cp: {t} -> {pb}/')
+    auto_install_expect_if_not_exist()
     ssh_path = Path.home() / '.ssh'
     if not ssh_path.exists():
         ssh_path.mkdir()
