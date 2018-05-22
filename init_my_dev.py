@@ -53,7 +53,6 @@ def main():
             f.write(ACTIVE_ALIASES)
     # add pipenv auto complete to user profile
     a = 'eval "$(pipenv --completion)"'
-    a = 'eval "$(pipenv --completion)"'
     ps = home.glob(".*profile")
     for p in ps:
         if not p.name in (".profile", ".bash_profile"):
