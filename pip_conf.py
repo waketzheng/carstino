@@ -1,25 +1,24 @@
 #!/usr/bin/env python3.6
-import os
 from pathlib import Path
 
 
-aliyun = '''
+aliyun = """
 [global]
 index-url = https://mirrors.aliyun.com/pypi/simple/
 [install]
 trusted-host = mirrors.aliyun.com
-'''
+"""
 
-douban = '''
+douban = """
 [global]
 index-url = https://pypi.douban.com/simple/
 [install]
 trusted-host = pypi.douban.com
-'''
+"""
 
 
 def init_pip_conf(source=aliyun, replace=False):
-    p = Path.home() / '.pip/pip.conf'
+    p = Path.home() / ".pip/pip.conf"
     if not p.parent.exists():
         p.parent.mkdir()
     source = source.strip()
@@ -27,28 +26,33 @@ def init_pip_conf(source=aliyun, replace=False):
         if source in p.read_text():
             return
         if not replace:
-            print('pip.conf exists! content:')
+            print("pip.conf exists! content:")
             print(p.read_text())
-            print('If you want to replace it,rerun this script and add "-y" in args')
+            print('If you want to replace it, rerun with "-y" in args')
             return
-    p.write_text(source+'\n')
-    print(f'Write lines to `{p}` as below:')
+    p.write_text(source + "\n")
+    print(f"Write lines to `{p}` as below:")
     print(source)
 
 
 def main():
-    import sys
     from argparse import ArgumentParser
+
     parser = ArgumentParser()
-    parser.add_argument('-y', action='store_true',
-                        help='whether replace exist file')
-    parser.add_argument('-s', '--source', default='aliyun',
-                        help='the source of pip, douban or aliyun(default)')
+    parser.add_argument(
+        "-y", action="store_true", help="whether replace exist file"
+    )
+    parser.add_argument(
+        "-s",
+        "--source",
+        default="aliyun",
+        help="the source of pip, douban or aliyun(default)",
+    )
     args = parser.parse_args()
-    source = douban if args.source == 'douban' else aliyun
+    source = douban if args.source == "douban" else aliyun
     init_pip_conf(source, args.y)
-    print('Done!')
+    print("Done!")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

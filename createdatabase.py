@@ -22,11 +22,16 @@ def configure_settings():
     return p
 
 
-def get_db(alias="default"):
+def get_db(alias="default", all_=False):
     from django.conf import settings
 
     dbs = settings.DATABASES
-    return dbs.get(alias)
+    if all_:
+        return dbs.keys(), dbs.values()
+    try:
+        return dbs[alias]
+    except KeyError:
+        raise Exception(f"database NAME ``{alias}`` not found at settings.")
 
 
 def getconf(dbconf):
@@ -51,12 +56,13 @@ def creat_db(config, db_name, engine, drop=False):
     elif "sqlite3" in engine:
         sqlite(config, db_name, drop)
     else:
-        raise Exception("Unknow database engine.")
+        raise Exception(f"Not handle database engine ``{engine}`` yet..")
 
 
 def mysql(config, db_name, drop=False):
     # TODO: use MySQLdb
     import pymysql
+
     try:
         conn = pymysql.connect(**config)
         cur = conn.cursor()
@@ -83,22 +89,41 @@ def postgres(config, db_name, drop=False):
 
 def sqlite(config, db_name, drop=False):
     if drop:
-        pass
+        os.remove(db_name)
+        print(f"{db_name} was deleted.")
 
 
 def main():
     from argparse import ArgumentParser
+
     parser = ArgumentParser()
-    parser.add_argument('-d', '--delete', action='store_true',
-                        help='whether to recursive')
-    parser.add_argument('-a', '--alias', default='default',
-                        help='the alias of the database(default:default)')
+    parser.add_argument(
+        "-d",
+        "--delete",
+        action="store_true",
+        help="whether to delete the database if exists",
+    )
+    parser.add_argument(
+        "--all", action="store_true", help="whether to handle all databases"
+    )
+    parser.add_argument(
+        "-a",
+        "--alias",
+        default="default",
+        help="the alias of the database(default:default)",
+    )
     args, unknown = parser.parse_known_args()
     manage_path = configure_settings()
     sys.path.insert(0, str(manage_path.parent))
-    db = get_db(args.alias)
-    creat_db(*getconf(db), drop=args.delete)
-    os.system(f"python {manage_path} migrate --database={args.alias}")
+    if args.all:
+        aliases, dbs = get_db(all_=True)
+    else:
+        aliases, dbs = [args.alias], [get_db(args.alias)]
+    for db in dbs:
+        creat_db(*getconf(db), drop=args.delete)
+    os.system(f"python {manage_path} makemigrations")
+    for alias in aliases:
+        os.system(f"python {manage_path} migrate --database={alias}")
 
 
 if __name__ == "__main__":
