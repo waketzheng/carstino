@@ -60,11 +60,10 @@ def creat_db(config, db_name, engine, drop=False):
 
 
 def mysql(config, db_name, drop=False):
-    # TODO: use MySQLdb
-    import pymysql
+    import MySQLdb
 
     try:
-        conn = pymysql.connect(**config)
+        conn = MySQLdb.connect(**config)
         cur = conn.cursor()
         if drop:
             cur.execute(f"drop database {db_name}")
