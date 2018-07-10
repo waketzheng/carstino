@@ -16,5 +16,6 @@ alias rstrip="~/letstype/rstrip.py"
 
 # some useful aliases
 alias cd..="cd .."
+alias cd-="cd -"
 alias ls..="ls .."
 alias cl="clear"
