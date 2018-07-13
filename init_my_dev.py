@@ -39,21 +39,31 @@ def main():
         os.system(f"cp {repo / fn} {home}")
     s = aliases.read_text()
     ss = re.sub(r'(rstrip=")(.*)"', rf'\1{repo/"rstrip.py"}"', s)
+    with os.popen("alias") as fp:
+        if "alias vi=" not in fp.read():
+            ss += "alias vi=vim"
     if s != ss:
         aliases.write_text(ss)
+    # switch pip source to aliyun
     swith_pip_source = repo / "pip_conf.py"
     os.system(f"{swith_pip_source}")
+    os.system("sudo cp -r ~/.pip /home/root/")
     # git push auto fill in username and password after input once
     os.system("git config --global credential.helper store")
     # auto complete for command `mg`
     if not Path("/etc/bash_completion.d/django_manage.bash").exists():
         os.system("sudo cp django_manage.bash /etc/bash_completion.d/")
     # Install some useful python modules
-    os.system(f"python3 -m pip install --upgrade --user {PACKAGES}")
+    if os.system(f"python3 -m pip install --upgrade --user {PACKAGES}") != 0:
+        os.system(f"sudo pip3 install -U {PACKAGES}")
     bashrc = home / ".bashrc"
     if FS[0] not in bashrc.read_text():
         with bashrc.open("a") as f:
             f.write(ACTIVE_ALIASES)
+    # make sure pipenv work
+    if os.system("pipenv --version") != 0:
+        cmd = "python3 -m pipenv"
+        os.system(f"echo 'pipenv=\"{cmd}\"'>>{aliases}")
     # add pipenv auto complete to user profile
     a = 'eval "$(pipenv --completion)"'
     ps = home.glob(".*profile")
@@ -72,9 +82,6 @@ def main():
     else:
         os.system(f". {bashrc}")
         print(f"`{bashrc}` activated")
-    if os.system("pipenv --version") != 0:
-        os.system("sudo cp -r ~/.pip /home/root/")
-        os.system(f"sudo pip3 install -U {PACKAGES}")
 
 
 if __name__ == "__main__":
