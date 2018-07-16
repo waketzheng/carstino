@@ -21,14 +21,13 @@ def cp_follow_symlink(from_path, to_path):
 
 def cp_packages(from_path, to_path):
     already = set([p.name for p in to_path.glob("*")])
-    print(f"already: {already}")
     for p in from_path.glob("*"):
         if p.name not in already:
             cp_follow_symlink(p, to_path)
             print(f"cp {p} --> {to_path}")
 
 
-def path_parsed(path, m=None, parent_level=None):
+def path_parsed(path, onlyone=False, m=None):
     if re.match(r"\d+(\.\d+)?", path):
         py = f"python{path}"
     elif re.match(r"python\d+(\.\d+)?", path):
@@ -36,20 +35,23 @@ def path_parsed(path, m=None, parent_level=None):
     elif Path(path).is_dir():
         return Path(path)
     modules = [m] if m else ("pip", "CommandNotFound", "lsb_release")
+    paths = set()
     for m in modules:
         cmd = f"{py} -c 'import {m} as m;print(m.__file__)'"
-        if os.system(cmd) == 0:
-            break
-    else:
+        if os.system(f"{cmd}  > /dev/null") != 0:
+            continue
+        child = Path(os.popen(cmd).read().strip())
+        parent_level = 1 if child.name == "__init__.py" else 0
+        paths.add(child.parents[parent_level])
+        if onlyone:
+            return paths.pop()
+    if not paths:
         raise Exception(
             f"Modules: {modules}, not found at {py}.\n"
             "You may need to try another version.\n"
             "Run `whereis python` to find avaliable versions."
         )
-    child = Path(os.popen(cmd).read().strip())
-    if not parent_level:
-        parent_level = 1 if child.name == "__init__.py" else 0
-    return child.parents[parent_level]
+    return paths
 
 
 def main():
@@ -65,8 +67,10 @@ def main():
         from_path, to_path = sys.argv[1:3]
     else:
         from_path, to_path = "3", "3.6"
-    from_path, to_path = path_parsed(from_path), path_parsed(to_path)
-    cp_packages(from_path, to_path)
+    from_paths, to_path = path_parsed(from_path), path_parsed(to_path, True)
+    print("from_paths", from_paths)
+    for from_path in from_paths:
+        cp_packages(from_path, to_path)
     print("Done!")
 
 
