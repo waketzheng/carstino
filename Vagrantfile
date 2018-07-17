@@ -82,7 +82,7 @@ Vagrant.configure("2") do |config|
 
   echo "Setup repo mirror"
 
-  sed -i "s|http://archive.ubuntu.com|https://mirrors.aliyun.com|g" /etc/apt/sources.list
+  python3 -c "d='mirrors.163.com';import re;from pathlib import Path;p=Path('/etc/apt/sources.list');s=p.read_text();bak=p.with_name(p.name+'.bak');bak.exists() or bak.write_text(s);p.write_text(re.sub(r'(cn.archive|security|archive)\.ubuntu\.com', d, s))"
 
   echo "Add postgresql repo"
   echo "deb https://mirrors.tuna.tsinghua.edu.cn/postgresql/repos/apt xenial-pgdg main" | tee /etc/apt/sources.list.d/postgresql.list
@@ -103,17 +103,11 @@ Vagrant.configure("2") do |config|
   echo "Install python development tools"
   apt-get install -y python3-pip python3-dev bzip2 libbz2-dev libxml2-dev libxslt1-dev zlib1g-dev libffi-dev libssl-dev
 
-  echo "switch pip source to aliyun, then install pipenv and ipython"
+  echo "switch pip source to aliyun, then install pipenv"
   su vagrant -c 'mkdir ~/.pip'
-  su vagrant -c 'echo "
-  [global]
-  index-url = https://mirrors.aliyun.com/pypi/simple/
-  [install]
-  trusted-host = mirrors.aliyun.com
-  ">~/.pip/pip.conf'
-  mkdir .pip&&cp /home/vagrant/.pip/pip.conf .pip/
+  su vagrant -c 'echo -e "[global]\nindex-url=https://mirrors.aliyun.com/pypi/simple/\n[install]\ntrusted-host=mirrors.aliyun.com">~/.pip/pip.conf'
+  cp -r /home/vagrant/.pip .
   su vagrant -c 'pip3 install pipenv'
-  python3 -m pip install ipython django autopep8 flake8 pylint white
 
   echo "Optional: custom vim config, aliases, django manage.py command auto completion"
   export repo="https://github.com/waketzheng/letstype"
@@ -122,6 +116,7 @@ Vagrant.configure("2") do |config|
   su vagrant -c 'wget $repo/raw/master/.bash_aliases -O ~/.bash_aliases'
   wget $repo/raw/master/django_manage.bash -O /etc/bash_completion.d/django_manage.bash
   apt-get install -y expect
+  python3 -m pip install ipython django autopep8 flake8 pylint white
 
   echo "Optional: auto store git password for push to http repo"
   su vagrant -c 'git config --global credential.helper store'
