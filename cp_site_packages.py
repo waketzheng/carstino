@@ -30,11 +30,14 @@ def cp_packages(from_path, to_path):
 def path_parsed(path, onlyone=False, m=None):
     if re.match(r"\d+(\.\d+)?", path):
         py = f"python{path}"
-    elif re.match(r"python\d+(\.\d+)?", path):
+    elif re.match(r"python(\d+)?(\.\d+)?", path):
         py = path
     elif Path(path).is_dir():
-        return Path(path)
-    modules = [m] if m else ("pip", "CommandNotFound", "lsb_release")
+        return Path(path) if onlyone else [Path(path)]
+    if m:
+        modules = [m] if isinstance(m, str) else m
+    else:
+        modules = ("pip", "CommandNotFound", "lsb_release")
     paths = set()
     for m in modules:
         cmd = f"{py} -c 'import {m} as m;print(m.__file__)'"
@@ -67,7 +70,8 @@ def main():
         from_path, to_path = sys.argv[1:3]
     else:
         from_path, to_path = "3", "3.6"
-    from_paths, to_path = path_parsed(from_path), path_parsed(to_path, True)
+    from_paths = path_parsed(from_path)
+    to_path = path_parsed(to_path, 1, ["subprocess", "pip", "CommandNotFound"])
     print("from_paths", from_paths)
     for from_path in from_paths:
         cp_packages(from_path, to_path)

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3
 """
 Configure python development environment.
 Only work for linux that use bash!
