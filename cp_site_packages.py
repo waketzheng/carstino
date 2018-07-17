@@ -7,10 +7,11 @@ from pathlib import Path
 
 def cp_follow_symlink(from_path, to_path):
     from_path = from_path.resolve()
-    if from_path.is_file():
+    miss = from_path.name not in set([p.name for p in to_path.glob("*")])
+    if from_path.is_file() and miss:
         os.system(f"sudo cp {from_path} {to_path}")
         return
-    if not any(p.is_symlink() for p in from_path.rglob("*")):
+    if not any(p.is_symlink() for p in from_path.rglob("*")) and miss:
         os.system(f"sudo cp -r {from_path} {to_path}")
         return
     to_path = to_path / from_path.name
