@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 
 
-scripts = ["aliyun", "gullwing", "romanload", "ssh212", "ssh2123"]
 GIT_CLONE = "git clone http://192.168.0.12/wenjie.zheng/ssh.git ~/.ssh/ssh"
 
 
@@ -20,11 +19,11 @@ def auto_install_expect_if_not_exist():
 
 def conf_scripts():
     pa, pb = Path(__file__).parent, Path.home()
-    for i in scripts:
-        t = pa / i
-        if not (pb / i).exists():
-            os.system(f"cp {t} {pb}")
-            print(f"cp: {t} -> {pb}/")
+    for p in pa.glob('*.bash'):
+        target = pb / p.stem
+        if not target.exists():
+            os.system(f"cp {p} {target}")
+            print(f"cp: {p} -> {target}")
     auto_install_expect_if_not_exist()
     ssh_path = Path.home() / ".ssh"
     if not ssh_path.exists():
