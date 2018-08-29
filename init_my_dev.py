@@ -41,7 +41,7 @@ def main():
     ss = re.sub(r'(rstrip=")(.*)"', rf'\1{repo/"rstrip.py"}"', s)
     with os.popen("alias") as fp:
         if "alias vi=" not in fp.read():
-            ss += "alias vi=vim"
+            ss += "alias vi=vim\n"
     if s != ss:
         aliases.write_text(ss)
     # switch pip source to aliyun
@@ -63,7 +63,7 @@ def main():
     # make sure pipenv work
     if os.system("pipenv --version") != 0:
         cmd = "python3 -m pipenv"
-        os.system(f"echo 'pipenv=\"{cmd}\"'>>{aliases}")
+        os.system(f"echo 'alias pipenv=\"{cmd}\"'>>{aliases}")
     # add pipenv auto complete to user profile
     a = 'eval "$(pipenv --completion)"'
     ps = home.glob(".*profile")
