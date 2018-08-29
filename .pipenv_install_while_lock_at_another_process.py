@@ -11,7 +11,8 @@ def subcmd(cmd):
 
 def main():
     os.system(f'pipenv install --skip-lock {" ".join(sys.argv[1:])}')
-    p = Process(target=subcmd, args=("pipenv lock 2>&1 >/dev/null",))
+    cmd = "pipenv lock 2>&1 >/dev/null"
+    p = Process(target=subcmd, args=(cmd,), daemon=True)
     p.start()
 
 
