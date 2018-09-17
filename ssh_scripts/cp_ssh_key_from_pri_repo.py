@@ -19,7 +19,7 @@ def auto_install_expect_if_not_exist():
 
 def conf_scripts():
     pa, pb = Path(__file__).parent, Path.home()
-    for p in pa.glob('*.bash'):
+    for p in pa.glob("*.bash"):
         target = pb / p.stem
         if not target.exists():
             os.system(f"cp {p} {target}")
