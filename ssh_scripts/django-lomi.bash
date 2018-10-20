@@ -1,1 +1,0 @@
-~/.ssh/ssh/django-lomi

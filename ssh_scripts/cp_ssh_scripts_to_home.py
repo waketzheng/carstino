@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 import os
+import re
 from pathlib import Path
-
-
-GIT_CLONE = "git clone http://192.168.0.12/wenjie.zheng/ssh.git ~/.ssh/ssh"
 
 
 def auto_install_expect_if_not_exist():
@@ -15,6 +13,8 @@ def auto_install_expect_if_not_exist():
             os.system("sudo yum install -y expect")
         elif os.popen("which zyyper").read():
             os.system("sudo zypper in -y expect")
+        elif os.popen("which pacman").read():
+            os.system("sudo pacman -S expect")
 
 
 def conf_scripts():
@@ -24,24 +24,13 @@ def conf_scripts():
         if not target.exists():
             os.system(f"cp {p} {target}")
             print(f"cp: {p} -> {target}")
+            content = target.read_text()
+            host = re.search(r'@\w+\.\w+.\w+"', content).group().strip('@"')
+            user = input(f"User for {host}: ")
+            passwd = input(f"password for {host}: ")
+            new_txt = content.replace("USER", user).replace("PASSWD", passwd)
+            target.write_text(new_txt)
     auto_install_expect_if_not_exist()
-    ssh_path = Path.home() / ".ssh"
-    if not ssh_path.exists():
-        ssh_path.mkdir()
-    pri_repo = ssh_path / "ssh"
-    if not pri_repo.exists():
-        os.system(GIT_CLONE)
-    pri_key = ssh_path / "213.key"
-    if not pri_key.exists():
-        os.system(f"cp {pri_repo / pri_key.name} {ssh_path}")
-        os.system(f"sudo chmod 400 {pri_key}")
-        print(f"cp `{pri_key.name}`: {pri_repo} -> {ssh_path}/")
-    for k in ("id_rsa", "id_rsa.pub"):
-        ssh_key = ssh_path / k
-        if not ssh_key.exists():
-            os.system(f"cp {pri_repo / ssh_key.name} {ssh_path}")
-            os.system(f"sudo chmod 400 {ssh_key}")
-            print(f"cp `{ssh_key.name}`: {pri_repo} -> {ssh_path}/")
 
 
 if __name__ == "__main__":
