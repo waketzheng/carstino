@@ -1,37 +1,40 @@
-#!/usr/bin/env python3
-from pathlib import Path
+#!/usr/bin/env python
+import os
+import re
+import sys
 
 
 PIPFILE = "Pipfile"
-
-ALIYUN = """
-[[source]]
-url = "https://mirrors.aliyun.com/pypi/simple"
-verify_ssl = true
-name = "aliyun"
-
-"""
-
-DOUBAN = """
-[[source]]
-url = "https://pypi.douban.com/simple"
-verify_ssl = true
-name = "douban"
-
-"""
+DEFAULT = "aliyun"
+SOURCES = {
+    "aliyun": "https://mirrors.aliyun.com/pypi/simple",
+    "douban": "https://pypi.douban.com/simple",
+    "qinghua": "https://pypi.tuna.tsinghua.edu.cn/simple",
+}
 
 
 def main():
-    import sys
-
-    p = Path(PIPFILE)
-    if not p.exists():
+    if not os.path.exists(PIPFILE):
+        print("Error: ``{}`` not found!\nExit!".format(PIPFILE))
         return
-    source = DOUBAN if "douban" in sys.argv else ALIYUN
-    s = p.read_text()
-    source = source.lstrip()
-    if source not in s:
-        p.write_text(source + s)
+    source = SOURCES[DEFAULT]
+    if len(sys.argv) > 1:
+        for i in ("douban", "qinghua"):
+            if i in sys.argv:
+                source = SOURCES.get(i)
+                break
+    with open(PIPFILE, "r+") as fp:
+        text = fp.read()
+        if source in text:
+            tip = "Source of {} already be:\n{}\nSkip!"
+        else:
+            pattern = r"(\[\[source\]\]\s*url\s*=\s*\")(.+?)(\")"
+            new_text = re.sub(pattern, r"\1{}\3".format(source), text)
+            fp.seek(0)
+            fp.truncate()
+            fp.write(new_text)
+            tip = "{} switched source to:\n{}\nDone."
+    print(tip.format(PIPFILE, source))
 
 
 if __name__ == "__main__":

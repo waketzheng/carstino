@@ -1,27 +1,31 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 rstrip every line of file(s)
 """
 import re
 import os
-from pathlib import Path
+
+
+class ContentException(Exception):
+    pass
 
 
 def rstrip_file(fname, newlines=1):
-    p = Path(fname)
-    s = p.read_text()
+    with open(fname) as fp:
+        s = fp.read()
     if not s:
-        raise Exception("Empty file.")
+        raise ContentException("Empty file.")
     ss = [line.rstrip() for line in s.rstrip().split("\n")]
     required = "\n".join(ss) + "\n" * newlines
     if s == required:
-        raise Exception("Already meet requirement.")
-    p.write_text(required)
+        raise ContentException("Already meet requirement.")
+    with open(fname, "w") as fp:
+        fp.write(required)
 
 
 def is_hidden(dir_or_file):
-    pattern_hidden = re.compile(r"\.\w")
-    return any(pattern_hidden.match(i) for i in dir_or_file.split(os.path.sep))
+    re_hidden = re.compile(r"\.\w")
+    return any(re_hidden.match(i) for i in dir_or_file.split(os.path.sep))
 
 
 def is_required_file_type(s, required):
@@ -62,7 +66,7 @@ def main():
     for fn in files:
         try:
             rstrip_file(fn)
-        except Exception as e:
+        except ContentException as e:
             count_skip += 1
             print("{}: skip! {}".format(fn, e))
         else:

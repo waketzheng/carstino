@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import os
 import sys
 from multiprocessing import Process
@@ -10,7 +10,7 @@ def subcmd(cmd):
 
 
 def main():
-    os.system(f'pipenv install --skip-lock {" ".join(sys.argv[1:])}')
+    os.system("pipenv install --skip-lock {}".format(" ".join(sys.argv[1:])))
     cmd = "pipenv lock 2>&1 >/dev/null"
     p = Process(target=subcmd, args=(cmd,), daemon=True)
     p.start()

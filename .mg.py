@@ -1,19 +1,18 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import os
 import sys
-from pathlib import Path
 
 
 def main():
     fn = "manage.py"
     for _ in range(5):
-        if Path(fn).exists():
+        if os.path.exists(fn):
             break
         fn = "../" + fn
     else:
-        print(f'Error:\n{" "*4}`manage.py` not found. Is it a django project?')
+        print("Error:\n    `manage.py` not found. Is it a django project?")
         return
-    os.system(f'python {fn} {" ".join(sys.argv[1:])}')
+    os.system("python {} {}".format(fn, " ".join(sys.argv[1:])))
 
 
 if __name__ == "__main__":

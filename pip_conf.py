@@ -1,38 +1,57 @@
-#!/usr/bin/env python3
-from pathlib import Path
+#!/usr/bin/env python
+import os
+import platform
 
-
-aliyun = """
+"""
+A sample of the pip.conf:
+```
 [global]
 index-url = https://mirrors.aliyun.com/pypi/simple/
 [install]
 trusted-host = mirrors.aliyun.com
+```
 """
 
-douban = """
+TEMPLATE = """
 [global]
-index-url = https://pypi.douban.com/simple/
+index-url = https://{}/simple/
 [install]
-trusted-host = pypi.douban.com
-"""
+trusted-host = {}
+""".strip()
+DEFAULT = "aliyun"
+SOURCES = {
+    "aliyun": "mirrors.aliyun.com/pypi",
+    "douban": "pypi.douban.com",
+    "qinghua": "pypi.tuna.tsinghua.edu.cn",
+}
 
 
-def init_pip_conf(source=aliyun, replace=False):
-    p = Path.home() / ".pip/pip.conf"
-    if not p.parent.exists():
-        p.parent.mkdir()
-    source = source.strip()
-    if p.exists():
-        if source in p.read_text():
+def init_pip_conf(source=DEFAULT, replace=False):
+    if platform.system() == "Windows":
+        _pip_conf = ("pip", "pip.ini")
+    else:
+        _pip_conf = (".pip", "pip.conf")
+    conf_file = os.path.join(os.path.expanduser("~"), *_pip_conf)
+    parent = os.path.dirname(conf_file)
+    if not os.path.exists(parent):
+        os.mkdir(parent)
+    url = SOURCES.get(source, SOURCES[DEFAULT])
+    text = TEMPLATE.format(url, url.split("/")[0])
+    if os.path.exists(conf_file):
+        with open(conf_file) as fp:
+            s = fp.read()
+        if text in s:
+            print("Pip source already be configured as expected.\nSkip!")
             return
         if not replace:
-            print("pip.conf exists! content:")
-            print(p.read_text())
-            print('If you want to replace it, rerun with "-y" in args')
+            print("The pip file {} exists! content:".format(conf_file))
+            print(s)
+            print('If you want to replace it, rerun with "-y" in args.\nExit!')
             return
-    p.write_text(source + "\n")
-    print(f"Write lines to `{p}` as below:")
-    print(source)
+    with open(conf_file, "w") as fp:
+        fp.write(text + "\n")
+    print("Write lines to `{}` as below:\n{}\n".format(conf_file, text))
+    print("Done!")
 
 
 def main():
@@ -46,12 +65,11 @@ def main():
         "-s",
         "--source",
         default="aliyun",
-        help="the source of pip, douban or aliyun(default)",
+        help="the source of pip, douban or qinghua or aliyun(default)",
     )
     args = parser.parse_args()
-    source = douban if args.source == "douban" else aliyun
+    source = args.source
     init_pip_conf(source, args.y)
-    print("Done!")
 
 
 if __name__ == "__main__":
