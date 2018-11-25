@@ -20,6 +20,9 @@ alias switch_pipenv_source="python3 ~/.switch_source_pipenv.py"
 # trim the space at the right side of every line
 alias rstrip="~/letstype/rstrip.py"
 
+# reformat html files to be prettify
+alias prettify="~/letstype/prettify.py"
+
 # some useful aliases
 alias cd..="cd .."
 alias cd-="cd -"

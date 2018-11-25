@@ -35,6 +35,7 @@ def main():
         os.system(f"cp {repo / fn} {home}")
     s = aliases_path.read_text()
     ss = re.sub(r'(rstrip=")(.*)"', rf'\1{repo/"rstrip.py"}"', s)
+    ss = re.sub(r'(prettify=")(.*)"', rf'\1{repo/"prettify.py"}"', s)
     with os.popen("alias") as fp:
         if "alias vi=" not in fp.read():
             ss += "alias vi=vim\n"
