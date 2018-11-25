@@ -1,10 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 """
 A script to reformat the HTML files that can be found by this command:
     $ find . -name "*.html"
 use bs4.BeautifulSoup.prettify to make every file prettify.
 """
+import re
 from pathlib import Path
+
 from bs4 import BeautifulSoup
 
 
@@ -27,11 +29,22 @@ def say_result(count_prettify, count_skip):
             print(f"{files_prettify}, {files_skip}")
 
 
+def prettify(html, indent_width=2):
+    ss = BeautifulSoup(html, "html.parser").prettify()
+    # Custom indent width
+    re_indent = re.compile(r"^(\s*)", re.MULTILINE)
+    ss = re_indent.sub(r"\1" * indent_width, ss)
+    # Put them in one line, if there is no content between tags
+    re_slim = re.compile(r"<(\w+)(.*)>\s*</\1>")
+    ss = re_slim.sub(r"<\1\2></\1>", ss)
+    return ss
+
+
 def main():
     count_skip = count_prettify = 0
     for p in Path().rglob("*.html"):
         s = p.read_text()
-        ss = BeautifulSoup(s, "html.parser").prettify()
+        ss = prettify(s)
         if s == ss:
             count_skip += 1
             continue
