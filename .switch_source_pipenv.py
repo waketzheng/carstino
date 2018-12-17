@@ -28,8 +28,13 @@ def main():
         if source in text:
             tip = "Source of {} already be:\n{}\nSkip!"
         else:
-            pattern = r"(\[\[source\]\]\s*url\s*=\s*\")(.+?)(\")"
-            new_text = re.sub(pattern, r"\1{}\3".format(source), text)
+            re_url = re.compile(r'(\[\[source\]\][^[]*?url\s*=\s*")(.+?)(")')
+            if not re_url.search(text):
+                raise Exception(
+                    "Pipfile format is not as expected.\n"
+                    "You may need to switch the souce manually."
+                )
+            new_text = re_url.sub(r"\1{}\3".format(source), text)
             fp.seek(0)
             fp.truncate()
             fp.write(new_text)
