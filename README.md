@@ -12,7 +12,7 @@ curl https://raw.githubusercontent.com/waketzheng/carstino/master/pip_conf.py|py
 
 - init_my_dev.py: setting for vim, git store, pipenv aliases.
 
-PS: I userally init my development environment in a new machine as following
+PS: I usually init my development environment in a new machine as following
 
 ```bash
 git clone https://github.com/waketzheng/carstino.git
