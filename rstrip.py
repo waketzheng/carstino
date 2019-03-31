@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 """
-rstrip every line of file(s)
+Remove spaces at the end of every line, 
+and make sure there is just one and only one empty line at the end the file.
+
+For example:
+    "a line with some spaces   \r\n" => "a line with some spaces\n"
 """
 import re
 import os

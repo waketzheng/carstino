@@ -19,6 +19,13 @@ def auto_install_expect_if_not_exist():
 
 def conf_scripts():
     pa, pb = Path(__file__).parent, Path.home()
+    expect_file = ".ssh_server.exp"
+    here, there = pa / expect_file, pb / expect_file
+    if here.exists() and not there.exists():
+        cmd = f"cp {here} {there.parent}"
+        os.system(cmd)
+        print(cmd)
+
     for p in pa.glob("*.bash"):
         target = pb / p.stem
         if not target.exists():
