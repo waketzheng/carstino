@@ -32,7 +32,7 @@ def conf_scripts():
             os.system(f"cp {p} {target}")
             print(f"cp: {p} -> {target}")
             content = target.read_text()
-            host = re.search(r'USER\s+([\w.]+)\s+PASSWD', content).group(1)
+            host = re.search(r"USER\s+([\w.]+)\s+PASSWD", content).group(1)
             user = input(f"User for {host}: ")
             passwd = input(f"password for {host}: ")
             new_txt = content.replace("USER", user).replace("PASSWD", passwd)

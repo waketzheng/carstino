@@ -17,7 +17,7 @@ FILES = ALIAS_FILE, *_ = [
     ".vimrc",
 ]
 
-PACKAGES = "pipenv ipython django pylint flake8 white black"
+PACKAGES = "pipenv ipython django autopep8 flake8 white black"
 
 
 def main():
@@ -34,8 +34,7 @@ def main():
     for fn in FILES:
         os.system(f"cp {repo / fn} {home}")
     s = aliases_path.read_text()
-    ss = re.sub(r'(rstrip=")(.*)"', rf'\1{repo/"rstrip.py"}"', s)
-    ss = re.sub(r'(prettify=")(.*)"', rf'\1{repo/"prettify.py"}"', s)
+    ss = re.sub(r'(rstrip|prettify)="(.*)"', rf'\1="{repo}/\1.py"', s)
     with os.popen("alias") as fp:
         if "alias vi=" not in fp.read():
             ss += "alias vi=vim\n"
@@ -69,7 +68,8 @@ def main():
     # switch pip source to aliyun
     swith_pip_source = repo / "pip_conf.py"
     os.system(f"{swith_pip_source}")
-    os.system("sudo cp -r ~/.pip /home/root/")
+    if not Path("/home/root/.pip/pip.conf").exists():
+        os.system("sudo cp -r ~/.pip /home/root/")
     # git push auto fill in username and password after input once
     os.system("git config --global credential.helper store")
     # Install some useful python modules
@@ -82,18 +82,24 @@ def main():
         with os.popen("which python3") as p:
             cmd = f"{p.read()} -m pipenv"
         os.system(f"echo 'alias pipenv=\"{cmd}\"'>>{aliases_path}")
-    # add pipenv auto complete to user profile
+    # add pipenv auto complete to user profile, and avoid pyc
     a = 'eval "$(pipenv --completion)"'
+    b = "export PYTHONDONTWRITEBYTECODE=1"
     ps = home.glob(".*profile")
     for p in ps:
         if p.name not in (".profile", ".bash_profile"):
             continue
-        if a in p.read_text():
-            print(f"`{a}` already in {p}")
+        s = p.read_text()
+        if a in s and b in s:
+            print(f"`{a}` and `{b}` already in {p}")
             continue
-        cmd = f"echo '{a}'>>{p}"
-        os.system(cmd)
-        print(cmd)
+        for i in (a, b):
+            if i in s:
+                print(f"`{i}` already in {p}")
+            else:
+                cmd = f"echo '{i}'>>{p}"
+                os.system(cmd)
+                print(cmd)
         os.system(f"bash {p}")
         print(f"`{p}` activated")
         break

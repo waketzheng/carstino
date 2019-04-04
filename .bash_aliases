@@ -1,5 +1,6 @@
-# python django
+# python django shortcut for `python manage.py` and its completion
 alias mg='~/.mg.py'
+alias activate_completion="source /etc/bash_completion.d/django_manage_completion.bash"
 
 # python pipenv
 alias ve="pipenv shell"
@@ -15,13 +16,13 @@ alias pii="~/.pipenv_install_while_lock_at_another_process.py"
 alias poo="pipenv open "
 alias puu="pipenv uninstall "
 alias pcc="pipenv check --style */*.py"
-alias switch_pipenv_source="python3 ~/.switch_source_pipenv.py"
+alias switch_pipenv_source="~/.switch_source_pipenv.py"
 
 # trim the space at the right side of every line
-alias rstrip="~/letstype/rstrip.py"
+alias rstrip="~/carstino/rstrip.py"
 
 # reformat html files to be prettify
-alias prettify="~/letstype/prettify.py"
+alias prettify="~/carstino/prettify.py"
 
 # some useful aliases
 alias cd..="cd .."
@@ -34,3 +35,9 @@ alias mgshell="mg shell"
 alias gitstatus="git status"
 alias gitlog="git log"
 alias gitdiff="git diff"
+alias gitadd="git add"
+alias gitcommit="git commit"
+alias t0="tmux a -t 0"
+alias t1="tmux a -t 1"
+alias t2="tmux a -t 2"
+alias t3="tmux a -t 3"

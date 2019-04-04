@@ -1,8 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 """
 A script to reformat the HTML files that can be found by this command:
     $ find . -name "*.html"
 use bs4.BeautifulSoup.prettify to make every file prettify.
+Note: Python 3.6+ and bs4 (pip install bs4) is required.
 """
 import re
 from pathlib import Path
