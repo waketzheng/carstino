@@ -36,8 +36,16 @@ alias gitstatus="git status"
 alias gitlog="git log"
 alias gitdiff="git diff"
 alias gitadd="git add"
+alias gitcheckout="git checkout"
 alias gitcommit="git commit"
+# for tmux
 alias t0="tmux a -t 0"
 alias t1="tmux a -t 1"
 alias t2="tmux a -t 2"
 alias t3="tmux a -t 3"
+# to frontend
+alias myarn="tmux new -t yarn"
+alias toyarn="tmux a -t yarn"
+# to backend tty
+alias mback="tmux new -t back"
+alias toback="tmux a -t back"
