@@ -95,12 +95,8 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", inline: <<-SHELL
 
   echo "Setup repo mirror"
-  sed -i "s!http://archive.ubuntu.com!https://mirrors.163.com!g" /etc/apt/sources.list
-  sed -i "s!http://security.ubuntu.com!https://mirrors.163.com!g" /etc/apt/sources.list
-
-  echo "Add postgresql repo"
-  echo "deb https://mirrors.tuna.tsinghua.edu.cn/postgresql/repos/apt xenial-pgdg main" | tee /etc/apt/sources.list.d/postgresql.list
-  wget --quiet -O - https://mirrors.tuna.tsinghua.edu.cn/postgresql/repos/apt/ACCC4CF8.asc | apt-key add -
+  sed -i "s!http://archive.ubuntu.com!https://mirrors.huaweicloud.com!g" /etc/apt/sources.list
+  sed -i "s!http://security.ubuntu.com!https://mirrors.huaweicloud.com!g" /etc/apt/sources.list
 
   echo "---- Add yarn repo"
   curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
@@ -109,12 +105,12 @@ Vagrant.configure("2") do |config|
   apt-get update
 
   echo "Install"
-  apt-get install -y rabbitmq-server
-  apt-get install -y postgresql-11
-  apt-get install -y redis-server
-  apt-get install -y ruby-sass
-  apt-get install -y python3-pip
-  apt-get install -y yarn
+  apt install -y rabbitmq-server
+  apt install -y postgresql-11
+  apt install -y redis-server
+  apt install -y ruby-sass
+  apt install -y python3-pip
+  apt install -y yarn
 
   echo "---- Set yarn registry"
   yarn config set registry https://registry.npm.taobao.org
@@ -122,14 +118,14 @@ Vagrant.configure("2") do |config|
   echo "---- Add global vue-cli"
   yarn global add @vue/cli
   echo "Install python software properties"
-  apt-get install -y python-software-properties
+  apt install -y python-software-properties
 
   echo "Install python development tools"
-  apt-get install -y python3-dev bzip2 libbz2-dev libxml2-dev libxslt1-dev zlib1g-dev libffi-dev libssl-dev
+  apt install -y python3-dev bzip2 libbz2-dev libxml2-dev libxslt1-dev zlib1g-dev libffi-dev libssl-dev
 
   echo "switch pip source to aliyun, then install pipenv"
-  su vagrant -c 'mkdir ~/.pip'
-  su vagrant -c 'echo -e "[global]\nindex-url=https://mirrors.aliyun.com/pypi/simple/\n[install]\ntrusted-host=mirrors.aliyun.com">~/.pip/pip.conf'
+  pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pip -U
+  su vagrant -c 'pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple'
   cp -r /home/vagrant/.pip .
   su vagrant -c 'pip3 install pipenv'
 
@@ -143,7 +139,7 @@ Vagrant.configure("2") do |config|
 
   echo "---- Optional: install tree tmux, etc."
   apt-get install -y tree tmux httpie expect
-  su vagrant -c "pip3 install flake8 white black isort autoflake"
+  su vagrant -c "pip3 install flake8 white black isort"
 
   echo "Optional: auto store git password for push to http repo"
   su vagrant -c 'git config --global credential.helper store'
