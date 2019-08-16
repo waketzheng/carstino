@@ -10,7 +10,6 @@ This is a repo about init my
 - change_ubuntu_mirror_sources.py: change apt mirror sources of ubuntu16/18
 - createdatabase.py: create database for django project
 - django_manage_completion.bash: auto completion for my custom command `mg`, which is for django manage
-- prettify.py: auto reformat javascript files
 - .switch_source_pipenv.py: switch pip source of Pipfile
 
 
