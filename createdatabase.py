@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
+"""
+Create or drop databases for django project
+
+Usage:
+    $ ./createdatabase  # Just create a new database
+    $ ./createdatbase -d  # Drop db if exists and then create a new one
+    $ ./createdatabase -dm  # Run `./manage.py migrate` after create
+"""
 import os
 import sys
 from pathlib import Path
-
 
 SETTINGS_ENV = "DJANGO_SETTINGS_MODULE"
 SQL = "create database {} DEFAULT CHARACTER SET {} COLLATE utf8_general_ci"
@@ -82,8 +89,12 @@ def postgres(config, db_name, drop=False):
     who = "sudo -u postgres psql -U postgres -d postgres -c "
     option = "encoding='utf-8'"
     if drop:
-        os.system(f'{who}"drop database {db_name};"')
-    os.system(f'{who}"create database {db_name} {option};"')
+        cmd = f'{who}"drop database {db_name};"'
+        print("\n-->", cmd, "...")
+        os.system(f"cd /tmp && {cmd}")
+    cmd = f'{who}"create database {db_name} {option};"'
+    print("\n-->", cmd, "...")
+    os.system(f"cd /tmp && {cmd}")
 
 
 def sqlite(config, db_name, drop=False):
@@ -103,6 +114,12 @@ def main():
         help="whether to delete the database if exists",
     )
     parser.add_argument(
+        "-m",
+        "--migrate",
+        action="store_true",
+        help="whether to run the migrate command",
+    )
+    parser.add_argument(
         "--all", action="store_true", help="whether to handle all databases"
     )
     parser.add_argument(
@@ -114,15 +131,21 @@ def main():
     args, unknown = parser.parse_known_args()
     manage_path = configure_settings()
     sys.path.insert(0, str(manage_path.parent))
+    print("Reading DATABASES configure from django settings...")
     if args.all:
         aliases, dbs = get_db(all_=True)
     else:
         aliases, dbs = [args.alias], [get_db(args.alias)]
     for db in dbs:
         creat_db(*getconf(db), drop=args.delete)
-    os.system(f"python {manage_path} makemigrations")
-    for alias in aliases:
-        os.system(f"python {manage_path} migrate --database={alias}")
+    if args.migrate:
+        cmd = f"python {manage_path} makemigrations"
+        print("\n-->", cmd, "...")
+        os.system(cmd)
+        for alias in aliases:
+            cmd = f"python {manage_path} migrate --database={alias}"
+            print("\n-->", cmd, "...")
+            os.system(cmd)
 
 
 if __name__ == "__main__":
