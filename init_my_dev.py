@@ -60,10 +60,16 @@ def main():
         a += f"&&source {git_completion_path}"
     if a not in aliases_path.read_text():
         os.system(f"echo 'alias activate_completion=\"{a}\"'>>{aliases_path}")
-    # activate aliases at .bashrc
-    bashrc = home / ".bashrc"
-    if ALIAS_FILE not in bashrc.read_text():
-        with bashrc.open("a") as fp:
+    # activate aliases at .bashrc or .zshrc ...
+    names = ['.bashrc', '.zshrc', '.profile', '.zprofile']
+    for name in names:
+        rc = home / name
+        if rc.exists():
+            break
+    else:
+        raise Exception(f'Startup file not found, including {names!r}')
+    if ALIAS_FILE not in rc.read_text():
+        with rc.open("a") as fp:
             fp.write(f"[[ -f ~/{ALIAS_FILE} ]] && . ~/{ALIAS_FILE}")
     # switch pip source to aliyun
     swith_pip_source = repo / "pip_conf.py"
@@ -104,9 +110,9 @@ def main():
         print(f"`{p}` activated")
         break
     else:
-        p = bashrc
-        os.system(f". {bashrc}")
-        print(f"`{bashrc}` activated")
+        p = rc
+        os.system(f". {rc}")
+        print(f"`{rc}` activated")
     if mg_completion_path.exists():
         if mg_completion_path.name not in p.read_text():
             os.system(f"echo '# django manage completion'>>{p}")
