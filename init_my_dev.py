@@ -15,9 +15,10 @@ FILES = ALIAS_FILE, *_ = [
     ".switch_source_pipenv.py",
     ".mg.py",
     ".vimrc",
+    ".lint.sh",
 ]
 
-PACKAGES = "pipenv ipython django autopep8 flake8 white black"
+PACKAGES = "pipenv ipython django flake8 white black isort"
 
 
 def main():

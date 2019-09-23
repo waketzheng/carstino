@@ -21,9 +21,6 @@ alias switch_pipenv_source="~/.switch_source_pipenv.py"
 # trim the space at the right side of every line
 alias rstrip="~/carstino/rstrip.py"
 
-# reformat html files to be prettify
-alias prettify="~/carstino/prettify.py"
-
 # some useful aliases
 alias cd..="cd .."
 alias cd-="cd -"
@@ -49,3 +46,6 @@ alias toyarn="tmux a -t yarn"
 # to backend tty
 alias mback="tmux new -t back"
 alias toback="tmux a -t back"
+
+# reformat py file
+alias lint="~/.lint.sh"
