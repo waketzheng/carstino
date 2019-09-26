@@ -15,7 +15,13 @@ This is a repo about init my
 
 Usage:
 ```bash
+# Change source of pip to aliyun.com, worked at both Linux and Windows(Run with Git Bash).
 curl https://raw.githubusercontent.com/waketzheng/carstino/master/pip_conf.py|python
+```
+
+```bash
+# Change apt source of ubuntu16/18 to huawei cloud.
+curl https://raw.githubusercontent.com/waketzheng/carstino/master/change_ubuntu_mirror_sources.py|python
 ```
 
 - init_my_dev.py: setting for vim, git store, pipenv aliases.
