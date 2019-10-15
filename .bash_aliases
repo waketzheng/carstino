@@ -4,12 +4,13 @@ alias activate_completion="source /etc/bash_completion.d/django_manage_completio
 
 # python pipenv
 alias ve="pipenv shell"
-alias env="pipenv --python 3&&python3 ~/.switch_source_pipenv.py&&ve"
 alias env6="pipenv --python 3.6&&python3 ~/.switch_source_pipenv.py&&ve"
 alias env3.6=env6
 alias env3="pipenv --three&&python3 ~/.switch_source_pipenv.py&&ve"
 alias env7="pipenv --python 3.7&&python3.7 ~/.switch_source_pipenv.py&&ve"
 alias env3.7=env7
+alias env8="pipenv --python 3.8&&python3.8 ~/.switch_source_pipenv.py&&ve"
+alias env3.8=env8
 alias env2="pipenv --two&&python3 ~/.switch_source_pipenv.py&&ve"
 alias pgg="pipenv graph"
 alias pii="~/.pipenv_install_while_lock_at_another_process.py"
