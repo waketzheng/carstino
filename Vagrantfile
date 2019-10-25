@@ -14,13 +14,16 @@ Vagrant.configure("2") do |config|
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://vagrantcloud.com/search or https://mirrors.tuna.tsinghua.edu.cn
   # Add required box of this vagrant file by the following line:
-  # vagrant box add https://mirrors.tuna.tsinghua.edu.cn/ubuntu-cloud-images/bionic/current/bionic-server-cloudimg-amd64-vagrant.box --name ubuntu/bionic
   # vagrant box add https://mirrors.tuna.tsinghua.edu.cn/ubuntu-cloud-images/eoan/current/eoan-server-cloudimg-amd64-vagrant.box --name ubuntu/eoan
   config.vm.box = "ubuntu/eoan"
 
   config.vm.hostname = "carstino"
 
+  # You may need to run the following line to fix sync folder error:
+  # vagrant plugin install vagrant-vbguest
   config.vm.synced_folder ".", "/carstino"
+
+  config.vm.boot_timeout = 600
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -74,11 +77,13 @@ Vagrant.configure("2") do |config|
   # argument is a set of non-required options.
   # config.vm.synced_folder "../data", "/vagrant_data"
 
+  # To set disksize, you may need to run:
+  # vagrant plugin install vagrant-disksize
+  config.disksize.size = '20GB'
+
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
   # Example for VirtualBox:
-  #
-  config.disksize.size = '20GB'
   config.vm.provider "virtualbox" do |vb|
     # Display the VirtualBox GUI when booting the machine
     #vb.gui = true
