@@ -15,7 +15,8 @@ Vagrant.configure("2") do |config|
   # boxes at https://vagrantcloud.com/search or https://mirrors.tuna.tsinghua.edu.cn
   # Add required box of this vagrant file by the following line:
   # vagrant box add https://mirrors.tuna.tsinghua.edu.cn/ubuntu-cloud-images/bionic/current/bionic-server-cloudimg-amd64-vagrant.box --name ubuntu/bionic
-  config.vm.box = "ubuntu/bionic"
+  # vagrant box add https://mirrors.tuna.tsinghua.edu.cn/ubuntu-cloud-images/eoan/current/eoan-server-cloudimg-amd64-vagrant.box --name ubuntu/eoan
+  config.vm.box = "ubuntu/eoan"
 
   config.vm.hostname = "carstino"
 
@@ -77,6 +78,7 @@ Vagrant.configure("2") do |config|
   # backing providers for Vagrant. These expose provider-specific options.
   # Example for VirtualBox:
   #
+  config.disksize.size = '20GB'
   config.vm.provider "virtualbox" do |vb|
     # Display the VirtualBox GUI when booting the machine
     #vb.gui = true
@@ -94,19 +96,21 @@ Vagrant.configure("2") do |config|
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
 
-  echo "Setup repo mirror"
-  sed -i "s!http://archive.ubuntu.com!https://mirrors.huaweicloud.com!g" /etc/apt/sources.list
-  sed -i "s!http://security.ubuntu.com!https://mirrors.huaweicloud.com!g" /etc/apt/sources.list
+  echo "Setup repo mirror to qinghua sources."
+  cp /etc/apt/sources.list /etc/apt/sources.list.bak
+  sed -i "s|http://archive.ubuntu.com|https://mirrors.tuna.tsinghua.edu.cn|g" /etc/apt/sources.list
+  sed -i "s|http://security.ubuntu.com|https://mirrors.tuna.tsinghua.edu.cn|g" /etc/apt/sources.list
 
   echo "---- Add yarn repo"
   curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
   echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-  echo "Update Repo"
-  apt-get update
+  echo "Updating Repo..."
+  apt update
 
-  echo "Install"
+  echo "Install rabbitmq/postgresql/redis/sass/pip/yarn"
   apt install -y rabbitmq-server
-  apt install -y postgresql-11
+  apt install -y postgresql
+  echo "To start, run: pg_ctlcluster 11 main start"
   apt install -y redis-server
   apt install -y ruby-sass
   apt install -y python3-pip
@@ -117,17 +121,15 @@ Vagrant.configure("2") do |config|
 
   echo "---- Add global vue-cli"
   yarn global add @vue/cli
-  echo "Install python software properties"
-  apt install -y python-software-properties
 
   echo "Install python development tools"
   apt install -y python3-dev bzip2 libbz2-dev libxml2-dev libxslt1-dev zlib1g-dev libffi-dev libssl-dev
 
-  echo "switch pip source to aliyun, then install pipenv"
-  pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pip -U
+  echo "switch pip source to qinghua, then install pipenv"
+  pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple pip -U
+  pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
   su vagrant -c 'pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple'
-  cp -r /home/vagrant/.pip .
-  su vagrant -c 'pip3 install pipenv'
+  su vagrant -c 'pip install pipenv --user'
 
   echo "Optional: custom vim config, aliases, django manage.py command auto completion"
   export repo="https://github.com/waketzheng/carstino"
@@ -135,11 +137,11 @@ Vagrant.configure("2") do |config|
   su vagrant -c 'wget $repo/raw/master/.switch_source_pipenv.py -O ~/.switch_source_pipenv.py'
   su vagrant -c 'wget $repo/raw/master/.mg.py -O ~/.mg.py'
   su vagrant -c 'wget $repo/raw/master/.bash_aliases -O ~/.bash_aliases'
-  wget $repo/raw/master/django_manage.bash -O /etc/bash_completion.d/django_manage.bash
+  wget $repo/raw/master/django_manage_completion.bash -O /etc/bash_completion.d/django_manage_completion.bash
 
   echo "---- Optional: install tree tmux, etc."
-  apt-get install -y tree tmux httpie expect
-  su vagrant -c "pip3 install flake8 white black isort"
+  apt install -y tree tmux httpie expect
+  su vagrant -c "pip install flake8 white black isort --user"
 
   echo "Optional: auto store git password for push to http repo"
   su vagrant -c 'git config --global credential.helper store'
@@ -168,9 +170,9 @@ Vagrant.configure("2") do |config|
   rabbitmqctl set_permissions -p rabbitmq_vhost rabbitmq ".*" ".*" ".*"
 
   echo "Set auto start services"
-  /lib/systemd/systemd-sysv-install enable postgresql
-  /lib/systemd/systemd-sysv-install enable redis-server
-  /lib/systemd/systemd-sysv-install enable rabbitmq-server
+  systemctl enable postgresql
+  systemctl enable redis-server
+  systemctl enable rabbitmq-server
 
   echo "Restart services"
   systemctl restart postgresql
