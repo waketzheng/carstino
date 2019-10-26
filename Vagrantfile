@@ -101,7 +101,7 @@ Vagrant.configure("2") do |config|
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
 
-  echo "Setup repo mirror to qinghua sources."
+  echo "---- Setup repo mirror to qinghua sources."
   cp /etc/apt/sources.list /etc/apt/sources.list.bak
   sed -i "s|http://archive.ubuntu.com|https://mirrors.tuna.tsinghua.edu.cn|g" /etc/apt/sources.list
   sed -i "s|http://security.ubuntu.com|https://mirrors.tuna.tsinghua.edu.cn|g" /etc/apt/sources.list
@@ -112,10 +112,9 @@ Vagrant.configure("2") do |config|
   echo "Updating Repo..."
   apt update
 
-  echo "Install rabbitmq/postgresql/redis/sass/pip/yarn"
+  echo "---- Install rabbitmq/postgresql/redis/sass/pip/yarn"
   apt install -y rabbitmq-server
   apt install -y postgresql
-  echo "To start, run: pg_ctlcluster 11 main start"
   apt install -y redis-server
   apt install -y ruby-sass
   apt install -y python3-pip
@@ -127,16 +126,23 @@ Vagrant.configure("2") do |config|
   echo "---- Add global vue-cli"
   yarn global add @vue/cli
 
-  echo "Install python development tools"
+  echo "---- Install python development tools"
   apt install -y python3-dev bzip2 libbz2-dev libxml2-dev libxslt1-dev zlib1g-dev libffi-dev libssl-dev
 
-  echo "switch pip source to qinghua, then install pipenv"
+  echo "---- Switch pip source to qinghua, then install pipenv"
   pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple pip -U
   pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
   su vagrant -c 'pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple'
   su vagrant -c 'pip install pipenv --user'
 
-  echo "Optional: custom vim config, aliases, django manage.py command auto completion"
+  echo "---- Optinal: install zsh"
+  apt install zsh
+  sed s/required/sufficient/g -i /etc/pam.d/chsh
+  chsh -s $(which zsh)
+  su vagrant -c "$(curl -fsSL https://raw.githubusercontenct.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+  echo "You may need to run 'chsh -s $(which zsh)'"
+
+  echo "---- Optional: custom vim config, aliases, django manage.py command auto completion"
   export repo="https://github.com/waketzheng/carstino"
   su vagrant -c 'wget $repo/raw/master/.vimrc -O ~/.vimrc'
   su vagrant -c 'wget $repo/raw/master/.switch_source_pipenv.py -O ~/.switch_source_pipenv.py'
@@ -148,42 +154,42 @@ Vagrant.configure("2") do |config|
   apt install -y tree tmux httpie expect
   su vagrant -c "pip install flake8 white black isort --user"
 
-  echo "Optional: auto store git password for push to http repo"
+  echo "---- Optional: auto store git password for push to http repo"
   su vagrant -c 'git config --global credential.helper store'
 
-  echo "Setup postgres"
+  echo "---- Setup postgres"
   echo "[postgres] Update listen_address"
   sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/g" /etc/postgresql/11/main/postgresql.conf
   echo "[postgres] Update default_transaction_isolation"
   sed -i "s/#default_transaction_isolation = 'read committed'/default_transaction_isolation = 'read committed'/g" \
   /etc/postgresql/11/main/postgresql.conf
 
-  echo "[postgres] Enable access from 10.0.x.x"
+  echo "---- [postgres] Enable access from 10.0.x.x"
   echo "host all all 10.0.0.0/16 md5" >> /etc/postgresql/11/main/pg_hba.conf
 
-  echo "[postgres] change default password to postgres"
+  echo "---- [postgres] change default password to postgres"
   sudo -u postgres psql -U postgres -d postgres -c "alter user postgres with password 'postgres';"
   sudo -u postgres psql -U postgres -d postgres -c "create database carstino_dev encoding='utf-8';"
 
-  echo "Setup redis"
+  echo "---- Setup redis"
   sed -i "s/bind 127.0.0.1/bind 0.0.0.0/g" /etc/redis/redis.conf
 
-  echo "Setup RabbitMQ"
+  echo "---- Setup RabbitMQ"
   rabbitmqctl add_user rabbitmq rabbitmq
   rabbitmqctl add_vhost rabbitmq_vhost
   rabbitmqctl set_user_tags rabbitmq test_only
   rabbitmqctl set_permissions -p rabbitmq_vhost rabbitmq ".*" ".*" ".*"
 
-  echo "Set auto start services"
+  echo "---- Set auto start services"
   systemctl enable postgresql
   systemctl enable redis-server
   systemctl enable rabbitmq-server
 
-  echo "Restart services"
+  echo "---- Restart services"
   systemctl restart postgresql
   systemctl restart redis-server
 
-  echo "Over."
+  echo "Done."
 
   SHELL
 end
