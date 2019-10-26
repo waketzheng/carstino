@@ -42,18 +42,12 @@ Vagrant.configure("2") do |config|
 
   # 9000 for django debug
   config.vm.network "forwarded_port", guest: 9000, host: 9000
-  # It is recommended to uncomment the next line at windows system
-  #config.vm.network "forwarded_port", guest: 8000, host: 8000
 
   # 5002 for flask debug
   config.vm.network "forwarded_port", guest: 5002, host: 5002
-  # It is recommended to uncomment the next line at windows system
-  #config.vm.network "forwarded_port", guest: 5000, host: 5000
 
   # for vue
-  config.vm.network "forwarded_port", guest: 8088, host: 8088
-  # It is recommended to uncomment the next line at windows system
-  #config.vm.network "forwarded_port", guest: 8080, host: 8080
+  config.vm.network "forwarded_port", guest: 8080, host: 8088
 
   # forwarded redis
   config.vm.network "forwarded_port", guest: 6379, host: 6379, host_ip: "127.0.0.1"
