@@ -136,11 +136,11 @@ Vagrant.configure("2") do |config|
   su vagrant -c 'pip install pipenv --user'
 
   echo "---- Optinal: install zsh"
-  apt install zsh
+  apt install -y zsh
   sed s/required/sufficient/g -i /etc/pam.d/chsh
   chsh -s $(which zsh)
-  su vagrant -c "$(curl -fsSL https://raw.githubusercontenct.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
-  echo "You may need to run 'chsh -s $(which zsh)'"
+  su vagrant -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+  echo "You may need to run 'chsh -s $(which zsh)' and then reboot"
 
   echo "---- Optional: custom vim config, aliases, django manage.py command auto completion"
   export repo="https://github.com/waketzheng/carstino"
