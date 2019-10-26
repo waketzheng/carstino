@@ -129,6 +129,9 @@ Vagrant.configure("2") do |config|
   su vagrant -c 'pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple'
   su vagrant -c 'pip install pipenv --user'
 
+  echo "---- Set default python"
+  which python || sudo ln -s `which python3` /usr/bin/python
+
   echo "---- Optinal: install zsh"
   apt install -y zsh
   sed s/required/sufficient/g -i /etc/pam.d/chsh
