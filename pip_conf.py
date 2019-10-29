@@ -1,9 +1,20 @@
 #!/usr/bin/env python
+"""
+This script is for pip source config.
+Worked both windows and linux, both python2.7 and python3.5+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Use:
+    $ python pip_conf.py
+    $ python pip_conf.py -y -s douban
+    $ python pip_conf.py -y -s qinghua
+    $ python pip_conf.py -y -s aliyun
+    $ python pip_conf.py -y -s huawei
+"""
 import os
 import platform
 
 """
-A sample of the pip.conf:
+A sample of the pip.conf/pip.ini:
 ```
 [global]
 index-url = https://mirrors.aliyun.com/pypi/simple/
@@ -18,11 +29,12 @@ index-url = https://{}/simple/
 [install]
 trusted-host = {}
 """.strip()
-DEFAULT = "aliyun"
+DEFAULT = "huawei"
 SOURCES = {
     "aliyun": "mirrors.aliyun.com/pypi",
     "douban": "pypi.douban.com",
     "qinghua": "pypi.tuna.tsinghua.edu.cn",
+    "huawei": "mirrors.huaweicloud.com/repository/pypi"
 }
 
 
@@ -59,13 +71,13 @@ def main():
 
     parser = ArgumentParser()
     parser.add_argument(
-        "-y", action="store_true", help="whether replace exist file"
+        "-y", action="store_true", help="whether replace existing file"
     )
     parser.add_argument(
         "-s",
         "--source",
-        default="aliyun",
-        help="the source of pip, douban or qinghua or aliyun(default)",
+        default=DEFAULT,
+        help="the source of pip, douban/qinghua/aliyun or huawei(default)",
     )
     args = parser.parse_args()
     source = args.source

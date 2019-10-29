@@ -19,9 +19,11 @@ Vagrant.configure("2") do |config|
 
   config.vm.hostname = "carstino"
 
-  # You may need to run the following line to fix sync folder error:
-  # vagrant plugin install vagrant-vbguest
-  config.vm.synced_folder ".", "/carstino"
+  # If get this error `/sbin/mount.vboxsf: mounting failed with the error:`
+  # look at this: https://github.com/scotch-io/scotch-box/issues/296
+  # which suggest to run the following commands:
+  # vagrant plugin install vagrant-vbguest && vagrant vbguest && vagrant reload
+  config.vm.synced_folder ".", "/carstino", type: "rsync"
 
   config.vm.boot_timeout = 600
 
@@ -121,7 +123,7 @@ Vagrant.configure("2") do |config|
   apt install -y yarn
 
   echo "---- Set yarn registry"
-  yarn config set registry https://registry.npm.taobao.org
+  yarn config set registry https://mirrors.huaweicloud.com/yarn/
 
   echo "---- Add global vue-cli"
   yarn global add @vue/cli
@@ -153,6 +155,7 @@ Vagrant.configure("2") do |config|
   echo "---- Optional: install tree tmux, etc."
   apt install -y tree tmux httpie expect
   su vagrant -c "pip install flake8 white black isort --user"
+  ln -s $(which python3) /usr/bin/python
 
   echo "---- Optional: auto store git password for push to http repo"
   su vagrant -c 'git config --global credential.helper store'
