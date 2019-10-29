@@ -44,18 +44,12 @@ Vagrant.configure("2") do |config|
 
   # 9000 for django debug
   config.vm.network "forwarded_port", guest: 9000, host: 9000
-  # It is recommended to uncomment the next line at windows system
-  #config.vm.network "forwarded_port", guest: 8000, host: 8000
 
   # 5002 for flask debug
   config.vm.network "forwarded_port", guest: 5002, host: 5002
-  # It is recommended to uncomment the next line at windows system
-  #config.vm.network "forwarded_port", guest: 5000, host: 5000
 
   # for vue
-  config.vm.network "forwarded_port", guest: 8088, host: 8088
-  # It is recommended to uncomment the next line at windows system
-  #config.vm.network "forwarded_port", guest: 8080, host: 8080
+  config.vm.network "forwarded_port", guest: 8080, host: 8088
 
   # forwarded redis
   config.vm.network "forwarded_port", guest: 6379, host: 6379, host_ip: "127.0.0.1"
@@ -137,11 +131,16 @@ Vagrant.configure("2") do |config|
   su vagrant -c 'pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple'
   su vagrant -c 'pip install pipenv --user'
 
+  echo "---- Set default python"
+  which python || sudo ln -s `which python3` /usr/bin/python
+
   echo "---- Optinal: install zsh"
   apt install -y zsh
   sed s/required/sufficient/g -i /etc/pam.d/chsh
   chsh -s $(which zsh)
   su vagrant -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+  su vagrant -c 'echo "[ -s \$HOME/.bash_aliases ] && source \$HOME/.bash_aliases" >> $HOME/.zshrc'
+  su vagrant -c 'echo "[ -s \$HOME/.local/bin ] && export PATH=\$HOME/.local/bin:/usr/local/bin:\$PATH" >> $HOME/.zshrc'
   echo "You may need to run 'chsh -s $(which zsh)' and then reboot"
 
   echo "---- Optional: custom vim config, aliases, django manage.py command auto completion"
