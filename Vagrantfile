@@ -132,7 +132,7 @@ Vagrant.configure("2") do |config|
   su vagrant -c 'pip install pipenv --user'
 
   echo "---- Set default python"
-  which python || sudo ln -s `which python3` /usr/bin/python
+  which python || ln -s `which python3` /usr/bin/python
 
   echo "---- Optinal: install zsh"
   apt install -y zsh
@@ -145,16 +145,16 @@ Vagrant.configure("2") do |config|
 
   echo "---- Optional: custom vim config, aliases, django manage.py command auto completion"
   export repo="https://github.com/waketzheng/carstino"
-  su vagrant -c 'wget $repo/raw/master/.vimrc -O ~/.vimrc'
-  su vagrant -c 'wget $repo/raw/master/.switch_source_pipenv.py -O ~/.switch_source_pipenv.py'
-  su vagrant -c 'wget $repo/raw/master/.mg.py -O ~/.mg.py'
-  su vagrant -c 'wget $repo/raw/master/.bash_aliases -O ~/.bash_aliases'
-  wget $repo/raw/master/django_manage_completion.bash -O /etc/bash_completion.d/django_manage_completion.bash
+  su vagrant -c 'mkdir archives&&cd archives&&git clone $repo'
+  su vagrant -c 'cp archives/carstino/.vimrc ~'
+  su vagrant -c 'cp archives/carstino/.bash_aliases ~'
+  su vagrant -c 'cp archives/carstino/.switch_source_pipenv.py ~'
+  su vagrant -c 'cp archives/carstino/.mg.py ~'
+  cp /home/vagrant/archives/carstino/django_manage_completion.bash /etc/bash_completion.d/
 
   echo "---- Optional: install tree tmux, etc."
   apt install -y tree tmux httpie expect
   su vagrant -c "pip install flake8 white black isort --user"
-  ln -s $(which python3) /usr/bin/python
 
   echo "---- Optional: auto store git password for push to http repo"
   su vagrant -c 'git config --global credential.helper store'
