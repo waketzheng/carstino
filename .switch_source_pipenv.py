@@ -5,11 +5,12 @@ import sys
 
 
 PIPFILE = "Pipfile"
-DEFAULT = "aliyun"
+DEFAULT = "huawei"
 SOURCES = {
     "aliyun": "https://mirrors.aliyun.com/pypi/simple",
     "douban": "https://pypi.douban.com/simple",
     "qinghua": "https://pypi.tuna.tsinghua.edu.cn/simple",
+    "huawei": "https://mirrors.huaweicloud.com/repository/pypi"
 }
 
 
@@ -19,7 +20,7 @@ def main():
         return
     source = SOURCES[DEFAULT]
     if len(sys.argv) > 1:
-        for i in ("douban", "qinghua"):
+        for i in SOURCES.keys():
             if i in sys.argv:
                 source = SOURCES.get(i)
                 break
