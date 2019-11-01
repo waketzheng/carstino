@@ -11,6 +11,7 @@ Use:
     $ python pip_conf.py -y -s huawei
 """
 import os
+import re
 import platform
 
 """
@@ -34,8 +35,9 @@ SOURCES = {
     "aliyun": "mirrors.aliyun.com/pypi",
     "douban": "pypi.douban.com",
     "qinghua": "pypi.tuna.tsinghua.edu.cn",
-    "huawei": "mirrors.huaweicloud.com/repository/pypi"
+    "huawei": "mirrors.huaweicloud.com/repository/pypi",
 }
+conf_cmd = "pip config set global.index-url https://{}/simple/"
 
 
 def init_pip_conf(source=DEFAULT, replace=False):
@@ -63,7 +65,20 @@ def init_pip_conf(source=DEFAULT, replace=False):
     with open(conf_file, "w") as fp:
         fp.write(text + "\n")
     print("Write lines to `{}` as below:\n{}\n".format(conf_file, text))
+    if can_set_global():
+        cmd = conf_cmd.format(url)
+        print("--> " + cmd)
+        os.system(cmd)
     print("Done!")
+
+
+def can_set_global():
+    with os.popen("pip --version") as p:
+        s = p.read()
+    version = re.search(r"^pip (\d+)\.(\d+).(\d+)", s)
+    if version and [int(i) for i in version.groups()] >= [10, 1, 0]:
+        return True
+    return False
 
 
 def main():

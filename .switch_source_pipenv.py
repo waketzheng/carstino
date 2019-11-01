@@ -10,7 +10,7 @@ SOURCES = {
     "aliyun": "https://mirrors.aliyun.com/pypi/simple",
     "douban": "https://pypi.douban.com/simple",
     "qinghua": "https://pypi.tuna.tsinghua.edu.cn/simple",
-    "huawei": "https://mirrors.huaweicloud.com/repository/pypi"
+    "huawei": "https://mirrors.huaweicloud.com/repository/pypi/simple"
 }
 
 
