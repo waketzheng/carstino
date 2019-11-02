@@ -75,7 +75,7 @@ Vagrant.configure("2") do |config|
 
   # To set disksize, you may need to run:
   # vagrant plugin install vagrant-disksize
-  config.disksize.size = '20GB'
+  #config.disksize.size = '20GB'
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.

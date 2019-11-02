@@ -38,3 +38,21 @@ git clone https://github.com/waketzheng/carstino.git
 cd carstino
 ./init_my_dev.py
 ```
+
+## TO init vagrant box
+
+```
+vagrant box add https://mirrors.tuna.tsinghua.edu.cn/ubuntu-cloud-images/eoan/current/eoan-server-cloudimg-amd64-vagrant.box --name ubuntu/eoan
+```
+
+## Proccess vagrant up
+
+```
+vagrant up; vagrant ssh
+git clone https://github.com/waketzheng/carstino
+./carstino/change_ubuntu_mirror_courses.py
+```
+
+```
+vagrant reload; vagrant ssh
+```
