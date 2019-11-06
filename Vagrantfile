@@ -137,11 +137,11 @@ Vagrant.configure("2") do |config|
   echo "---- Optinal: install zsh"
   apt install -y zsh
   sed s/required/sufficient/g -i /etc/pam.d/chsh
-  chsh -s $(which zsh)
-  su vagrant -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+  su vagrant -c 'chsh -s $(which zsh)'
+  su vagrant -c "$(curl -fsSL https://www.shequyi.fun/media/install-oh-my-zsh.sh)"
   su vagrant -c 'echo "[ -s \$HOME/.bash_aliases ] && source \$HOME/.bash_aliases" >> $HOME/.zshrc'
   su vagrant -c 'echo "[ -s \$HOME/.local/bin ] && export PATH=\$HOME/.local/bin:/usr/local/bin:\$PATH" >> $HOME/.zshrc'
-  echo "You may need to run 'chsh -s $(which zsh)' and then reboot"
+  echo 'You may need to run `chsh -s $(which zsh)` and then reboot'
 
   echo "---- Optional: custom vim config, aliases, django manage.py command auto completion"
   export repo="https://github.com/waketzheng/carstino"
