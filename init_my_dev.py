@@ -62,7 +62,7 @@ def main():
     if a not in aliases_path.read_text():
         os.system(f"echo 'alias activate_completion=\"{a}\"'>>{aliases_path}")
     # activate aliases at .bashrc or .zshrc ...
-    names = ['.bashrc', '.zshrc', '.profile', '.zprofile']
+    names = ['.bashrc', '.zshrc', '.profile', '.zprofile', '.bash_profile']
     for name in names:
         rc = home / name
         if rc.exists():
@@ -104,6 +104,7 @@ def main():
             if i in s:
                 print(f"`{i}` already in {p}")
             else:
+                os.system(f"echo >> {p}")  # add empty line
                 cmd = f"echo '{i}'>>{p}"
                 os.system(cmd)
                 print(cmd)
