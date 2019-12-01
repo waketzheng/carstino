@@ -5,7 +5,7 @@ import sys
 
 
 PIPFILE = "Pipfile"
-DEFAULT = "huawei"
+DEFAULT = "aliyun"
 SOURCES = {
     "aliyun": "https://mirrors.aliyun.com/pypi/simple",
     "douban": "https://pypi.douban.com/simple",

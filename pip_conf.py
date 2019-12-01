@@ -30,7 +30,7 @@ index-url = https://{}/simple/
 [install]
 trusted-host = {}
 """.strip()
-DEFAULT = "huawei"
+DEFAULT = "aliyun"
 SOURCES = {
     "aliyun": "mirrors.aliyun.com/pypi",
     "douban": "pypi.douban.com",
