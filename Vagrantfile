@@ -99,23 +99,10 @@ Vagrant.configure("2") do |config|
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
 
-  echo "---- Add yarn repo"
-  curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-  echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-  echo "Updating Repo..."
-  apt update
-
-  echo "---- Set default python"
-  which python || ln -s `which python3` /usr/bin/python
-
-  echo "---- Optional: custom vim config, aliases, django manage.py command auto completion"
+  echo "---- Optional: clone carstino"
   export repo="https://github.com/waketzheng/carstino"
   su vagrant -c 'mkdir archives&&cd archives&&git clone $repo'
 
-  echo "---- Optional: auto store git password for push to http repo"
-  su vagrant -c 'git config --global credential.helper store'
-
   echo "Done."
-
   SHELL
 end

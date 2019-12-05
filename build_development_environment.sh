@@ -1,6 +1,13 @@
 # TODO: check whether it work as expected.
 echo "This script need root permission."
-sudo ./change_ubuntu_mirror_sources.sh
+sudo echo "---- Add yarn repo"
+curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+
+echo "---- Set default python"
+which python || sudo ln /usr/bin/python `which python3`
+sudo ./change_ubuntu_mirror_sources.py
+echo "Updating Repo..."
 sudo apt update
 
 echo "---- Install rabbitmq/postgresql/redis/sass/pip/yarn"
@@ -39,6 +46,12 @@ sudo apt install -y python3-dev bzip2 libbz2-dev libxml2-dev libxslt1-dev zlib1g
 echo "---- Optional: install tree tmux, etc."
 sudo apt install -y tree tmux httpie expect
 
+echo "---- Optional: install python3.8"
+./upgrade_py.py
+
+echo "---- Init python development environment."
+./init_my_dev.py
+
 echo "---- Optional: install zsh"
 sudo apt install -y zsh
 sudo python -c "fn='/etc/pam.d/chsh';a,b='required','sufficient';fp=open(fn);s=fp.read();fp.close();fp=open(fn,'w');fp.write(s.replace(a,b));fp.close()"
@@ -47,9 +60,3 @@ chsh -s $(which zsh)
 sh -c "$(curl -fsSL https://www.shequyi.fun/media/install-oh-my-zsh.sh)"
 sh -c 'echo "[ -s \$HOME/.bash_aliases ] && source \$HOME/.bash_aliases" >> $HOME/.zshrc'
 sh -c 'echo "[ -s \$HOME/.local/bin ] && export PATH=\$HOME/.local/bin:/usr/local/bin:\$PATH" >> $HOME/.zshrc'
-
-echo "---- Optional: install python3.8"
-./upgrade_py.py
-
-echo "---- Init python development environment."
-./init_my_dev.py
