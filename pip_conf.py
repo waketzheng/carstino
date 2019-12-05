@@ -8,7 +8,6 @@ Use:
     $ python pip_conf.py -y -s douban
     $ python pip_conf.py -y -s qinghua
     $ python pip_conf.py -y -s aliyun
-    $ python pip_conf.py -y -s huawei
 """
 import os
 import re
@@ -35,7 +34,6 @@ SOURCES = {
     "aliyun": "mirrors.aliyun.com/pypi",
     "douban": "pypi.douban.com",
     "qinghua": "pypi.tuna.tsinghua.edu.cn",
-    "huawei": "mirrors.huaweicloud.com/repository/pypi",
 }
 conf_cmd = "pip config set global.index-url https://{}/simple/"
 
@@ -92,7 +90,7 @@ def main():
         "-s",
         "--source",
         default=DEFAULT,
-        help="the source of pip, douban/qinghua/aliyun or huawei(default)",
+        help="the source of pip, douban/qinghua or aliyun(default)",
     )
     args = parser.parse_args()
     source = args.source

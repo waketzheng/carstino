@@ -1,6 +1,7 @@
 # TODO: check whether it work as expected.
 echo "This script need root permission."
 sudo ./change_ubuntu_mirror_sources.sh
+sudo apt update
 
 echo "---- Install rabbitmq/postgresql/redis/sass/pip/yarn"
 sudo apt install -y rabbitmq-server

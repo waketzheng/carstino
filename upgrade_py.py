@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Configure python development environment.
-Only work for linux that use bash!
+Install latest version Python.
+Only work for linux!
 And python3.6+ is required.
 """
 import os
