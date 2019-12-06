@@ -5,7 +5,7 @@ curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
 echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
 
 echo "---- Set default python"
-which python || sudo ln /usr/bin/python `which python3`
+which python || sudo ln `which python3` /usr/bin/python
 sudo ./change_ubuntu_mirror_sources.py
 echo "Updating Repo..."
 sudo apt update
