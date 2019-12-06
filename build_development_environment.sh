@@ -23,10 +23,15 @@ sudo -u postgres psql -U postgres -d postgres -c "alter user postgres with passw
 sudo -u postgres psql -U postgres -d postgres -c "create database carstino_dev encoding='utf-8';"
 
 echo "---- Setup RabbitMQ"
-sudo rabbitmqctl add_user rabbitmq rabbitmq
+sudo rabbitmqctl add_user your_name password
 sudo rabbitmqctl add_vhost rabbitmq_vhost
-sudo rabbitmqctl set_user_tags rabbitmq test_only
-sudo rabbitmqctl set_permissions -p rabbitmq_vhost rabbitmq ".*" ".*" ".*"
+sudo rabbitmqctl set_user_tags your_name test_only
+sudo rabbitmqctl set_permissions -p rabbitmq_vhost your_name ".*" ".*" ".*"
+# Example:
+# sudo rabbitmqctl add_user waket 123456
+# sudo rabbitmqctl add_vhost carstino
+# sudo rabbitmqctl set_user_tags waket administrator
+# sudo rabbitmqctl set_permissions -p carstino waket ".*" ".*" ".*"
 
 echo "---- Set auto start services"
 sudo systemctl enable postgresql
@@ -57,6 +62,6 @@ sudo apt install -y zsh
 sudo python -c "fn='/etc/pam.d/chsh';a,b='required','sufficient';fp=open(fn);s=fp.read();fp.close();fp=open(fn,'w');fp.write(s.replace(a,b));fp.close()"
 # sudo python -c "fn='/etc/pam.d/chsh';a,b='required','sufficient';fp=open(fn,'a+');s=fp.read();fp.truncate();fp.write(s.replace(b,a));fp.close()"
 chsh -s $(which zsh)
-sh -c "$(curl -fsSL https://www.shequyi.fun/media/install-oh-my-zsh.sh)"
 sh -c 'echo "[ -s \$HOME/.bash_aliases ] && source \$HOME/.bash_aliases" >> $HOME/.zshrc'
 sh -c 'echo "[ -s \$HOME/.local/bin ] && export PATH=\$HOME/.local/bin:/usr/local/bin:\$PATH" >> $HOME/.zshrc'
+sh -c "$(curl -fsSL https://www.shequyi.fun/media/install-oh-my-zsh.sh)"

@@ -84,11 +84,13 @@ def main():
         if os.system(f"sudo pip3 install -U {PACKAGES}") != 0:
             print("Please install python3-pip and then rerun this script.")
             return
-    # make sure pipenv work
-    if os.system("pipenv --version") != 0:
-        with os.popen("which python3") as p:
-            cmd = f"{p.read()} -m pipenv"
-        os.system(f"echo 'alias pipenv=\"{cmd}\"'>>{aliases_path}")
+    # Commented the following 5 lines because pipenv will work after reboot
+    # # make sure pipenv work
+    # if os.system("pipenv --version") != 0:
+    #     with os.popen("which python3") as p:
+    #         cmd = f"{p.read()} -m pipenv"
+    #     os.system(f"echo 'alias pipenv=\"{cmd}\"'>>{aliases_path}")
+
     # add pipenv auto complete to user profile, and avoid pyc
     a = 'eval "$(pipenv --completion)"'
     b = "export PYTHONDONTWRITEBYTECODE=1"
