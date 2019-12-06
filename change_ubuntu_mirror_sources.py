@@ -7,9 +7,8 @@ SOURCES = {
     "163": "https://mirrors.163.com",
     "aliyun": "https://mirrors.aliyun.com",
     "qinghua": "https://mirrors.tuna.tsinghua.edu.cn",
-    "huawei": "https://mirrors.huaweicloud.com",
 }
-DEFAULT = SOURCES["huawei"]
+DEFAULT = SOURCES["aliyun"]
 SOURCE_FILE = "/etc/apt/sources.list"
 
 

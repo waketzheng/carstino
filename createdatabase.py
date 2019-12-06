@@ -3,9 +3,10 @@
 Create or drop databases for django project
 
 Usage:
-    $ ./createdatabase  # Just create a new database
-    $ ./createdatbase -d  # Drop db if exists and then create a new one
-    $ ./createdatabase -dm  # Run `./manage.py migrate` after create
+    $ ./createdatabase.py  # Just create a new database
+    $ ./createdatbase.py -d  # Drop db if exists and then create a new one
+    $ ./createdatabase.py -m  # Run `./manage.py migrate` after create
+    $ ./createdatabase.py -dm  # drop, create, migrate
 """
 import os
 import sys
@@ -17,7 +18,8 @@ SQL = "create database {} DEFAULT CHARACTER SET {} COLLATE utf8_general_ci"
 
 def configure_settings():
     p = Path("manage.py")
-    for _ in range(5):
+    MAX_NESTED = 5  # make `mg` work at sub directory
+    for _ in range(MAX_NESTED):
         if p.exists():
             break
         p = Path(f"../{p}")
