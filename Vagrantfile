@@ -15,6 +15,7 @@ Vagrant.configure("2") do |config|
   # boxes at https://vagrantcloud.com/search or https://mirrors.tuna.tsinghua.edu.cn
   # Add required box of this vagrant file by the following line:
   # vagrant box add https://mirrors.tuna.tsinghua.edu.cn/ubuntu-cloud-images/eoan/current/eoan-server-cloudimg-amd64-vagrant.box --name ubuntu/eoan
+  # vagrant box add https://mirrors.cloud.tengxun.com/ubuntu-cloud-images/eoan/current/eoan-server-cloudimg-amd64-vagrant.box --name ubuntu/eoan
   config.vm.box = "ubuntu/eoan"
 
   config.vm.hostname = "carstino"
@@ -52,13 +53,6 @@ Vagrant.configure("2") do |config|
   # for vue
   config.vm.network "forwarded_port", guest: 8080, host: 8088
   config.vm.network "forwarded_port", guest: 8081, host: 8089
-
-  # forwarded redis
-  config.vm.network "forwarded_port", guest: 6379, host: 6379, host_ip: "127.0.0.1"
-  # forwarded postgresql
-  config.vm.network "forwarded_port", guest: 5432, host: 5432, host_ip: "127.0.0.1"
-  # forwarded rabbitmq
-  config.vm.network "forwarded_port", guest: 5672, host: 5672, host_ip: "127.0.0.1"
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
