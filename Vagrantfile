@@ -53,6 +53,7 @@ Vagrant.configure("2") do |config|
   # for vue
   config.vm.network "forwarded_port", guest: 8080, host: 8088
   config.vm.network "forwarded_port", guest: 8081, host: 8089
+  config.vm.network "forwarded_port", guest: 9527, host: 9528
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
