@@ -85,9 +85,16 @@ def main():
             break
     else:
         raise Exception(f"Startup file not found, including {names!r}")
-    if ALIAS_FILE not in rc.read_text():
+    txt = rc.read_text()
+    if ALIAS_FILE not in txt:
         with rc.open("a") as fp:
             fp.write(f"[[ -f ~/{ALIAS_FILE} ]] && . ~/{ALIAS_FILE}")
+    # change nvm node mirrors
+    nvm = 'export NVM_NODEJS_ORG_MIRROR=https://npm.taobao.org/mirrors/node'
+    if nvm not in txt:
+        with rc.open("a") as fp:
+            fp.write(f"# For nvm\n{nvm}\n")
+
     # switch pip source to aliyun
     swith_pip_source = repo / "pip_conf.py"
     os.system(f"{swith_pip_source}")
@@ -107,7 +114,7 @@ def main():
     #         cmd = f"{p.read()} -m pipenv"
     #     os.system(f"echo 'alias pipenv=\"{cmd}\"'>>{aliases_path}")
 
-    # add pipenv auto complete to user profile, and avoid pyc
+    # add pipenv auto complete to user bashrc/profile/zshrc, and avoid pyc
     a = 'eval "$(pipenv --completion)"'
     b = "export PYTHONDONTWRITEBYTECODE=1"
     ps = home.glob(".*profile")

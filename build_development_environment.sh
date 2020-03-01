@@ -45,7 +45,7 @@ yarn config set sass_binary_site http://cdn.npm.taobao.org/dist/node-sass -g
 yarn global add @vue/cli
 
 echo "---- Optional install nvm to manage nodejs version"
-git clone https://github.com/creationix/nvm.git ~/.nvm && cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`
+git clone https://gitee.com/waketzheng/nvm.git ~/.nvm && cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`
 ./install.sh
 source ./nvm.sh
 cd -
