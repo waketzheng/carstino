@@ -15,16 +15,24 @@ class ContentException(Exception):
 
 
 def rstrip_file(fname, newlines=1):
-    with open(fname) as fp:
-        s = fp.read()
+    try:
+        with open(fname) as fp:
+            s = fp.read()
+    except UnicodeDecodeError:
+        with open(fname, encoding="utf8") as fp:
+            s = fp.read()
     if not s:
         raise ContentException("Empty file.")
     ss = [line.rstrip() for line in s.rstrip().split("\n")]
-    required = "\n".join(ss) + "\n" * newlines
-    if s == required:
+    n = os.linesep
+    required = n.join(ss) + n * newlines
+    with open(fname, "rb") as fp:
+        byt = fp.read()
+    new_byt = required.encode()
+    if byt == new_byt:
         raise ContentException("Already meet requirement.")
-    with open(fname, "w") as fp:
-        fp.write(required)
+    with open(fname, "wb") as fp:
+        fp.write(new_byt)
 
 
 def is_hidden(dir_or_file):
