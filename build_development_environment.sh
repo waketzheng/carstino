@@ -1,6 +1,6 @@
-# TODO: check whether it work as expected.
 echo "This script need root permission."
 sudo echo "Go ahead..."
+starttime=`date +'%Y-%m-%d %H:%M:%S'`
 
 echo "---- Set default python"
 which python || sudo ln `which python3` /usr/bin/python
@@ -37,9 +37,8 @@ sudo apt install -y python3-dev bzip2 libbz2-dev libxml2-dev libxslt1-dev zlib1g
 echo "---- nodejs/npm/yarn/vue for frontend"
 sudo apt install -y nodejs
 sudo apt install -y npm
-npm config set registry https://registry.npm.taobao.org
-sudo npm i -g npm
-sudo npm i -g yarn
+sudo npm i -g npm --registry https://registry.npm.taobao.org
+sudo npm i -g yarn --registry https://registry.npm.taobao.org
 yarn config set registry https://registry.npm.taobao.org -g
 yarn config set sass_binary_site http://cdn.npm.taobao.org/dist/node-sass -g
 yarn global add @vue/cli
@@ -49,14 +48,30 @@ git clone https://gitee.com/waketzheng/nvm.git ~/.nvm && cd ~/.nvm && git checko
 ./install.sh
 source ./nvm.sh
 cd -
-nvm node_mirror https://npm.taobao.org/mirrors/node/
-nvm npm_mirror https://npm.taobao.org/mirrors/npm/
+export NVM_NODEJS_ORG_MIRROR=http://npm.taobao.org/mirrors/node
+nvm install --lts
+npm config set registry https://registry.npm.taobao.org
 
 echo "---- Optional: install tree tmux, etc."
 sudo apt install -y tree tmux httpie expect
 
-echo "---- Optional: install python3.8"
-./upgrade_py.py
+# https://stackoverflow.com/questions/2829613/how-do-you-tell-if-a-string-contains-another-string-in-posix-sh
+# contains(string, substring)
+#
+# Returns 0 if the specified string contains the specified substring,
+# otherwise returns 1.
+contains() {
+    string="$1"
+    substring="$2"
+    if test "${string#*$substring}" != "$string"
+    then
+        return 0    # $substring is in $string
+    else
+        return 1    # $substring is not in $string
+    fi
+}
+contains $* "--skip-py" && echo "---- Optional: install python3.8" && ./upgrade_py.py
+
 
 echo "---- Init python development environment."
 ./init_my_dev.py
@@ -69,3 +84,9 @@ chsh -s $(which zsh)
 sh -c 'echo "[ -s \$HOME/.bash_aliases ] && source \$HOME/.bash_aliases" >> $HOME/.zshrc'
 sh -c 'echo "[ -s \$HOME/.local/bin ] && export PATH=\$HOME/.local/bin:/usr/local/bin:\$PATH" >> $HOME/.zshrc'
 sh -c "$(curl -fsSL https://www.shequyi.fun/media/install-oh-my-zsh.sh)"
+
+# Count cost seconds
+endtime=`date +'%Y-%m-%d %H:%M:%S'`
+start_seconds=$(date --date="$starttime" +%s);
+end_seconds=$(date --date="$endtime" +%s);
+echo "Cost: "$((end_seconds-start_seconds))"s"

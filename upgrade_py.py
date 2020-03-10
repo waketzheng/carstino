@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 
 TARGET_VERSION = "3.8"
-DOWNLOAD_URL = "https://www.shequyi.fun/media/python.xz"
+DOWNLOAD_URL = 'https://mirrors.huaweicloud.com/python/3.8.2/Python-3.8.2.tar.xz'
 INSTALL = "./configure --enable-optimizations && make && sudo make {}install"
 
 
