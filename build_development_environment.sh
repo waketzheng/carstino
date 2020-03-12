@@ -34,24 +34,6 @@ sudo systemctl enable rabbitmq-server
 echo "---- Install python development tools"
 sudo apt install -y python3-dev bzip2 libbz2-dev libxml2-dev libxslt1-dev zlib1g-dev libffi-dev
 
-echo "---- nodejs/npm/yarn/vue for frontend"
-sudo apt install -y nodejs
-sudo apt install -y npm
-sudo npm i -g npm --registry https://registry.npm.taobao.org
-sudo npm i -g yarn --registry https://registry.npm.taobao.org
-yarn config set registry https://registry.npm.taobao.org -g
-yarn config set sass_binary_site http://cdn.npm.taobao.org/dist/node-sass -g
-yarn global add @vue/cli
-
-echo "---- Optional install nvm to manage nodejs version"
-git clone https://gitee.com/waketzheng/nvm.git ~/.nvm && cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`
-./install.sh
-source ./nvm.sh
-cd -
-export NVM_NODEJS_ORG_MIRROR=http://npm.taobao.org/mirrors/node
-nvm install --lts
-npm config set registry https://registry.npm.taobao.org
-
 echo "---- Optional: install tree tmux, etc."
 sudo apt install -y tree tmux httpie expect
 
@@ -70,7 +52,7 @@ contains() {
         return 1    # $substring is not in $string
     fi
 }
-contains $* "--skip-py" && echo "---- Optional: install python3.8" && ./upgrade_py.py
+contains $* "--upgrade-py" && echo "---- Optional: install python3.8" && ./upgrade_py.py && python3.8 -m pip install --user -U pip -i https://pypi.tuna.tsinghua.edu.cn/simple && export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
 
 
 echo "---- Init python development environment."
@@ -84,6 +66,26 @@ chsh -s $(which zsh)
 sh -c 'echo "[ -s \$HOME/.bash_aliases ] && source \$HOME/.bash_aliases" >> $HOME/.zshrc'
 sh -c 'echo "[ -s \$HOME/.local/bin ] && export PATH=\$HOME/.local/bin:/usr/local/bin:\$PATH" >> $HOME/.zshrc'
 sh -c "$(curl -fsSL https://www.shequyi.fun/media/install-oh-my-zsh.sh)"
+
+# ---- For frontend development
+echo "---- nodejs/npm/yarn/vue for frontend"
+sudo apt install -y nodejs
+sudo apt install -y npm
+sudo npm i -g npm --registry https://registry.npm.taobao.org
+sudo npm i -g yarn --registry https://registry.npm.taobao.org
+yarn config set registry https://registry.npm.taobao.org -g
+yarn config set sass_binary_site http://cdn.npm.taobao.org/dist/node-sass -g
+yarn global add @vue/cli
+
+echo "---- Optional install nvm to manage nodejs version"
+git clone https://gitee.com/waketzheng/nvm.git ~/.nvm && cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`
+./install.sh
+source ./nvm.sh
+cd -
+export NVM_NODEJS_ORG_MIRROR=http://npm.taobao.org/mirrors/node
+nvm install --lts
+npm config set registry https://registry.npm.taobao.org
+# ---- End For
 
 # Count cost seconds
 endtime=`date +'%Y-%m-%d %H:%M:%S'`
