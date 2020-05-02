@@ -37,7 +37,8 @@ set scrolloff=5
 set nocompatible
 
 " 打开语法高亮。自动识别代码，使用多种颜色显示。
-syntax on
+" Not work @ 2020-05-02
+"syntax on
 
 " 在底部显示，当前处于命令模式还是插入模式。
 set showmode
@@ -46,7 +47,8 @@ set showmode
 set showcmd
 
 " 支持使用鼠标。
-set mouse=a
+" Not work @ 2020-05-02
+"set mouse=a
 
 " 使用 utf-8 编码。
 set encoding=utf-8
@@ -59,7 +61,7 @@ set laststatus=2
 
 " 第80列显示红色竖线
 highlight StatusLine cterm=bold ctermfg=yellow ctermbg=blue
-let &colorcolumn="80"
+"let &colorcolumn="80"  # Not work@ubuntu19.10 2020-05-02
 res +80
 vertical res +20
 
