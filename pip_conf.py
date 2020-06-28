@@ -39,6 +39,12 @@ conf_cmd = "pip config set global.index-url https://{}/simple/"
 
 
 def init_pip_conf(source=DEFAULT, replace=False):
+    url = SOURCES.get(source, SOURCES[DEFAULT])
+    if can_set_global():
+        cmd = conf_cmd.format(url)
+        print("--> " + cmd)
+        os.system(cmd)
+        return
     if platform.system() == "Windows":
         _pip_conf = ("pip", "pip.ini")
     else:
@@ -47,7 +53,6 @@ def init_pip_conf(source=DEFAULT, replace=False):
     parent = os.path.dirname(conf_file)
     if not os.path.exists(parent):
         os.mkdir(parent)
-    url = SOURCES.get(source, SOURCES[DEFAULT])
     text = TEMPLATE.format(url, url.split("/")[0])
     if os.path.exists(conf_file):
         with open(conf_file) as fp:
@@ -63,10 +68,6 @@ def init_pip_conf(source=DEFAULT, replace=False):
     with open(conf_file, "w") as fp:
         fp.write(text + "\n")
     print("Write lines to `{}` as below:\n{}\n".format(conf_file, text))
-    if can_set_global():
-        cmd = conf_cmd.format(url)
-        print("--> " + cmd)
-        os.system(cmd)
     print("Done!")
 
 

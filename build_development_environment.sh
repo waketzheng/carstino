@@ -13,7 +13,6 @@ echo "---- Install rabbitmq/postgresql/redis/sass/pip/nodejs/npm"
 sudo apt install -y rabbitmq-server  # for Celery
 sudo apt install -y postgresql
 sudo apt install -y redis-server
-sudo apt install -y ruby-sass  # for Django compress
 sudo apt install -y python3-pip
 
 echo "---- [postgres] change default password to postgres"
@@ -22,8 +21,8 @@ sudo -u postgres psql -U postgres -d postgres -c "create database carstino_dev e
 
 echo "---- Setup RabbitMQ"
 sudo rabbitmqctl add_user waket 123456
-sudo rabbitmqctl add_vhost carstino
 sudo rabbitmqctl set_user_tags waket administrator
+sudo rabbitmqctl add_vhost carstino
 sudo rabbitmqctl set_permissions -p carstino waket ".*" ".*" ".*"
 
 echo "---- Set auto start services"
@@ -34,7 +33,7 @@ sudo systemctl enable rabbitmq-server
 echo "---- Install python development tools"
 sudo apt install -y python3-dev bzip2 libbz2-dev libxml2-dev libxslt1-dev zlib1g-dev libffi-dev
 
-echo "---- nodejs/npm/yarn/vue for frontend"
+echo "---- Optional: nodejs/npm/yarn/vue for frontend"
 sudo apt install -y nodejs
 sudo apt install -y npm
 sudo npm i -g npm --registry https://registry.npm.taobao.org
