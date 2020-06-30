@@ -41,7 +41,9 @@ def set_completions(home, repo, aliases_path):
         if not target.exists():
             if sys_completion_path.parent.exists():
                 if not sys_completion_path.exists():
-                    os.system(f"sudo cp {fpath} {sys_completion_path}")
+                    # zsh used, no need now@2020-05-02
+                    # os.system(f"sudo cp {fpath} {sys_completion_path}")
+                    pass
             else:
                 os.system(f"cp {fpath} {target}")
         # append mg and git completion activate alias to aliases file
@@ -72,6 +74,7 @@ def main():
         os.system(f"cp {repo / fn} {home}")
     s = aliases_path.read_text()
     ss = re.sub(r'(rstrip|prettify)="(.*)"', rf'\1="{repo}/\1.py"', s)
+    ss = re.sub(r'(httpa)="(.*)"', rf'\1="{repo}/\1.sh"', s)
     if os.system("which vi") and "alias vi=" not in get_cmd_result("alias"):
         ss += "alias vi=vim\n"
     if s != ss:

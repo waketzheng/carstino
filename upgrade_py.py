@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 
 TARGET_VERSION = "3.8"
-DOWNLOAD_URL = 'https://mirrors.huaweicloud.com/python/3.8.2/Python-3.8.2.tar.xz'
+TAR_URL = 'https://mirrors.huaweicloud.com/python/3.8.3/Python-3.8.3.tar.xz'
 INSTALL = "./configure --enable-optimizations && make && sudo make {}install"
 
 
@@ -29,21 +29,31 @@ def run_and_echo(cmd):
 
 def main():
     py_version = default_python_version()
+    tip = 'Python3.8 already installed. Do your want to reinstall? [y/N]'
     if py_version.startswith(TARGET_VERSION):
         run_and_echo("python -V")
-        return
-    if sliently_run("which python3.8").strip():
+        a = input(tip)
+        if a.strip().lower() != 'y':
+            return
+    elif sliently_run("which python3.8").strip():
         run_and_echo("python3.8 -V")
-        return
+        a = input(tip)
+        if a.strip().lower() != 'y':
+            return
     folder = Path.home() / "softwares"
     folder.exists() or folder.mkdir()
-    run_and_echo(f"cd {folder} && wget {DOWNLOAD_URL}")
-    run_and_echo(f"cd {folder} && tar -xf {Path(DOWNLOAD_URL).name}")
+    fname = Path(TAR_URL).name
+    fpath = folder / fname
+    if not fpath.exists():
+        if run_and_echo(f"cd {folder} && wget {TAR_URL}") != 0:
+            return
+    py_folder = folder / fpath.stem.rstrip('.tar')
+    if not py_folder.exists():
+        if run_and_echo(f"cd {folder} && tar -xf {fname}") != 0:
+            return
     install = INSTALL.format("" if py_version.startswith("3") else "alt")
-    glob = folder.glob(f"Python-{TARGET_VERSION}*")
-    py_folder = [p for p in glob if p.is_dir()][0]
-    run_and_echo(f"cd {py_folder} && {install}")
-    print("Done!")
+    if run_and_echo(f"cd {py_folder} && {install}") == 0:
+        print("Done!")
 
 
 if __name__ == "__main__":
