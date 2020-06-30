@@ -29,17 +29,20 @@ def run_and_echo(cmd):
 
 def main():
     py_version = default_python_version()
-    tip = 'Python3.8 already installed. Do your want to reinstall? [y/N]'
+    target = 'Python' + TARGET_VERSION
+    tip = f'{target} already installed. Do your want to reinstall? [y/N]'
     if py_version.startswith(TARGET_VERSION):
         run_and_echo("python -V")
         a = input(tip)
         if a.strip().lower() != 'y':
             return
-    elif sliently_run("which python3.8").strip():
-        run_and_echo("python3.8 -V")
+    elif sliently_run(f"which {target}").strip():
+        run_and_echo(f"{target} -V")
         a = input(tip)
         if a.strip().lower() != 'y':
             return
+    sudo = f'sudo echo {target} will be installed, it may take several minutes'
+    run_and_echo(sudo)
     folder = Path.home() / "softwares"
     folder.exists() or folder.mkdir()
     fname = Path(TAR_URL).name
