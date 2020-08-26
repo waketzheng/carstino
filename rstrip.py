@@ -8,6 +8,7 @@ For example:
 """
 import os
 import re
+import sys
 
 
 class ContentException(Exception):
@@ -88,4 +89,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if sys.version < "3":
+        os.system("python3 " + ' '.join(sys.argv))
+    else:
+        main()
