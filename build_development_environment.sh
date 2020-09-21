@@ -82,7 +82,7 @@ sudo python -c "fn='/etc/pam.d/chsh';a,b='required','sufficient';fp=open(fn);s=f
 chsh -s $(which zsh)
 sh -c 'echo "[ -s \$HOME/.bash_aliases ] && source \$HOME/.bash_aliases" >> $HOME/.zshrc'
 sh -c 'echo "[ -s \$HOME/.local/bin ] && export PATH=\$HOME/.local/bin:/usr/local/bin:\$PATH" >> $HOME/.zshrc'
-sh -c "$(curl -fsSL https://www.shequyi.fun/media/install-oh-my-zsh.sh)"
+sh -c "$(curl -fsSL https://gitee.com/mirrors/oh-my-zsh/raw/master/tools/install.sh)"
 
 # Count cost seconds
 endtime=`date +'%Y-%m-%d %H:%M:%S'`
