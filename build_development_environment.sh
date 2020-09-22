@@ -26,9 +26,9 @@ sudo rabbitmqctl add_vhost carstino
 sudo rabbitmqctl set_permissions -p carstino waket ".*" ".*" ".*"
 
 echo "---- Set auto start services"
-sudo systemctl enable postgresql
-sudo systemctl enable redis-server
-sudo systemctl enable rabbitmq-server
+sudo systemctl enable postgresql || (sudo chkconfig --add postgresql && sudo chkconfig postgresql on)
+sudo systemctl enable redis-server || (sudo chkconfig --add redis-server && sudo chkconfig redis-server on)
+sudo systemctl enable rabbitmq-server || (sudo chkconfig --add rabbitmq-server && sudo chkconfig rabbitmq-server)
 
 echo "---- Install python development tools"
 sudo apt install -y python3-dev bzip2 libbz2-dev libxml2-dev libxslt1-dev zlib1g-dev libffi-dev
@@ -37,6 +37,7 @@ echo "---- Optional: nodejs/npm/yarn/vue for frontend"
 sudo apt install -y nodejs
 sudo apt install -y npm
 sudo npm i -g npm --registry https://registry.npm.taobao.org
+npm config set registry https://registry.npm.taobao.org
 sudo npm i -g yarn --registry https://registry.npm.taobao.org
 yarn config set registry https://registry.npm.taobao.org -g
 yarn config set sass_binary_site http://cdn.npm.taobao.org/dist/node-sass -g
@@ -49,7 +50,6 @@ source ./nvm.sh
 cd -
 export NVM_NODEJS_ORG_MIRROR=http://npm.taobao.org/mirrors/node
 nvm install --lts
-npm config set registry https://registry.npm.taobao.org
 
 echo "---- Optional: install tree tmux, etc."
 sudo apt install -y tree tmux httpie expect
