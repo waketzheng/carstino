@@ -8,7 +8,8 @@ import os
 from pathlib import Path
 
 TARGET_VERSION = "3.8"
-DOWNLOAD_URL = 'https://mirrors.huaweicloud.com/python/3.8.3/Python-3.8.3.tar.xz'
+VERSION = f"{TARGET_VERSION}.5"
+DOWNLOAD_URL = "https://mirrors.huaweicloud.com/python/{0}/Python-{0}.tar.xz"
 INSTALL = "./configure --enable-optimizations && make && sudo make {}install"
 
 
@@ -37,8 +38,9 @@ def main():
         return
     folder = Path.home() / "softwares"
     folder.exists() or folder.mkdir()
-    run_and_echo(f"cd {folder} && wget {DOWNLOAD_URL}")
-    run_and_echo(f"cd {folder} && tar -xf {Path(DOWNLOAD_URL).name}")
+    url = DOWNLOAD_URL.format(VERSION)
+    run_and_echo(f"cd {folder} && wget {url}")
+    run_and_echo(f"cd {folder} && tar -xf {Path(url).name}")
     install = INSTALL.format("" if py_version.startswith("3") else "alt")
     glob = folder.glob(f"Python-{TARGET_VERSION}*")
     py_folder = [p for p in glob if p.is_dir()][0]
