@@ -3,8 +3,15 @@
 Install latest version Python.
 Only work for linux!
 And python3 is required.
+
+This script do the following steps:
+    1. Download Python xz file from huaweicloud
+    2. unzip it to ~/softwares (if folder not found with auto create)
+    3. Run this command::
+        ./configure --enable-optimizations && make && sudo make altinstall
 """
 import os
+import sys
 from pathlib import Path
 
 TARGET_VERSION = "3.8"
@@ -29,13 +36,15 @@ def run_and_echo(cmd):
 
 
 def main():
+    force_upgrade = "-f" in sys.argv or "--force" in sys.argv
     py_version = default_python_version()
-    if py_version.startswith(TARGET_VERSION):
-        run_and_echo("python -V")
-        return
-    if sliently_run("which python3.8").strip():
-        run_and_echo("python3.8 -V")
-        return
+    if not force_upgrade:
+        if py_version.startswith(TARGET_VERSION):
+            run_and_echo("python -V")
+            return
+        if sliently_run("which python3.8").strip():
+            run_and_echo("python3.8 -V")
+            return
     folder = Path.home() / "softwares"
     folder.exists() or folder.mkdir()
     url = DOWNLOAD_URL.format(VERSION)
