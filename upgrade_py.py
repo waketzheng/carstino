@@ -2,13 +2,13 @@
 """
 Install latest version Python.
 Only work for linux!
-And python3.6+ is required.
+And python3 is required.
 """
 import os
 from pathlib import Path
 
 TARGET_VERSION = "3.8"
-VERSION = f"{TARGET_VERSION}.5"
+VERSION = "{}.6".format(TARGET_VERSION)
 DOWNLOAD_URL = "https://mirrors.huaweicloud.com/python/{0}/Python-{0}.tar.xz"
 INSTALL = "./configure --enable-optimizations && make && sudo make {}install"
 
@@ -39,12 +39,12 @@ def main():
     folder = Path.home() / "softwares"
     folder.exists() or folder.mkdir()
     url = DOWNLOAD_URL.format(VERSION)
-    run_and_echo(f"cd {folder} && wget {url}")
-    run_and_echo(f"cd {folder} && tar -xf {Path(url).name}")
+    run_and_echo("cd {} && wget {}".format(folder, url))
+    run_and_echo("cd {} && tar -xf {}".format(folder, Path(url).name))
     install = INSTALL.format("" if py_version.startswith("3") else "alt")
-    glob = folder.glob(f"Python-{TARGET_VERSION}*")
+    glob = folder.glob("Python-{version}*".format(version=TARGET_VERSION))
     py_folder = [p for p in glob if p.is_dir()][0]
-    run_and_echo(f"cd {py_folder} && {install}")
+    run_and_echo("cd {} && {}".format(py_folder, install))
     print("Done!")
 
 
