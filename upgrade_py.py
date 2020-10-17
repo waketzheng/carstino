@@ -8,7 +8,8 @@ This script do the following steps:
     1. Download Python xz file from huaweicloud
     2. unzip it to ~/softwares (if folder not found with auto create)
     3. Run this command::
-        ./configure --enable-optimizations && make && sudo make altinstall
+        ./configure --enable-optimizations --enable-loadable-sqlite-extensions\
+                && make && sudo make altinstall
 """
 import os
 import sys
@@ -17,7 +18,11 @@ from pathlib import Path
 TARGET_VERSION = "3.8"
 VERSION = "{}.6".format(TARGET_VERSION)
 DOWNLOAD_URL = "https://mirrors.huaweicloud.com/python/{0}/Python-{0}.tar.xz"
-INSTALL = "./configure --enable-optimizations && make && sudo make {}install"
+# ipython need sqlite3 enable to store history
+INSTALL = (
+    "./configure --enable-optimizations  --enable-loadable-sqlite-extensions"
+    " && make && sudo make {}install"
+)
 
 
 def default_python_version():
