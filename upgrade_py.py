@@ -13,7 +13,6 @@ This script do the following steps:
 """
 import os
 import sys
-from pathlib import Path
 
 TARGET_VERSION = "3.8"
 VERSION = "{}.6".format(TARGET_VERSION)
@@ -41,6 +40,8 @@ def run_and_echo(cmd):
 
 
 def main():
+    from pathlib import Path  # Put it here to compatitable with Python2
+
     force_upgrade = "-f" in sys.argv or "--force" in sys.argv
     py_version = default_python_version()
     if not force_upgrade:
@@ -49,6 +50,8 @@ def main():
             return
         if sliently_run("which python3.8").strip():
             run_and_echo("python3.8 -V")
+            print('\nPython3.8 already in your system.')
+            print('You can add `-f` to force upgrade to {}.'.format(VERSION))
             return
     folder = Path.home() / "softwares"
     folder.exists() or folder.mkdir()
@@ -63,4 +66,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if sys.version < "3":
+        os.system("python3 " + ' '.join(sys.argv))
+    else:
+        main()
