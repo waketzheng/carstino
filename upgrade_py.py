@@ -2,14 +2,26 @@
 """
 Install latest version Python.
 Only work for linux!
-And python3.6+ is required.
+And python3 is required.
+
+This script do the following steps:
+    1. Download Python xz file from huaweicloud
+    2. unzip it to ~/softwares (if folder not found with auto create)
+    3. Run this command::
+        ./configure --enable-optimizations --enable-loadable-sqlite-extensions\
+                && make && sudo make altinstall
 """
 import os
-from pathlib import Path
+import sys
 
 TARGET_VERSION = "3.8"
-TAR_URL = 'https://mirrors.huaweicloud.com/python/3.8.3/Python-3.8.3.tar.xz'
-INSTALL = "./configure --enable-optimizations && make && sudo make {}install"
+VERSION = "{}.6".format(TARGET_VERSION)
+DOWNLOAD_URL = "https://mirrors.huaweicloud.com/python/{0}/Python-{0}.tar.xz"
+# ipython need sqlite3 enable to store history
+INSTALL = (
+    "./configure --enable-optimizations  --enable-loadable-sqlite-extensions"
+    " && make && sudo make {}install"
+)
 
 
 def default_python_version():
@@ -28,24 +40,30 @@ def run_and_echo(cmd):
 
 
 def main():
+    from pathlib import Path  # Put it here to compatitable with Python2
+
+    force_upgrade = "-f" in sys.argv or "--force" in sys.argv
     py_version = default_python_version()
-    tip = 'Python3.8 already installed. Do your want to reinstall? [y/N]'
-    if py_version.startswith(TARGET_VERSION):
-        run_and_echo("python -V")
-        a = input(tip)
-        if a.strip().lower() != 'y':
-            return
-    elif sliently_run("which python3.8").strip():
-        run_and_echo("python3.8 -V")
-        a = input(tip)
-        if a.strip().lower() != 'y':
-            return
+    if not force_upgrade:
+        tip = 'Python3.8 already installed. Do your want to reinstall? [y/N]'
+        if py_version.startswith(TARGET_VERSION):
+            run_and_echo("python -V")
+            a = input(tip)
+            if a.strip().lower() != 'y':
+                return
+        elif sliently_run("which python3.8").strip():
+            run_and_echo("python3.8 -V")
+            a = input(tip)
+            if a.strip().lower() != 'y':
+                return
     folder = Path.home() / "softwares"
     folder.exists() or folder.mkdir()
-    fname = Path(TAR_URL).name
+    url = DOWNLOAD_URL.format(VERSION)
+    fname = Path(url).name
     fpath = folder / fname
     if not fpath.exists():
-        if run_and_echo(f"cd {folder} && wget {TAR_URL}") != 0:
+        if run_and_echo("cd {} && wget {}".format(folder, url)) != 0:
+            print('Exit! Fail to get file from', url)
             return
     py_folder = folder / fpath.stem.rstrip('.tar')
     if not py_folder.exists():
@@ -57,4 +75,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if sys.version < "3":
+        os.system("python3 " + ' '.join(sys.argv))
+    else:
+        main()

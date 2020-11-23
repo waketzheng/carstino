@@ -34,7 +34,7 @@ curl https://raw.githubusercontent.com/waketzheng/carstino/master/.switch_source
 PS: I usually init my development environment in a new machine as following
 
 ```bash
-git clone https://github.com/waketzheng/carstino.git
+git clone https://gitee.com/waketzheng/carstino.git
 cd carstino
 ./init_my_dev.py
 ```
