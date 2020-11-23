@@ -71,15 +71,20 @@ def main():
             return
     py_folder = folder / fpath.stem.rstrip(".tar")
     if not py_folder.exists():
-        if run_and_echo(f"cd {folder} && tar -xf {fname}") != 0:
+        cmd = "cd {} && tar -xf {}".format(folder, fname)
+        if run_and_echo(cmd) != 0:
             return
     install = INSTALL.format("" if py_version.startswith("3") else "alt")
-    if run_and_echo(f"cd {py_folder} && {install}") == 0:
+    if run_and_echo("cd {} && {}".format(py_folder, install)) == 0:
         print("Done!")
 
 
 if __name__ == "__main__":
     if sys.version < "3":
-        os.system("python3 " + " ".join(sys.argv))
+        has_py3 = sliently_run("which python3").strip()
+        if not has_py3 or sliently_run("python3 -V") < "Python 3.6":
+            print("Python 3.6+ is required!")
+        else:
+            os.system("python3 " + " ".join(sys.argv))
     else:
         main()
