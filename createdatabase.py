@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 SETTINGS_ENV = "DJANGO_SETTINGS_MODULE"
-SQL = "create database {} DEFAULT CHARACTER SET {} COLLATE utf8_general_ci"
+SQL = "create database {} CHARACTER SET {}"
 
 
 def configure_settings():
