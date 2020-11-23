@@ -45,16 +45,20 @@ def main():
     force_upgrade = "-f" in sys.argv or "--force" in sys.argv
     py_version = default_python_version()
     if not force_upgrade:
-        tip = 'Python3.8 already installed. Do your want to reinstall? [y/N]'
+        tip = "Python3.8 already installed. "
         if py_version.startswith(TARGET_VERSION):
             run_and_echo("python -V")
+            if py_version < VERSION:
+                tip += "Do your want to upgrade to {}? [y/N] ".format(VERSION)
+            else:
+                tip += "Do your want to reinstall? [y/N] "
             a = input(tip)
-            if a.strip().lower() != 'y':
+            if a.strip().lower() != "y":
                 return
         elif sliently_run("which python3.8").strip():
             run_and_echo("python3.8 -V")
-            a = input(tip)
-            if a.strip().lower() != 'y':
+            a = input(tip + "Do your want to reinstall? [y/N] ")
+            if a.strip().lower() != "y":
                 return
     folder = Path.home() / "softwares"
     folder.exists() or folder.mkdir()
@@ -63,9 +67,9 @@ def main():
     fpath = folder / fname
     if not fpath.exists():
         if run_and_echo("cd {} && wget {}".format(folder, url)) != 0:
-            print('Exit! Fail to get file from', url)
+            print("Exit! Fail to get file from", url)
             return
-    py_folder = folder / fpath.stem.rstrip('.tar')
+    py_folder = folder / fpath.stem.rstrip(".tar")
     if not py_folder.exists():
         if run_and_echo(f"cd {folder} && tar -xf {fname}") != 0:
             return
@@ -76,6 +80,6 @@ def main():
 
 if __name__ == "__main__":
     if sys.version < "3":
-        os.system("python3 " + ' '.join(sys.argv))
+        os.system("python3 " + " ".join(sys.argv))
     else:
         main()
