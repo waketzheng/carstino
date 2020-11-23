@@ -4,7 +4,7 @@ starttime=`date +'%Y-%m-%d %H:%M:%S'`
 
 echo "---- Set default python"
 which python || sudo ln `which python3` /usr/bin/python
-sudo ./change_ubuntu_mirror_sources.py
+sudo ./change_ubuntu_mirror_sources.sh
 echo "Updating Repo..."
 sudo apt update
 sudo apt-get install -y build-essential libssl-dev
