@@ -13,9 +13,9 @@ This script do the following steps:
 """
 import os
 import sys
+import time
 
-TARGET_VERSION = "3.8"
-VERSION = "{}.6".format(TARGET_VERSION)
+VERSION = "3.9.1"
 DOWNLOAD_URL = "https://mirrors.huaweicloud.com/python/{0}/Python-{0}.tar.xz"
 # ipython need sqlite3 enable to store history
 INSTALL = (
@@ -26,8 +26,8 @@ DEFAULT_DIR = "~/softwares"
 
 # To install python2, just run `sudo apt install python2`
 SHORTCUTS = {
-    "3": "3.9.1",
-    "39": "3.9.1",
+    "3": VERSION,
+    "39": VERSION,
     "38": "3.8.6",
     "37": "3.7.9",
     "36": "3.6.9",
@@ -50,24 +50,21 @@ def run_and_echo(cmd):
 
 
 def main():
+    start = time.time()
     sys_argv = sys.argv[1:]
-    print(f'{sys_argv = }')
     for idx, arg in enumerate(sys_argv):
         # todo: use argparser instead
-        print(f'{arg = }, {arg == "-v"}, {arg.startswith("--version")}')
         if arg == "-v":
             v = sys_argv[idx + 1]
             version = SHORTCUTS.get(v, v)
-            target_version = version.rsplit(".", 1)[0]
             break
         if arg.startswith("--version="):
             v = arg.replace("--version=", "")
             version = SHORTCUTS.get(v, v)
-            target_version = version.rsplit(".", 1)[0]
             break
     else:
-        target_version, version = TARGET_VERSION, VERSION
-    print(f'{target_version = }, {version = }')
+        version = VERSION
+    target_version = version.rsplit(".", 1)[0]
     force_upgrade = "-f" in sys_argv or "--force" in sys_argv
     py_version = default_python_version()
     if not force_upgrade:
@@ -100,6 +97,12 @@ def main():
             folder = arg.replace("--dir=", "")
             break
     install_py(folder, url, alt)
+    cost = int(time.time() - start)
+    if cost >= 3600:
+        cost = ">= {}h".format(cost // 3600)
+    elif cost > 60:
+        cost = "{}m{}s".format(cost // 60, cost % 60)
+    print("Done! Cost:", cost)
 
 
 def install_py(folder, url, alt):
@@ -122,8 +125,8 @@ def install_py(folder, url, alt):
         if run_and_echo(cmd) != 0:
             return
     install = INSTALL.format("alt" if alt else "")
-    if run_and_echo("cd {} && {}".format(py_folder, install)) == 0:
-        print("Done!")
+    if run_and_echo("cd {} && {}".format(py_folder, install)) != 0:
+        sys.exit()
 
 
 if __name__ == "__main__":
