@@ -86,7 +86,7 @@ sh -c 'echo "[ -s \$HOME/.bash_aliases ] && source \$HOME/.bash_aliases" >> $HOM
 sh -c 'echo "[ -s \$HOME/.local/bin ] && export PATH=\$HOME/.local/bin:/usr/local/bin:\$PATH" >> $HOME/.zshrc'
 sh -c 'echo "export ZSH=\$HOME/.oh-my-zsh" >>  $HOME/.zshrc'
 sh -c 'echo "ZSH_THEME=random" >>  $HOME/.zshrc'
-sh -c 'echo "plugins=(git pip python)" >>  $HOME/.zshrc'
+sh -c 'echo "plugins=(git pip python pipenv)" >>  $HOME/.zshrc'
 sh -c 'echo "[ -s \$ZSH/oh-my-zsh.sh ] && source \$ZSH/oh-my-zsh.sh" >>  $HOME/.zshrc'
 
 export REMOTE="https://gitee.com/mirrors/oh-my-zsh.git" && sh -c "$(curl -fsSL https://gitee.com/mirrors/oh-my-zsh/raw/master/tools/install.sh)" --keep-zshrc
