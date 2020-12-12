@@ -10,14 +10,13 @@ from pathlib import Path
 
 FILES = ALIAS_FILE, *_ = [
     ".bash_aliases",
-    ".pipenv_install_while_lock_at_another_process.py",
     ".switch_source_pipenv.py",
     ".mg.py",
     ".vimrc",
     ".lint.sh",
 ]
 
-PACKAGES = "pipenv ipython django flake8 white black isort"
+PACKAGES = "pipenv ipython django flake8 black isort mypy"
 
 
 def get_cmd_result(cmd):
