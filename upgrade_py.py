@@ -35,10 +35,10 @@ SHORTCUTS = {
 
 
 def default_python_version():
-    return sliently_run("python -V").replace("Python ", "")
+    return silently_run("python -V").replace("Python ", "")
 
 
-def sliently_run(cmd):
+def silently_run(cmd):
     with os.popen(cmd) as p:
         s = p.read()
     return s
@@ -50,6 +50,7 @@ def run_and_echo(cmd):
 
 
 def main():
+    # is_ubuntu = bool(silently_run("which apt"))
     start = time.time()
     sys_argv = sys.argv[1:]
     for idx, arg in enumerate(sys_argv):
@@ -79,7 +80,7 @@ def main():
             a = input(tip)
             if a.strip().lower() != "y":
                 return
-        elif sliently_run("which {}".format(pyx)).strip():
+        elif silently_run("which {}".format(pyx)).strip():
             run_and_echo("{} -V".format(pyx))
             a = input(tip + "Do your want to reinstall? [y/N] ")
             if a.strip().lower() != "y":
@@ -131,8 +132,8 @@ def install_py(folder, url, alt):
 
 if __name__ == "__main__":
     if sys.version < "3":
-        has_py3 = sliently_run("which python3").strip()
-        if not has_py3 or sliently_run("python3 -V") < "Python 3.6":
+        has_py3 = silently_run("which python3").strip()
+        if not has_py3 or silently_run("python3 -V") < "Python 3.6":
             print("Python 3.6+ is required!")
         else:
             os.system("python3 " + " ".join(sys.argv))

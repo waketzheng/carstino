@@ -1,5 +1,5 @@
 # Carstino
-This is a repo about init my
+This is a repo about init my dev environment
 
 1. a script to init my development environment at a new machine.
 2. Some useful scripts for linux os system.
@@ -9,8 +9,8 @@ This is a repo about init my
 - pip_conf.py: switch pip source to aliyun or douban or qinghua.
 - change_ubuntu_mirror_sources.sh: change apt mirror sources of ubuntu16/18/19/20
 - createdatabase.py: create database for django project
-- django_manage_completion.bash: auto completion for my custom command `mg`, which is for django manage
 - .switch_source_pipenv.py: switch pip source of Pipfile
+- build_development_environment.sh: install packages for python and vue develop environment
 
 
 Usage:
@@ -20,7 +20,7 @@ curl https://raw.githubusercontent.com/waketzheng/carstino/master/pip_conf.py|py
 ```
 
 ```bash
-# Change apt source of ubuntu16/18/19 to aliyun cloud.
+# Change apt source of ubuntu16/18/19/20 to aliyun cloud.
 curl https://raw.githubusercontent.com/waketzheng/carstino/master/change_ubuntu_mirror_sources.py|python
 ```
 
@@ -34,21 +34,14 @@ curl https://raw.githubusercontent.com/waketzheng/carstino/master/.switch_source
 PS: I usually init my development environment in a new machine as following
 
 ```bash
-git clone https://gitee.com/waketzheng/carstino.git
+git clone https://github.com/waketzheng/carstino.git
 cd carstino
 ./init_my_dev.py
 ```
 
-## TO init vagrant box
-
-```
-vagrant box add https://mirrors.tuna.tsinghua.edu.cn/ubuntu-cloud-images/eoan/current/eoan-server-cloudimg-amd64-vagrant.box --name ubuntu/eoan
-```
-
-## Proccess vagrant up
-
-```
-vagrant up; vagrant ssh
-git clone https://github.com/waketzheng/carstino
-./carstino/build_development_environment.sh
+- build_development_environment.sh: For new ubuntu machine(version>=16), just run this script.
+```bash
+git clone https://github.com/waketzheng/carstino.git
+cd carstino
+./build_development_environment.sh
 ```
