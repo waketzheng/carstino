@@ -1,3 +1,3 @@
-isort -rc $* && white $* && flake8 $*
-echo 'Run `'"isort -rc $* && white $* && flake8 $*"'`'
+isort $* && black $* && flake8 $*  && \
+echo 'Run `'"isort $* && black $* && flake8 $*"'`'  && \
 echo Done.

@@ -10,14 +10,13 @@ from pathlib import Path
 
 FILES = ALIAS_FILE, *_ = [
     ".bash_aliases",
-    ".pipenv_install_while_lock_at_another_process.py",
     ".switch_source_pipenv.py",
     ".mg.py",
     ".vimrc",
     ".lint.sh",
 ]
 
-PACKAGES = "pipenv ipython django flake8 white black isort"
+PACKAGES = "pipenv ipython django flake8 black isort mypy"
 
 
 def get_cmd_result(cmd):
@@ -59,6 +58,14 @@ def set_completions(home, repo, aliases_path):
     return target
 
 
+def vim_vue():
+    folder = "~/.vim/pack/plugins/start"
+    repo_url = "https://github.com/posva/vim-vue.git"
+    cmd = "mkdir -p {0} && git clone {1} {0}/vim-vue".format(folder, repo_url)
+    print("-->", cmd)
+    os.system(cmd)
+
+
 def main():
     home = Path.home()
     aliases_path = home / ALIAS_FILE
@@ -72,6 +79,7 @@ def main():
         repo = Path(".").resolve()
     for fn in FILES:
         os.system(f"cp {repo / fn} {home}")
+    vim_vue()
     s = aliases_path.read_text()
     ss = re.sub(r'(rstrip|prettify)="(.*)"', rf'\1="{repo}/\1.py"', s)
     ss = re.sub(r'(httpa)="(.*)"', rf'\1="{repo}/\1.sh"', s)
@@ -93,7 +101,7 @@ def main():
         with rc.open("a") as fp:
             fp.write(f"[[ -f ~/{ALIAS_FILE} ]] && . ~/{ALIAS_FILE}")
     # change nvm node mirrors
-    nvm = 'export NVM_NODEJS_ORG_MIRROR=https://npm.taobao.org/mirrors/node'
+    nvm = "export NVM_NODEJS_ORG_MIRROR=https://npm.taobao.org/mirrors/node"
     if nvm not in txt:
         with rc.open("a") as fp:
             fp.write(f"# For nvm\n{nvm}\n")

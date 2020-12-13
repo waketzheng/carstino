@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os
 import re
 import sys
@@ -30,6 +30,12 @@ def main(fname=SOURCE_FILE):
         msg = "Sources of `{}` already set to `{}`\nSkip."
         print(msg.format(fname, target))
         return
+    if "aliyun" in target:
+        aliyuncs = "mirrors.cloud.aliyuncs.com"
+        if aliyuncs in s:
+            msg = "Sources of `{}` already set to `{}`\nSkip."
+            print(msg.format(fname, aliyuncs))
+            return
 
     ss = re.sub(r"https*://[^/]+/", target + "/", s)
     try:

@@ -7,7 +7,7 @@ This is a repo about init my
 ## scripts:
 - rstrip.py: strip white spaces at the end of every line.
 - pip_conf.py: switch pip source to aliyun or douban or qinghua.
-- change_ubuntu_mirror_sources.py: change apt mirror sources of ubuntu16/18/19
+- change_ubuntu_mirror_sources.sh: change apt mirror sources of ubuntu16/18/19/20
 - createdatabase.py: create database for django project
 - django_manage_completion.bash: auto completion for my custom command `mg`, which is for django manage
 - .switch_source_pipenv.py: switch pip source of Pipfile
@@ -34,7 +34,7 @@ curl https://raw.githubusercontent.com/waketzheng/carstino/master/.switch_source
 PS: I usually init my development environment in a new machine as following
 
 ```bash
-git clone https://github.com/waketzheng/carstino.git
+git clone https://gitee.com/waketzheng/carstino.git
 cd carstino
 ./init_my_dev.py
 ```
