@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Install latest version Python.
 Only work for linux!
-And python3 is required.
+And python2.7 or python3 is required.
 
 This script do the following steps:
     1. Download Python xz file from huaweicloud
