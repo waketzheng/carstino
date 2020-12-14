@@ -17,7 +17,7 @@ import sys
 import time
 
 try:
-    input = raw_input
+    input = raw_input  # type:ignore
 except NameError:
     pass
 
@@ -47,8 +47,13 @@ SHORTCUTS = {
 }
 
 
+def python_version(py="python"):
+    return silently_run("{} -V".format(py)).replace("Python ", "")
+
+
 def default_python_version():
-    return silently_run("python -V").replace("Python ", "")
+    print("Default python version:")
+    return python_version()
 
 
 def silently_run(cmd):
@@ -58,7 +63,7 @@ def silently_run(cmd):
 
 
 def run_and_echo(cmd):
-    print("-->", cmd)
+    print("--> " + cmd)
     return os.system(cmd)
 
 
@@ -69,7 +74,11 @@ def parse_args():
         "-d", "--dir", nargs="?", default=DEFAULT_DIR, help="Where to install"
     )
     parser.add_argument(
-        "-v", "--version", nargs="?", default=VERSION, help="Python version"
+        "-v",
+        "--version",
+        nargs="?",
+        default=VERSION,
+        help="Python version to be installed",
     )
     parser.add_argument(
         "--dep", action="store_true", help="Install some ubuntu packages"
@@ -80,61 +89,49 @@ def parse_args():
         action="store_true",
         help="Force update (example:3.8.1 -> 3.8.6)",
     )
+    parser.add_argument(
+        "-n",
+        "--no-input",
+        action="store_true",
+        help="Do not ask me anything",
+    )
     parser.add_argument("--alt", action="store_true", help="Want altinstall?")
     return parser.parse_args()
 
 
 def validated_args():
     args = parse_args()
-    # if '.' in args.version:
-    #     assert args.version >= '3', 'Only support Python3 install'
-    # else:
-    #     assert args.version in SHORTCUTS, 'Version should be in ' + str(list(SHORTCUTS.keys()))
-    if "." in args.v:
-        assert args.v >= "3", "Only support Python3 install"
-    elif args.v not in SHORTCUTS:
+    if "." in args.version:
+        assert args.version >= "3", "Only support Python3 install"
+    elif args.version not in SHORTCUTS:
         raise AssertionError("Version should be in " + repr(list(SHORTCUTS.keys())))
-    return args
-
-
-def main():
-    args = validated_args()
-    # is_ubuntu = bool(silently_run("which apt"))
+    else:
+        args.version = SHORTCUTS[args.version]
     version = args.version
-    start = time.time()
     target_version = version.rsplit(".", 1)[0]
     current_version = default_python_version()
-    if not args.force_upgrade:
+    if not args.force:
         pyx = "python" + target_version
-        tip = "\n{} already installed. ".format(pyx.title())
-        if current_version.startswith(target_version):
-            run_and_echo("python -V")
-            if current_version < version:
+        has_same_version = current_version.startswith(target_version)
+        can_upgrade = current_version < version
+        if not has_same_version:
+            if silently_run("which {}".format(pyx)).strip():
+                has_same_version = True
+                can_upgrade = python_version(pyx) < version
+        if has_same_version:
+            tip = "\n{} already installed. ".format(pyx.title())
+            if args.no_input:
+                print("Exit! " + tip)
+                sys.exit()
+            if can_upgrade:
                 tip += "Do your want to upgrade to {}? [y/N] ".format(version)
             else:
                 tip += "Do your want to reinstall? [y/N] "
-            a = input(tip)
-            if a.strip().lower() != "y":
+            if input(tip).strip().lower() != "y":
                 sys.exit()
-        elif silently_run("which {}".format(pyx)).strip():
-            run_and_echo("{} -V".format(pyx))
-            a = input(tip + "Do your want to reinstall? [y/N] ")
-            if a.strip().lower() != "y":
-                sys.exit()
-    url = DOWNLOAD_URL.format(version)
     # if system python is py3, replace it, else `make altinstall`
-    alt = args.alt or not current_version.startswith("3")
-    folder = args.dir
-    install_py(folder, url, alt)
-    print("Done! Cost:", friendly_time(int(time.time() - start)))
-
-
-def friendly_time(cost):
-    if cost >= 3600:
-        return ">= {}h".format(cost // 3600)
-    elif cost > 60:
-        return "{}m{}s".format(cost // 60, cost % 60)
-    return "{} seconds".format(cost)
+    args.alt = args.alt or not current_version.startswith("3")
+    return args
 
 
 def home():
@@ -147,35 +144,77 @@ def home():
 
 
 def install_py(folder, url, alt):
-    from pathlib import Path  # Put it here to compatitable with Python2
-
-    if isinstance(folder, str):
-        if not folder.startswith("/"):
-            folder = folder.replace("~", str(Path.home()))
-        folder = Path(folder)
-    folder.exists() or folder.mkdir()
-    fname = Path(url).name
-    fpath = folder / fname
-    if not fpath.exists():
-        if run_and_echo("cd {} && wget {}".format(folder, url)) != 0:
-            print("Exit! Fail to get file from", url)
-            return
-    py_folder = folder / fpath.stem.rstrip(".tar")
-    if not py_folder.exists():
-        cmd = "cd {} && tar -xf {}".format(folder, fname)
-        if run_and_echo(cmd) != 0:
-            return
+    commands = []
+    if not folder.startswith("/"):
+        folder = folder.replace("~", home())
+    if not os.path.exists(folder):
+        commands.append("mkdir -p {}".format(folder))
+    fname = url.split("/")[-1]
+    fpath = "{folder}/{fname}".format(folder=folder, fname=fname)
+    cd_folder = "cd " + folder
+    if not os.path.exists(fpath):
+        # TODO: check md5 of exist file
+        commands.append(cd_folder)
+        commands.append("wget " + url)
+    sub_folder = fname.split(".tar")[0]
+    py_folder = os.path.join(folder, sub_folder)
+    if not os.path.exists(py_folder):
+        commands.append("tar -xf " + fname)
+    if cd_folder in commands:
+        commands.append("cd " + sub_folder)
+    else:
+        commands.append("cd " + py_folder)
     install = INSTALL.format("alt" if alt else "")
-    if run_and_echo("cd {} && {}".format(py_folder, install)) != 0:
+    return commands + install.split(" && ")
+
+def is_ubuntu_sys():
+    r = silently_run("which apt-get")
+    return r and 'not found' not in r
+
+
+def gen_cmds():
+    args = validated_args()
+    cmds = []
+    is_ubuntu = is_ubuntu_sys()
+    if is_ubuntu:
+        dep = "sudo apt install -y " + EXTEND
+        if args.dep:
+            cmds.append(dep)
+        elif not args.no_input:
+            tip = "Do you want to install these: {}? [Y/n] ".format(EXTEND)
+            if input(tip).lower() != "n":
+                cmds.append(dep)
+    url = DOWNLOAD_URL.format(args.version)
+    cmds.extend(install_py(args.dir, url, args.alt))
+    if is_ubuntu:
+        cmds.append(APPEND)
+    return cmds
+
+
+def main():
+    cmds = gen_cmds()
+    is_root_user = home() == "/root"
+    if is_root_user:
+        cmds = [i.replace("sudo ", "") for i in cmds]
+    print("The following commands will be executed to install python:")
+    print("\n    " + "\n    ".join(cmds) + "\n")
+    if not is_root_user:
+        print("They need sudo permission.")
+        if os.system("sudo echo going on ............") != 0:
+            sys.exit()
+    start = time.time()
+    if run_and_echo('&&'.join(cmds)) != 0:
         sys.exit()
+    print("Done! Cost: " + friendly_time(int(time.time() - start)))
+
+
+def friendly_time(cost):
+    if cost >= 3600:
+        return ">= {}h".format(cost // 3600)
+    elif cost > 60:
+        return "{}m{}s".format(cost // 60, cost % 60)
+    return "{} seconds".format(cost)
 
 
 if __name__ == "__main__":
-    if sys.version < "3":
-        has_py3 = silently_run("which python3").strip()
-        if not has_py3 or silently_run("python3 -V") < "Python 3.6":
-            print("Python 3.6+ is required!")
-        else:
-            os.system("python3 " + " ".join(sys.argv))
-    else:
-        main()
+    main()
