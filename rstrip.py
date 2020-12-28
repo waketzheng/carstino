@@ -5,7 +5,17 @@ and make sure there is just one and only one empty line at the end the file.
 
 For example:
     "a line with some spaces   \r\n" => "a line with some spaces\n"
+
+Usage::
+    $ rstrip *.py  # rstrip all python files in current directory
+    $ rstrip **/*.py  # rstrip all python files in current and its sub directories
+    $ rstrip src/*.py  # rstrip all python files in src/
+    $ rstrip -r src/*.py  # rstrip all python files in src/ and its sub directories
+    $ rstrip src/**/*.py  # rstrip all python files in src/ and its sub directories
+    $ rstrip a.py b.txt  # rstrip the two files
+
 """
+import argparse
 import os
 import re
 import sys
@@ -45,26 +55,37 @@ def is_required_file_type(s, required):
     return required == "*" or s.endswith(required.rsplit(".", 1)[-1])
 
 
-def main():
-    import sys
-    from argparse import ArgumentParser
-
-    if not sys.argv[1:]:
-        print(__doc__.strip())
-        print("\nUsage:")
-        print("{}{} /path/to/file".format(" " * 4, sys.argv[0]))
-        return
-    parser = ArgumentParser()
-    parser.add_argument(
-        "-R", "-r", action="store_true", help="whether to recursive"
-    )
+def parse_args():
+    """parse custom arguments and set default value"""
+    parser = argparse.ArgumentParser(description="Lua file upload tool")
+    # --------------
+    parser.add_argument("-R", "-r", action="store_true", help="whether to recursive")
     parser.add_argument(
         "-t", "--type", default="*", help="filter file type(Example: *.py)"
     )
     parser.add_argument(
         "-d", "--dir", default=".", help="the directory path(default:.)"
     )
-    args, unknown = parser.parse_known_args()
+    # -------------
+    parser.add_argument(
+        "files", nargs="*", default=[], help="files or directories (support re)"
+    )
+    parser.add_argument(
+        "-s", "--suffix", nargs="?", default="", help="upload file type"
+    )
+    parser.add_argument("-l", "--list", action="store_true", help="list all devices")
+    parser.add_argument("-i", "--inter", action="store_true", help="terminal interface")
+    return parser.parse_args()
+
+
+def main():
+    if not sys.argv[1:]:
+        print(__doc__)
+        return
+    args = parse_args()
+
+    # args, unknown = parser.parse_known_args()
+    args, unknown = "", ""
     if args.R:
         files = []
         for r, ds, fs in os.walk(args.dir):
@@ -90,6 +111,6 @@ def main():
 
 if __name__ == "__main__":
     if sys.version < "3":
-        os.system("python3 " + ' '.join(sys.argv))
+        os.system("python3 " + " ".join(sys.argv))
     else:
         main()
