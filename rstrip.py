@@ -58,24 +58,95 @@ def is_required_file_type(s, required):
 def parse_args():
     """parse custom arguments and set default value"""
     parser = argparse.ArgumentParser(description="Lua file upload tool")
-    # --------------
-    parser.add_argument("-R", "-r", action="store_true", help="whether to recursive")
+    parser.add_argument("-R", "-r", action="store_true", help="Whether to recursive")
+    parser.add_argument("-y", "--yes", action="store_true", help="No ask")
     parser.add_argument(
-        "-t", "--type", default="*", help="filter file type(Example: *.py)"
+        "-t", "--type", default="*", help="Filter file type(Example: *.py)"
     )
-    parser.add_argument(
-        "-d", "--dir", default=".", help="the directory path(default:.)"
-    )
-    # -------------
+    parser.add_argument("-d", "--dir", default="", help="The directory path")
     parser.add_argument(
         "files", nargs="*", default=[], help="files or directories (support re)"
     )
-    parser.add_argument(
-        "-s", "--suffix", nargs="?", default="", help="upload file type"
-    )
-    parser.add_argument("-l", "--list", action="store_true", help="list all devices")
-    parser.add_argument("-i", "--inter", action="store_true", help="terminal interface")
     return parser.parse_args()
+
+
+def only_files(paths):
+    return [i for i in paths if i.is_file()]
+
+
+def get_filepaths(args):
+    from pathlib import Path
+
+    fpaths = []
+    if args.dir:
+        parent = Path(args.dir)
+        if not parent.exists():
+            raise Exception("Directory `{}` not exists!".format(args.dir))
+    else:
+        parent = Path()
+    # to be optimize
+    for i in args.files:
+        if "*" not in i:
+            p = Path(i) if i.startswith("/") else (parent / i)
+            print(f'{p = }')
+            if p.exists():
+                if p.is_file():
+                    fpaths.append(p)
+                elif p.is_dir():
+                    if args.type != "*":
+                        args.type = "*." + args.type.lstrip("*").lstrip(".")
+                    if args.R:
+                        fpaths += list(p.rglob(args.type))
+                    else:
+                        fpaths += only_files(p.glob(args.type))
+                    print(f'{fpaths = }, {args.R = }, {args.type = }')
+        else:
+            if "**" in i:
+                if i.startswith("**"):
+                    i = i.lstrip("*").lstrip("/") or "*"
+                    fpaths += list(Path().rglob(i))
+                else:
+                    if i.endswith("**") or i.endswith("**/"):
+                        i = i.rstrip("/").rstrip("*")
+                        fpaths += list(Path(i).rglob("*"))
+                    else:
+                        ps = i.split("/**/")
+                        assert (
+                            len(ps) == 2
+                        ), "Invalid pattern! Must sure only one double `*`."
+                        fpaths += list(Path(ps[0]).rglob(ps[1]))
+            else:
+                if i == "*" or i.startswith("*."):
+                    fpaths += only_files(Path().glob(i))
+                elif i.startswith("*/"):
+                    suffix = i.lstrip("*").lstrip("/") or "*"
+                    for j in Path().glob("*"):
+                        if j.is_file():
+                            fpaths.append(j)
+                        elif j.is_dir():
+                            fpaths += only_files(j.glob(suffix))
+                elif i.endswith("*/"):
+                    suffix = "*"
+                    i = i.rstrip("/").rstrip("*")
+                    ps = i.split("/*/")
+                    assert len(ps) < 3, "Too many `*`!"
+                    root = Path(ps[0])
+                    if len(ps) == 1:
+                        fpaths += only_files(root.glob(suffix))
+                    else:
+                        for j in root.glob("*"):
+                            j = j / ps[1]
+                            if j.is_dir():
+                                fpaths += only_files(j.glob(suffix))
+                else:
+                    ps = i.split("/*/")
+                    assert 3 > len(ps) > 1, "Invalid `*` pattern!"
+                    root = Path(ps[0])
+                    suffix = ps[-1]
+                    for j in root.glob("*"):
+                        if j.is_dir():
+                            fpaths += only_files(j.glob(suffix))
+    return fpaths
 
 
 def main():
@@ -83,19 +154,7 @@ def main():
         print(__doc__)
         return
     args = parse_args()
-
-    # args, unknown = parser.parse_known_args()
-    args, unknown = "", ""
-    if args.R:
-        files = []
-        for r, ds, fs in os.walk(args.dir):
-            if is_hidden(r):
-                continue
-            for fn in fs:
-                if not is_hidden(fn) and is_required_file_type(fn, args.type):
-                    files.append(os.path.join(r, fn))
-    elif unknown:
-        files = [os.path.join(args.dir, f) for f in unknown]
+    files = get_filepaths(args)
     count_skip = count_rstrip = 0
     for fn in files:
         try:
