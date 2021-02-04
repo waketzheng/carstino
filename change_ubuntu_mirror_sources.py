@@ -7,8 +7,11 @@ SOURCES = {
     "163": "https://mirrors.163.com",
     "aliyun": "https://mirrors.aliyun.com",
     "qinghua": "https://mirrors.tuna.tsinghua.edu.cn",
+    "huawei": "http://repo.huaweicloud.com",
+    "tencent": "https://mirrors.cloud.tencent.com",
 }
 DEFAULT = SOURCES["aliyun"]
+SOURCES["tx"] = SOURCES["tencent"]
 SOURCE_FILE = "/etc/apt/sources.list"
 
 
@@ -36,7 +39,7 @@ def main(fname=SOURCE_FILE):
             msg = "Sources of `{}` already set to `{}`\nSkip."
             print(msg.format(fname, aliyuncs))
             return
-
+    # to be optimize: show current mirrors and ask to confirm
     ss = re.sub(r"https*://[^/]+/", target + "/", s)
     try:
         with open(fname, "w") as fp:
