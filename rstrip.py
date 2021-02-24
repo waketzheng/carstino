@@ -85,10 +85,15 @@ def get_filepaths(args):
     else:
         parent = Path()
     # to be optimize
+    print(1111111111)
+    print(f'{args.files = }')
+    sys.exit()
     for i in args.files:
+        print(f'{i = }')
         if "*" not in i:
+            print(2222222222)
             p = Path(i) if i.startswith("/") else (parent / i)
-            print(f'{p = }')
+            print(f"{p = }")
             if p.exists():
                 if p.is_file():
                     fpaths.append(p)
@@ -99,8 +104,9 @@ def get_filepaths(args):
                         fpaths += list(p.rglob(args.type))
                     else:
                         fpaths += only_files(p.glob(args.type))
-                    print(f'{fpaths = }, {args.R = }, {args.type = }')
+                    print(f"{fpaths = }, {args.R = }, {args.type = }")
         else:
+            print(33333333333)
             if "**" in i:
                 if i.startswith("**"):
                     i = i.lstrip("*").lstrip("/") or "*"
@@ -116,7 +122,9 @@ def get_filepaths(args):
                         ), "Invalid pattern! Must sure only one double `*`."
                         fpaths += list(Path(ps[0]).rglob(ps[1]))
             else:
+                print(444444444)
                 if i == "*" or i.startswith("*."):
+                    print(555555555555)
                     fpaths += only_files(Path().glob(i))
                 elif i.startswith("*/"):
                     suffix = i.lstrip("*").lstrip("/") or "*"
@@ -146,6 +154,8 @@ def get_filepaths(args):
                     for j in root.glob("*"):
                         if j.is_dir():
                             fpaths += only_files(j.glob(suffix))
+    print(f'{fpaths = }')
+    sys.exit()
     return fpaths
 
 
@@ -162,6 +172,9 @@ def main():
         except ContentException as e:
             count_skip += 1
             print("{}: skip! {}".format(fn, e))
+        except UnicodeDecodeError as e:
+            count_skip += 1
+            print("{}: failed! {}".format(fn, e))
         else:
             count_rstrip += 1
             print("{}: rstriped.".format(fn))
