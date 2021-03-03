@@ -4,14 +4,16 @@ Remove spaces at the end of every line,
 and make sure there is just one and only one empty line at the end the file.
 
 For example:
-    "a line with some spaces   \r\n" => "a line with some spaces\n"
+    "a line with some spaces   \\r\\n" => "a line with some spaces\\n"
 
 Usage::
     $ rstrip *.py  # rstrip all python files in current directory
     $ rstrip **/*.py  # rstrip all python files in current and its sub directories
     $ rstrip src/*.py  # rstrip all python files in src/
-    $ rstrip -r src/*.py  # rstrip all python files in src/ and its sub directories
     $ rstrip src/**/*.py  # rstrip all python files in src/ and its sub directories
+    $ rstrip -r src/  # rstrip all files in src/ and its sub directories
+    $ rstrip -t .py src/  # rstrip all python files in src/
+    $ rstrip -r -t .py src/  # rstrip all python files in src/ and its sub directories
     $ rstrip a.py b.txt  # rstrip the two files
 
 """
@@ -57,7 +59,9 @@ def is_required_file_type(s, required):
 
 def parse_args():
     """parse custom arguments and set default value"""
-    parser = argparse.ArgumentParser(description="Lua file upload tool")
+    parser = argparse.ArgumentParser(
+        description="Trim spaces at the end of every lines."
+    )
     parser.add_argument("-R", "-r", action="store_true", help="Whether to recursive")
     parser.add_argument("-y", "--yes", action="store_true", help="No ask")
     parser.add_argument(
@@ -65,7 +69,11 @@ def parse_args():
     )
     parser.add_argument("-d", "--dir", default="", help="The directory path")
     parser.add_argument(
-        "files", nargs="*", default=[], help="files or directories (support re)"
+        "files",
+        nargs="+",
+        default=[],
+        metavar="*.py",
+        help="files or directories",
     )
     return parser.parse_args()
 
@@ -85,15 +93,9 @@ def get_filepaths(args):
     else:
         parent = Path()
     # to be optimize
-    print(1111111111)
-    print(f'{args.files = }')
-    sys.exit()
     for i in args.files:
-        print(f'{i = }')
         if "*" not in i:
-            print(2222222222)
             p = Path(i) if i.startswith("/") else (parent / i)
-            print(f"{p = }")
             if p.exists():
                 if p.is_file():
                     fpaths.append(p)
@@ -104,9 +106,7 @@ def get_filepaths(args):
                         fpaths += list(p.rglob(args.type))
                     else:
                         fpaths += only_files(p.glob(args.type))
-                    print(f"{fpaths = }, {args.R = }, {args.type = }")
         else:
-            print(33333333333)
             if "**" in i:
                 if i.startswith("**"):
                     i = i.lstrip("*").lstrip("/") or "*"
@@ -122,9 +122,7 @@ def get_filepaths(args):
                         ), "Invalid pattern! Must sure only one double `*`."
                         fpaths += list(Path(ps[0]).rglob(ps[1]))
             else:
-                print(444444444)
                 if i == "*" or i.startswith("*."):
-                    print(555555555555)
                     fpaths += only_files(Path().glob(i))
                 elif i.startswith("*/"):
                     suffix = i.lstrip("*").lstrip("/") or "*"
@@ -154,8 +152,6 @@ def get_filepaths(args):
                     for j in root.glob("*"):
                         if j.is_dir():
                             fpaths += only_files(j.glob(suffix))
-    print(f'{fpaths = }')
-    sys.exit()
     return fpaths
 
 
