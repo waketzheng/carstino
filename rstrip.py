@@ -4,8 +4,20 @@ Remove spaces at the end of every line,
 and make sure there is just one and only one empty line at the end the file.
 
 For example:
-    "a line with some spaces   \r\n" => "a line with some spaces\n"
+    "a line with some spaces   \\r\\n" => "a line with some spaces\\n"
+
+Usage::
+    $ rstrip *.py  # rstrip all python files in current directory
+    $ rstrip **/*.py  # rstrip all python files in current and its sub directories
+    $ rstrip src/*.py  # rstrip all python files in src/
+    $ rstrip src/**/*.py  # rstrip all python files in src/ and its sub directories
+    $ rstrip -r src/  # rstrip all files in src/ and its sub directories
+    $ rstrip -t .py src/  # rstrip all python files in src/
+    $ rstrip -r -t .py src/  # rstrip all python files in src/ and its sub directories
+    $ rstrip a.py b.txt  # rstrip the two files
+
 """
+import argparse
 import os
 import re
 import sys
@@ -45,36 +57,110 @@ def is_required_file_type(s, required):
     return required == "*" or s.endswith(required.rsplit(".", 1)[-1])
 
 
-def main():
-    import sys
-    from argparse import ArgumentParser
+def parse_args():
+    """parse custom arguments and set default value"""
+    parser = argparse.ArgumentParser(
+        description="Trim spaces at the end of every lines."
+    )
+    parser.add_argument("-R", "-r", action="store_true", help="Whether to recursive")
+    parser.add_argument("-y", "--yes", action="store_true", help="No ask")
+    parser.add_argument(
+        "-t", "--type", default="*", help="Filter file type(Example: *.py)"
+    )
+    parser.add_argument("-d", "--dir", default="", help="The directory path")
+    parser.add_argument(
+        "files",
+        nargs="+",
+        default=[],
+        metavar="*.py",
+        help="files or directories",
+    )
+    return parser.parse_args()
 
+
+def only_files(paths):
+    return [i for i in paths if i.is_file()]
+
+
+def get_filepaths(args):
+    from pathlib import Path
+
+    fpaths = []
+    if args.dir:
+        parent = Path(args.dir)
+        if not parent.exists():
+            raise Exception("Directory `{}` not exists!".format(args.dir))
+    else:
+        parent = Path()
+    # to be optimize
+    for i in args.files:
+        if "*" not in i:
+            p = Path(i) if i.startswith("/") else (parent / i)
+            if p.exists():
+                if p.is_file():
+                    fpaths.append(p)
+                elif p.is_dir():
+                    if args.type != "*":
+                        args.type = "*." + args.type.lstrip("*").lstrip(".")
+                    if args.R:
+                        fpaths += list(p.rglob(args.type))
+                    else:
+                        fpaths += only_files(p.glob(args.type))
+        else:
+            if "**" in i:
+                if i.startswith("**"):
+                    i = i.lstrip("*").lstrip("/") or "*"
+                    fpaths += list(Path().rglob(i))
+                else:
+                    if i.endswith("**") or i.endswith("**/"):
+                        i = i.rstrip("/").rstrip("*")
+                        fpaths += list(Path(i).rglob("*"))
+                    else:
+                        ps = i.split("/**/")
+                        assert (
+                            len(ps) == 2
+                        ), "Invalid pattern! Must sure only one double `*`."
+                        fpaths += list(Path(ps[0]).rglob(ps[1]))
+            else:
+                if i == "*" or i.startswith("*."):
+                    fpaths += only_files(Path().glob(i))
+                elif i.startswith("*/"):
+                    suffix = i.lstrip("*").lstrip("/") or "*"
+                    for j in Path().glob("*"):
+                        if j.is_file():
+                            fpaths.append(j)
+                        elif j.is_dir():
+                            fpaths += only_files(j.glob(suffix))
+                elif i.endswith("*/"):
+                    suffix = "*"
+                    i = i.rstrip("/").rstrip("*")
+                    ps = i.split("/*/")
+                    assert len(ps) < 3, "Too many `*`!"
+                    root = Path(ps[0])
+                    if len(ps) == 1:
+                        fpaths += only_files(root.glob(suffix))
+                    else:
+                        for j in root.glob("*"):
+                            j = j / ps[1]
+                            if j.is_dir():
+                                fpaths += only_files(j.glob(suffix))
+                else:
+                    ps = i.split("/*/")
+                    assert 3 > len(ps) > 1, "Invalid `*` pattern!"
+                    root = Path(ps[0])
+                    suffix = ps[-1]
+                    for j in root.glob("*"):
+                        if j.is_dir():
+                            fpaths += only_files(j.glob(suffix))
+    return fpaths
+
+
+def main():
     if not sys.argv[1:]:
-        print(__doc__.strip())
-        print("\nUsage:")
-        print("{}{} /path/to/file".format(" " * 4, sys.argv[0]))
+        print(__doc__)
         return
-    parser = ArgumentParser()
-    parser.add_argument(
-        "-R", "-r", action="store_true", help="whether to recursive"
-    )
-    parser.add_argument(
-        "-t", "--type", default="*", help="filter file type(Example: *.py)"
-    )
-    parser.add_argument(
-        "-d", "--dir", default=".", help="the directory path(default:.)"
-    )
-    args, unknown = parser.parse_known_args()
-    if args.R:
-        files = []
-        for r, ds, fs in os.walk(args.dir):
-            if is_hidden(r):
-                continue
-            for fn in fs:
-                if not is_hidden(fn) and is_required_file_type(fn, args.type):
-                    files.append(os.path.join(r, fn))
-    elif unknown:
-        files = [os.path.join(args.dir, f) for f in unknown]
+    args = parse_args()
+    files = get_filepaths(args)
     count_skip = count_rstrip = 0
     for fn in files:
         try:
@@ -82,6 +168,9 @@ def main():
         except ContentException as e:
             count_skip += 1
             print("{}: skip! {}".format(fn, e))
+        except UnicodeDecodeError as e:
+            count_skip += 1
+            print("{}: failed! {}".format(fn, e))
         else:
             count_rstrip += 1
             print("{}: rstriped.".format(fn))
@@ -90,6 +179,6 @@ def main():
 
 if __name__ == "__main__":
     if sys.version < "3":
-        os.system("python3 " + ' '.join(sys.argv))
+        os.system("python3 " + " ".join(sys.argv))
     else:
         main()

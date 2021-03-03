@@ -13,6 +13,7 @@ SOURCES = {
 DEFAULT = SOURCES["aliyun"]
 SOURCES["tx"] = SOURCES["tencent"]
 SOURCE_FILE = "/etc/apt/sources.list"
+RE_SOURCE = re.compile(r"https*://[^/]+/")
 
 
 def parse_argv(args):
@@ -39,8 +40,17 @@ def main(fname=SOURCE_FILE):
             msg = "Sources of `{}` already set to `{}`\nSkip."
             print(msg.format(fname, aliyuncs))
             return
-    # to be optimize: show current mirrors and ask to confirm
-    ss = re.sub(r"https*://[^/]+/", target + "/", s)
+    current_sources = list(set(RE_SOURCE.findall(s)))
+    should_confirm = all("ubuntu" in i for i in current_sources)
+    if not should_confirm:
+        if len(current_sources) == 1:
+            print("Current source is `{}`".format(current_sources[0].strip('/')))
+        else:
+            print("Current sources are:\n" + "\n    ".join(current_sources))
+        a = input("Do you want to replace to `{}`? [y/N] ".format(target))
+        if a.lower() != "y":
+            return
+    ss = RE_SOURCE.sub(target + "/", s)
     try:
         with open(fname, "w") as fp:
             fp.write(ss)
