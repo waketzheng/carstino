@@ -42,7 +42,7 @@ def main(fname=SOURCE_FILE):
             return
     current_sources = list(set(RE_SOURCE.findall(s)))
     should_confirm = all("ubuntu" in i for i in current_sources)
-    if not should_confirm:
+    if not should_confirm and '-y' not in sys.argv:
         if len(current_sources) == 1:
             print("Current source is `{}`".format(current_sources[0].strip('/')))
         else:
