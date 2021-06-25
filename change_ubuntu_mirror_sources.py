@@ -1,4 +1,13 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
+"""
+Change ubuntu mirrors. Support Python2.7 and Python3.5+
+
+Usage::
+    # ./change_ubuntu_mirror_sources.py
+    # ./change_ubuntu_mirror_sources.py tx
+    # ./change_ubuntu_mirror_sources.py qinghua
+"""
+
 import os
 import re
 import sys
@@ -7,6 +16,7 @@ SOURCES = {
     "163": "https://mirrors.163.com",
     "aliyun": "https://mirrors.aliyun.com",
     "qinghua": "https://mirrors.tuna.tsinghua.edu.cn",
+    "tx": "http://mirrors.tencentyun.com",
 }
 DEFAULT = SOURCES["aliyun"]
 SOURCE_FILE = "/etc/apt/sources.list"
@@ -38,15 +48,16 @@ def main(fname=SOURCE_FILE):
             print(msg.format(fname, aliyuncs))
             return
     current_sources = list(set(RE_SOURCE.findall(s)))
-    should_confirm = all("ubuntu" in i for i in current_sources)
-    if not should_confirm:
+    is_origin_mirrors = all("ubuntu" in i for i in current_sources)
+    if not is_origin_mirrors:
         if len(current_sources) == 1:
             print("Current source is `{}`".format(current_sources[0].strip('/')))
         else:
             print("Current sources are:\n" + "\n    ".join(current_sources))
-        a = input("Do you want to replace to `{}`? [y/N] ".format(target))
-        if a.lower() != "y":
-            return
+        if '-y' not in sys.argv:
+            a = input("Do you want to replace to `{}`? [y/N] ".format(target))
+            if a.lower() != "y":
+                return
     ss = RE_SOURCE.sub(target + "/", s)
     try:
         with open(fname, "w") as fp:

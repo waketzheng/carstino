@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 """
 This script is for pip source config.
-Worked both windows and linux, both python2.7 and python3.5+
+Worked both windows and linux, support python2.7 and python3.5+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Use:
     $ python pip_conf.py
-    $ python pip_conf.py -y -s douban
-    $ python pip_conf.py -y -s qinghua
-    $ python pip_conf.py -y -s aliyun
+    $ python pip_conf.py -s tx
+    $ python pip_conf.py -s aliyun
+    $ python pip_conf.py -s douban
+    $ python pip_conf.py -s qinghua
 """
 import os
 import re
@@ -34,6 +35,7 @@ SOURCES = {
     "aliyun": "mirrors.aliyun.com/pypi",
     "douban": "pypi.douban.com",
     "qinghua": "pypi.tuna.tsinghua.edu.cn",
+    "tx": "mirrors.tencentyun.com/pypi",
 }
 conf_cmd = "pip config set global.index-url https://{}/simple/"
 
@@ -42,6 +44,8 @@ def init_pip_conf(source=DEFAULT, replace=False):
     url = SOURCES.get(source, SOURCES[DEFAULT])
     if can_set_global():
         cmd = conf_cmd.format(url)
+        if source == 'tx':
+            cmd = cmd.replace('https', 'http')
         print("--> " + cmd)
         os.system(cmd)
         return
@@ -54,6 +58,8 @@ def init_pip_conf(source=DEFAULT, replace=False):
     if not os.path.exists(parent):
         os.mkdir(parent)
     text = TEMPLATE.format(url, url.split("/")[0])
+    if source == 'tx':
+        text = text.replace('https', 'http')
     if os.path.exists(conf_file):
         with open(conf_file) as fp:
             s = fp.read()

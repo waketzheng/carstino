@@ -6,17 +6,17 @@ And python3.6+ is required.
 """
 import os
 import re
+import sys
 from pathlib import Path
 
 FILES = ALIAS_FILE, *_ = [
     ".bash_aliases",
-    ".switch_source_pipenv.py",
     ".mg.py",
     ".vimrc",
     ".lint.sh",
 ]
 
-PACKAGES = "pipenv ipython django flake8 black isort mypy"
+PACKAGES = "ipython django flake8 black isort mypy autoflake"
 
 
 def get_cmd_result(cmd):
@@ -79,7 +79,9 @@ def main():
         repo = Path(".").resolve()
     for fn in FILES:
         os.system(f"cp {repo / fn} {home}")
-    vim_vue()
+    sys_argv = sys.argv[1:]
+    if '--vue' in sys_argv:
+        vim_vue()
     s = aliases_path.read_text()
     ss = re.sub(r'(rstrip|prettify)="(.*)"', rf'\1="{repo}/\1.py"', s)
     ss = re.sub(r'(httpa)="(.*)"', rf'\1="{repo}/\1.sh"', s)
@@ -101,10 +103,11 @@ def main():
         with rc.open("a") as fp:
             fp.write(f"[[ -f ~/{ALIAS_FILE} ]] && . ~/{ALIAS_FILE}")
     # change nvm node mirrors
-    nvm = "export NVM_NODEJS_ORG_MIRROR=https://npm.taobao.org/mirrors/node"
-    if nvm not in txt:
-        with rc.open("a") as fp:
-            fp.write(f"# For nvm\n{nvm}\n")
+    if '--nvm' in sys_argv:
+        nvm = "export NVM_NODEJS_ORG_MIRROR=https://npm.taobao.org/mirrors/node"
+        if nvm not in txt:
+            with rc.open("a") as fp:
+                fp.write(f"# For nvm\n{nvm}\n")
 
     # switch pip source to aliyun
     swith_pip_source = repo / "pip_conf.py"
