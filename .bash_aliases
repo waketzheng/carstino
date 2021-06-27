@@ -1,6 +1,7 @@
-# python django shortcut for `python manage.py` and its completion
+# Shortcuts for `python manage.py` and its completion
 alias mg='~/.mg.py'
 alias mgshell="mg shell"
+alias mgtest="mg test"
 alias mgrunserver="mg runserver 0:9000"
 alias mgmakemigrations="mg makemigrations"
 alias mgmigrate="mg migrate"
@@ -30,12 +31,6 @@ alias gitdiff="git diff"
 alias gitadd="git add"
 alias gitcheckout="git checkout"
 alias gitcommit="git commit"
-
-# python manage.py xxx
-alias mgshell="mg shell"
-alias mgrunserver="mg runserver 0:9000"
-alias mgmakemigrations="mg makemigrations"
-alias mgmigrate="mg migrate"
 
 # fabric
 alias fabpull='fab pull'
