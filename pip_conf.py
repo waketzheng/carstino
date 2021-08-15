@@ -11,8 +11,8 @@ Use:
     $ python pip_conf.py -s qinghua
 """
 import os
-import re
 import platform
+import re
 
 """
 A sample of the pip.conf/pip.ini:
@@ -35,8 +35,10 @@ SOURCES = {
     "aliyun": "mirrors.aliyun.com/pypi",
     "douban": "pypi.douban.com",
     "qinghua": "pypi.tuna.tsinghua.edu.cn",
-    "tx": "mirrors.tencentyun.com/pypi",
+    "tx": "mirrors.cloud.tencent.com/pypi",
+    "huawei": "repo.huaweicloud.com/repository/pypi",
 }
+SOURCES["tencent"] = SOURCES["tengxun"] = SOURCES["tx"]
 conf_cmd = "pip config set global.index-url https://{}/simple/"
 
 
@@ -44,8 +46,6 @@ def init_pip_conf(source=DEFAULT, replace=False):
     url = SOURCES.get(source, SOURCES[DEFAULT])
     if can_set_global():
         cmd = conf_cmd.format(url)
-        if source == 'tx':
-            cmd = cmd.replace('https', 'http')
         print("--> " + cmd)
         os.system(cmd)
         return
@@ -58,8 +58,6 @@ def init_pip_conf(source=DEFAULT, replace=False):
     if not os.path.exists(parent):
         os.mkdir(parent)
     text = TEMPLATE.format(url, url.split("/")[0])
-    if source == 'tx':
-        text = text.replace('https', 'http')
     if os.path.exists(conf_file):
         with open(conf_file) as fp:
             s = fp.read()
@@ -90,9 +88,7 @@ def main():
     from argparse import ArgumentParser
 
     parser = ArgumentParser()
-    parser.add_argument(
-        "-y", action="store_true", help="whether replace existing file"
-    )
+    parser.add_argument("-y", action="store_true", help="whether replace existing file")
     parser.add_argument(
         "-s",
         "--source",
