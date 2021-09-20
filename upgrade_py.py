@@ -6,7 +6,7 @@ And python2.7 or python3 is required.
 
 This script do the following steps:
     1. Download Python xz file from huaweicloud
-    2. unzip it to ~/softwares (if folder not found with auto create)
+    2. unzip it to ~/softwares (if folder does not exist will auto create)
     3. Run this command::
         ./configure --enable-optimizations --enable-loadable-sqlite-extensions\
                 && make && sudo make altinstall
@@ -21,7 +21,7 @@ try:
 except NameError:
     pass
 
-VERSION = "3.9.5"
+VERSION = "3.9.7"
 DOWNLOAD_URL = "https://mirrors.huaweicloud.com/python/{0}/Python-{0}.tar.xz"
 # ipython need sqlite3 enable to store history
 INSTALL = (
@@ -41,9 +41,9 @@ APPEND = "sudo apt install -y python3-dev"
 SHORTCUTS = {
     "3": VERSION,
     "39": VERSION,
-    "38": "3.8.10",
-    "37": "3.7.10",
-    "36": "3.6.13",
+    "38": "3.8.12",
+    "37": "3.7.12",
+    "36": "3.6.15",
 }
 
 
