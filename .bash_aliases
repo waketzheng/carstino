@@ -1,5 +1,12 @@
-# python django shortcut for `python manage.py` and its completion
+# Shortcuts for `python manage.py` and its completion
 alias mg='~/.mg.py'
+alias mgshell="mg shell"
+alias mgtest="mg test"
+alias mgrunserver="mg runserver 0:9000"
+alias mgmakemigrations="mg makemigrations"
+alias mgmigrate="mg migrate"
+alias mgcreatesuperuser="mg createsuperuser"
+alias mgcollectstatic='mg collectstatic'
 alias activate_completion="source /etc/bash_completion.d/django_manage_completion.bash"
 
 # python poetry
@@ -17,18 +24,13 @@ alias cl="clear"
 # Git
 alias gitpush="git push"
 alias gitpull="git pull"
+alias gittag="git tag"
 alias gitstatus="git status"
 alias gitlog="git log"
 alias gitdiff="git diff"
 alias gitadd="git add"
 alias gitcheckout="git checkout"
 alias gitcommit="git commit"
-
-# python manage.py xxx
-alias mgshell="mg shell"
-alias mgrunserver="mg runserver 0:9000"
-alias mgmakemigrations="mg makemigrations"
-alias mgmigrate="mg migrate"
 
 # fabric
 alias fabpull='fab pull'
@@ -40,6 +42,12 @@ alias t0="tmux a -t 0"
 alias t1="tmux a -t 1"
 alias t2="tmux a -t 2"
 alias t3="tmux a -t 3"
+alias t4="tmux a -t 4"
+alias t5="tmux a -t 5"
+alias tw="tmux select-window -t"
+alias ts="tmux switch -t"
+alias rw="tmux rename-window"
+alias rs="tmux rename-session"
 
 # For httpie
 alias httpa="~/archives/carstino/httpa.sh"

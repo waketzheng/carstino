@@ -16,6 +16,8 @@ SOURCES = {
     "163": "https://mirrors.163.com",
     "aliyun": "https://mirrors.aliyun.com",
     "qinghua": "https://mirrors.tuna.tsinghua.edu.cn",
+    "huawei": "http://repo.huaweicloud.com",
+    "tencent": "https://mirrors.cloud.tencent.com",
     "tx": "http://mirrors.tencentyun.com",
 }
 DEFAULT = SOURCES["aliyun"]

@@ -25,7 +25,7 @@ VERSION = "3.9.7"
 DOWNLOAD_URL = "https://mirrors.huaweicloud.com/python/{0}/Python-{0}.tar.xz"
 # ipython need sqlite3 enable to store history
 INSTALL = (
-    "./configure --enable-optimizations  --enable-loadable-sqlite-extensions"
+    "./configure --enable-optimizations  --enable-loadable-sqlite-extensions {}"
     " && make && sudo make {}install"
 )
 DEFAULT_DIR = "~/softwares"
@@ -143,7 +143,7 @@ def home():
         return pwd.getpwuid(os.getuid()).pw_dir
 
 
-def install_py(folder, url, alt):
+def install_py(folder, url, alt, conf=""):
     commands = []
     if not folder.startswith("/"):
         folder = folder.replace("~", home())
@@ -153,7 +153,6 @@ def install_py(folder, url, alt):
     fpath = "{folder}/{fname}".format(folder=folder, fname=fname)
     cd_folder = "cd " + folder
     if not os.path.exists(fpath):
-        # TODO: check md5 of exist file
         commands.append(cd_folder)
         commands.append("wget " + url)
     sub_folder = fname.split(".tar")[0]
@@ -164,16 +163,23 @@ def install_py(folder, url, alt):
         commands.append("cd " + sub_folder)
     else:
         commands.append("cd " + py_folder)
-    install = INSTALL.format("alt" if alt else "")
+    install = INSTALL.format(conf, "alt" if alt else "")
     return commands + install.split(" && ")
+
 
 def is_ubuntu_sys():
     r = silently_run("which apt-get")
-    return r and 'not found' not in r
+    return r and "not found" not in r
 
 
 def gen_cmds():
     args = validated_args()
+    is_mac = sys.platform == "darwin"
+    if is_mac:
+        print("For MacOS, try this:\n")
+        print("    brew update&&brew upgrade pyenv&&brew install " + args.version)
+        print("\nSee more at https://github.com/pyenv/pyenv\n")
+        sys.exit()
     cmds = []
     is_ubuntu = is_ubuntu_sys()
     if is_ubuntu:
@@ -203,7 +209,7 @@ def main():
         if os.system("sudo echo going on ............") != 0:
             sys.exit()
     start = time.time()
-    if run_and_echo('&&'.join(cmds)) != 0:
+    if run_and_echo("&&".join(cmds)) != 0:
         sys.exit()
     print("Done! Cost: " + friendly_time(int(time.time() - start)))
 
