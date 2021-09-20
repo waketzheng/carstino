@@ -47,7 +47,7 @@ SOURCES = {
 }
 SOURCES["tencent"] = SOURCES["tengxun"] = SOURCES["tx"]
 SOURCES["ali"] = SOURCES["aliyun"]
-conf_cmd = "pip config set global.index-url https://{}/simple/"
+CONF_CMD = "pip config set global.index-url https://{}/simple/"
 
 
 def is_pingable(domain):
@@ -67,17 +67,20 @@ def is_ali_cloud_server():
 
 
 def init_pip_conf(
-    source=DEFAULT, replace=False, root=False, force=False, template=TEMPLATE
+    source=DEFAULT, replace=False, root=False, force=False,
+    template=TEMPLATE, conf_cmd=CONF_CMD
 ):
     if not force:
         if "ali" in source:
             if is_ali_cloud_server():
                 source = "ali_ecs"
                 template = template.replace("https", "http")
+                conf_cmd = conf_cmd.replace("https", "http")
         elif "tx" in source or "ten" in source:
             if is_tx_cloud_server():
                 source = "tx_ecs"
                 template = template.replace("https", "http")
+                conf_cmd = conf_cmd.replace("https", "http")
     url = SOURCES.get(source, SOURCES[DEFAULT])
     is_windows = platform.system() == "Windows"
     if (not root or is_windows) and can_set_global():
