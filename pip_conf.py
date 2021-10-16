@@ -1,17 +1,19 @@
 #!/usr/bin/env python
 """
 This script is for pip source config.
-Worked both windows and linux, support python2.7 and python3.5+
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Use:
-    $ python pip_conf.py  # default to tencent source
+Worked both Windows and Linux/Mac, support python2.7 and python3.5+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Usage:
+    $ ./pip_conf.py  # default to tencent source
 
 Or:
-    $ python pip_conf.py -s tx
-    $ python pip_conf.py -s aliyun
-    $ python pip_conf.py -s douban
-    $ python pip_conf.py -s qinghua
-    $ sudo python pip_conf.py -r  # Set conf file to /etc
+    $ python pip_conf.py tx
+    $ python pip_conf.py aliyun
+    $ python pip_conf.py douban
+    $ python pip_conf.py huawei
+    $ python pip_conf.py qinghua
+
+    $ sudo python pip_conf.py --etc  # Set conf file to /etc
 """
 import os
 import platform
@@ -67,8 +69,12 @@ def is_ali_cloud_server():
 
 
 def init_pip_conf(
-    source=DEFAULT, replace=False, root=False, force=False,
-    template=TEMPLATE, conf_cmd=CONF_CMD
+    source=DEFAULT,
+    replace=False,
+    root=False,
+    force=False,
+    template=TEMPLATE,
+    conf_cmd=CONF_CMD,
 ):
     if not force:
         if "ali" in source:
@@ -131,17 +137,15 @@ def main():
     from argparse import ArgumentParser
 
     parser = ArgumentParser()
+    source_help = "the source of pip, ali/douban/huawei/qinghua or tx(default)"
+    parser.add_argument("name", nargs="?", default="", help=source_help)
+    # Be compatible with old version
+    parser.add_argument("-s", "--source", default=DEFAULT, help=source_help)
     parser.add_argument("-y", action="store_true", help="whether replace existing file")
-    parser.add_argument("-r", action="store_true", help="Set conf file to /etc")
+    parser.add_argument("--etc", action="store_true", help="Set conf file to /etc")
     parser.add_argument("-f", action="store_true", help="Force to skip ecs cloud check")
-    parser.add_argument(
-        "-s",
-        "--source",
-        default=DEFAULT,
-        help="the source of pip, douban/qinghua/aliyun or tx(default)",
-    )
     args = parser.parse_args()
-    init_pip_conf(args.source, args.y, args.r, args.f)
+    init_pip_conf(args.name or args.source, args.y, args.etc, args.f)
 
 
 if __name__ == "__main__":
