@@ -128,6 +128,8 @@ def can_set_global():
     with os.popen("pip --version") as p:
         s = p.read()
     version = re.search(r"^pip (\d+)\.(\d+).(\d+)", s)
+    if not version:
+        version = re.search(r"^pip (\d+)\.(\d+)", s)
     if version and [int(i) for i in version.groups()] >= [10, 1, 0]:
         return True
     return False
