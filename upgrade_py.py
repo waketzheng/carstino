@@ -21,7 +21,7 @@ try:
 except NameError:
     pass
 
-VERSION = "3.9.7"
+VERSION = "3.10.0"
 DOWNLOAD_URL = "https://mirrors.huaweicloud.com/python/{0}/Python-{0}.tar.xz"
 # ipython need sqlite3 enable to store history
 INSTALL = (
@@ -40,7 +40,8 @@ APPEND = "sudo apt install -y python3-dev"
 # To install python2, just run `sudo apt install python2`
 SHORTCUTS = {
     "3": VERSION,
-    "39": VERSION,
+    "310": VERSION,
+    "39": "3.9.7",
     "38": "3.8.12",
     "37": "3.7.12",
     "36": "3.6.15",
