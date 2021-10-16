@@ -71,7 +71,7 @@ def is_ali_cloud_server():
 def init_pip_conf(
     source=DEFAULT,
     replace=False,
-    root=False,
+    at_etc=False,
     force=False,
     template=TEMPLATE,
     conf_cmd=CONF_CMD,
@@ -89,7 +89,7 @@ def init_pip_conf(
                 conf_cmd = conf_cmd.replace("https", "http")
     url = SOURCES.get(source, SOURCES[DEFAULT])
     is_windows = platform.system() == "Windows"
-    if (not root or is_windows) and can_set_global():
+    if (not at_etc or is_windows) and can_set_global():
         cmd = conf_cmd.format(url)
         print("--> " + cmd)
         os.system(cmd)
@@ -98,7 +98,7 @@ def init_pip_conf(
         _pip_conf = ("pip", "pip.ini")
         conf_file = os.path.join(os.path.expanduser("~"), *_pip_conf)
     else:
-        if root:
+        if at_etc:
             conf_file = os.path.join("/etc", "pip.conf")
         else:
             _pip_conf = (".pip", "pip.conf")
