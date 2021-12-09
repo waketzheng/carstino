@@ -9,7 +9,7 @@ echo "Updating Repo..."
 sudo apt update
 sudo apt-get install -y build-essential libssl-dev
 
-echo "---- Install rabbitmq/postgresql/redis/sass/pip/nodejs/npm"
+echo "---- Install rabbitmq/postgresql/redis/pip"
 sudo apt install -y rabbitmq-server  # for Celery
 sudo apt install -y postgresql
 sudo apt install -y redis-server
@@ -33,28 +33,8 @@ sudo systemctl enable rabbitmq-server || (sudo chkconfig --add rabbitmq-server &
 echo "---- Install python development tools"
 sudo apt install -y python3-dev bzip2 libbz2-dev libxml2-dev libxslt1-dev zlib1g-dev libffi-dev
 
-echo "---- Optional: nodejs/npm/yarn/vue for frontend"
-sudo apt install -y nodejs
-sudo apt install -y npm
-sudo npm i -g npm --registry https://registry.npm.taobao.org
-npm config set registry https://registry.npm.taobao.org
-sudo npm i -g yarn --registry https://registry.npm.taobao.org
-yarn config set registry https://registry.npm.taobao.org -g
-yarn config set sass_binary_site http://cdn.npm.taobao.org/dist/node-sass -g
-yarn global add @vue/cli
-
 echo "---- Optional: install tree tmux, etc."
 sudo apt install -y tree tmux httpie expect
-
-# Uncomment the following several lines to install nvm
-#echo "---- Optional install nvm to manage nodejs version"
-#git clone https://gitee.com/waketzheng/nvm.git ~/.nvm && cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`
-#./install.sh
-#source ./nvm.sh
-#cd -
-#export NVM_NODEJS_ORG_MIRROR=http://npm.taobao.org/mirrors/node
-#nvm install --lts
-
 
 # https://stackoverflow.com/questions/2829613/how-do-you-tell-if-a-string-contains-another-string-in-posix-sh
 # contains(string, substring)
@@ -73,10 +53,6 @@ contains() {
 }
 contains $* "--upgrade-py" && echo "---- Optional: install python3.8" && ./upgrade_py.py && python3.8 -m pip install --user -U pip -i https://pypi.tuna.tsinghua.edu.cn/simple && export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
 
-
-echo "---- Init python development environment."
-./init_my_dev.py
-
 echo "---- Optional: install zsh"
 sudo apt install -y zsh
 sudo python -c "fn='/etc/pam.d/chsh';a,b='required','sufficient';fp=open(fn);s=fp.read();fp.close();fp=open(fn,'w');fp.write(s.replace(a,b));fp.close()"
@@ -90,6 +66,10 @@ sh -c 'echo "plugins=(git pip python pipenv)" >>  $HOME/.zshrc'
 sh -c 'echo "[ -s \$ZSH/oh-my-zsh.sh ] && source \$ZSH/oh-my-zsh.sh" >>  $HOME/.zshrc'
 
 export REMOTE="https://gitee.com/mirrors/oh-my-zsh.git" && sh -c "$(curl -fsSL https://gitee.com/mirrors/oh-my-zsh/raw/master/tools/install.sh)" --keep-zshrc
+
+
+echo "---- Init python development environment."
+./init_my_dev.py
 
 # ---- For frontend development
 echo "---- nodejs/npm/yarn/vue for frontend"

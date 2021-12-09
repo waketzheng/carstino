@@ -4,8 +4,8 @@ Configure python development environment.
 Only work for linux that use bash!
 And python3.6+ is required.
 """
-import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -16,19 +16,24 @@ FILES = ALIAS_FILE, *_ = [
     ".lint.sh",
 ]
 
-PACKAGES = "ipython django flake8 black isort mypy autoflake"
+PACKAGES = "ipython flake8 black isort mypy autoflake"
 
 
-def get_cmd_result(cmd):
-    with os.popen(cmd) as p:
-        return p.read().strip()
+def get_cmd_result(cmd: str) -> str:
+    ret = subprocess.run(cmd, shell=True, capture_output=True)
+    return ret.stdout.decode().strip()
 
 
-def get_shell():
+def run_cmd(command: str) -> int:
+    # return os.system(command)
+    return subprocess.run(command, shell=True).returncode
+
+
+def get_shell() -> str:
     return Path(get_cmd_result("echo $SHELL")).name
 
 
-def set_completions(home, repo, aliases_path):
+def set_completions(home: Path, repo: Path, aliases_path: Path) -> Path:
     # auto complete for command `mg`
     shell = get_shell()
     fname = f".mg_completion.{shell}"
@@ -40,30 +45,44 @@ def set_completions(home, repo, aliases_path):
         if not target.exists():
             if sys_completion_path.parent.exists():
                 if not sys_completion_path.exists():
-                    # zsh used, no need now@2020-05-02
-                    # os.system(f"sudo cp {fpath} {sys_completion_path}")
-                    pass
+                    if shell == "bash":
+                        run_cmd(f"sudo cp {fpath} {sys_completion_path}")
+                        a = f"source {sys_completion_path}"
+                else:
+                    a = f"source {sys_completion_path}"
             else:
-                os.system(f"cp {fpath} {target}")
-        # append mg and git completion activate alias to aliases file
-        if target.exists():
+                if shell == "bash":
+                    run_cmd(f"cp {fpath} {target}")
+        else:
             a = f"source {target}"
-        elif sys_completion_path.exists():
-            a = f"source {sys_completion_path}"
     git_completion_path = Path("/etc/bash_completion.d/git-completion.bash")
     if git_completion_path.exists():
         a += f"&&source {git_completion_path}"
     if a and a not in aliases_path.read_text():
-        os.system(f"echo 'alias activate_completion=\"{a}\"'>>{aliases_path}")
+        # append mg and git completion activate alias to aliases file
+        run_cmd(f"echo 'alias activate_completion=\"{a}\"'>>{aliases_path}")
     return target
 
 
-def vim_vue():
+def vim_vue() -> None:
     folder = "~/.vim/pack/plugins/start"
     repo_url = "https://github.com/posva/vim-vue.git"
     cmd = "mkdir -p {0} && git clone {1} {0}/vim-vue".format(folder, repo_url)
     print("-->", cmd)
-    os.system(cmd)
+    run_cmd(cmd)
+
+
+def configure_aliases(rc: Path) -> None:
+    txt = rc.read_text()
+    if ALIAS_FILE not in txt:
+        with rc.open("a") as fp:
+            fp.write(f"[[ -f ~/{ALIAS_FILE} ]] && . ~/{ALIAS_FILE}")
+    # change nvm node mirrors
+    if "--nvm" in sys.argv:
+        nvm = "export NVM_NODEJS_ORG_MIRROR=https://npm.taobao.org/mirrors/node"
+        if nvm not in txt:
+            with rc.open("a") as fp:
+                fp.write(f"# For nvm\n{nvm}\n")
 
 
 def main():
@@ -78,86 +97,67 @@ def main():
     except NameError:
         repo = Path(".").resolve()
     for fn in FILES:
-        os.system(f"cp {repo / fn} {home}")
+        run_cmd(f"cp {repo / fn} {home}")
     sys_argv = sys.argv[1:]
-    if '--vue' in sys_argv:
+    if "--vue" in sys_argv:
         vim_vue()
     s = aliases_path.read_text()
     ss = re.sub(r'(rstrip|prettify)="(.*)"', rf'\1="{repo}/\1.py"', s)
     ss = re.sub(r'(httpa)="(.*)"', rf'\1="{repo}/\1.sh"', s)
-    if os.system("which vi") and "alias vi=" not in get_cmd_result("alias"):
+    if run_cmd("which vi") and "alias vi=" not in get_cmd_result("alias"):
         ss += "alias vi=vim\n"
     if s != ss:
         aliases_path.write_text(ss)
     mg_completion_path = set_completions(home, repo, aliases_path)
     # activate aliases at .bashrc or .zshrc ...
     names = [".bashrc", ".zshrc", ".profile", ".zprofile", ".bash_profile"]
+    if get_shell() == "zsh":
+        names = names[1:] + names[:1]
     for name in names:
         rc = home / name
         if rc.exists():
             break
     else:
         raise Exception(f"Startup file not found, including {names!r}")
-    txt = rc.read_text()
-    if ALIAS_FILE not in txt:
-        with rc.open("a") as fp:
-            fp.write(f"[[ -f ~/{ALIAS_FILE} ]] && . ~/{ALIAS_FILE}")
-    # change nvm node mirrors
-    if '--nvm' in sys_argv:
-        nvm = "export NVM_NODEJS_ORG_MIRROR=https://npm.taobao.org/mirrors/node"
-        if nvm not in txt:
-            with rc.open("a") as fp:
-                fp.write(f"# For nvm\n{nvm}\n")
+    configure_aliases(rc)
 
     # switch pip source to aliyun
     swith_pip_source = repo / "pip_conf.py"
-    os.system(f"{swith_pip_source}")
-    if not Path("/home/root/.pip/pip.conf").exists():
-        os.system("sudo cp -r ~/.pip /home/root/")
-    # git push auto fill in username and password after input once
-    os.system("git config --global credential.helper store")
+    run_cmd(f"{swith_pip_source}")
     # Install some useful python modules
-    if os.system(f"python3 -m pip install --upgrade --user {PACKAGES}") != 0:
-        if os.system(f"sudo pip3 install -U {PACKAGES}") != 0:
+    if run_cmd(f"python3 -m pip install --upgrade --user {PACKAGES}") != 0:
+        if run_cmd(f"sudo pip3 install -U {PACKAGES}") != 0:
             print("Please install python3-pip and then rerun this script.")
             return
-    # Commented the following 5 lines because pipenv will work after reboot
-    # # make sure pipenv work
-    # if os.system("pipenv --version") != 0:
-    #     with os.popen("which python3") as p:
-    #         cmd = f"{p.read()} -m pipenv"
-    #     os.system(f"echo 'alias pipenv=\"{cmd}\"'>>{aliases_path}")
-
-    # add pipenv auto complete to user bashrc/profile/zshrc, and avoid pyc
-    a = 'eval "$(pipenv --completion)"'
+    # avoid pyc
     b = "export PYTHONDONTWRITEBYTECODE=1"
     ps = home.glob(".*profile")
     for p in ps:
         if p.name not in (".profile", ".bash_profile"):
             continue
         s = p.read_text()
-        if a in s and b in s:
-            print(f"`{a}` and `{b}` already in {p}")
+        if b in s:
+            print(f"`{b}` already in {p}")
             continue
-        for i in (a, b):
+        for i in (b,):
             if i in s:
                 print(f"`{i}` already in {p}")
             else:
-                os.system(f"echo >> {p}")  # add empty line
+                run_cmd(f"echo >> {p}")  # add empty line
                 cmd = f"echo '{i}'>>{p}"
-                os.system(cmd)
+                run_cmd(cmd)
                 print(cmd)
-        os.system(f"bash {p}")
+        run_cmd(f"bash {p}")
         print(f"`{p}` activated")
         break
     else:
         p = rc
-        os.system(f". {rc}")
+        run_cmd(f". {rc}")
         print(f"`{rc}` activated")
     if mg_completion_path.exists():
         if mg_completion_path.name not in p.read_text():
             a = f"[[ -f {mg_completion_path} ]] && . {mg_completion_path}"
-            os.system(f"echo -e '\n# django manage completion\n{a}'>>{p}")
+            run_cmd(f"echo -e '\n# django manage completion\n{a}'>>{p}")
     print("Done!")
 
 
