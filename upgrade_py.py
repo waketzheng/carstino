@@ -21,13 +21,12 @@ try:
 except NameError:
     pass
 
-VERSION = "3.10.0"
+VERSION = "3.10.1"
 DOWNLOAD_URL = "https://mirrors.huaweicloud.com/python/{0}/Python-{0}.tar.xz"
 # ipython need sqlite3 enable to store history
-INSTALL = (
-    "./configure --enable-optimizations  --enable-loadable-sqlite-extensions {}"
-    " && make && sudo make {}install"
-)
+ENABLE_OPTIMIZE = "--enable-optimizations"
+ENABLE_SQLITE = "--enable-loadable-sqlite-extensions"
+INSTALL = "./configure {} && make && sudo make {}install"
 DEFAULT_DIR = "~/softwares"
 
 # Only for ubuntu
@@ -41,7 +40,7 @@ APPEND = "sudo apt install -y python3-dev"
 SHORTCUTS = {
     "3": VERSION,
     "310": VERSION,
-    "39": "3.9.7",
+    "39": "3.9.9",
     "38": "3.8.12",
     "37": "3.7.12",
     "36": "3.6.15",
@@ -89,6 +88,11 @@ def parse_args():
         "--force",
         action="store_true",
         help="Force update (example:3.8.1 -> 3.8.6)",
+    )
+    parser.add_argument(
+        "--no-sqlite",
+        action="store_true",
+        help="Do not enable sqlite option",
     )
     parser.add_argument(
         "-n",
@@ -192,7 +196,11 @@ def gen_cmds():
             if input(tip).lower() != "n":
                 cmds.append(dep)
     url = DOWNLOAD_URL.format(args.version)
-    cmds.extend(install_py(args.dir, url, args.alt))
+    conf = ENABLE_OPTIMIZE + " "
+    if not args.no_sqlite:
+        conf += ENABLE_SQLITE + " "
+    conf += args.dir
+    cmds.extend(install_py(conf, url, args.alt))
     if is_ubuntu:
         cmds.append(APPEND)
     return cmds
