@@ -8,15 +8,18 @@ Usage:
 
 Or:
     $ python pip_conf.py tx
+    $ python pip_conf.py huawei
     $ python pip_conf.py aliyun
     $ python pip_conf.py douban
-    $ python pip_conf.py huawei
     $ python pip_conf.py qinghua
+
+    $ python pip_conf.py --list  # show choices
 
     $ sudo python pip_conf.py --etc  # Set conf file to /etc
 """
 import os
 import platform
+import pprint
 import re
 import socket
 
@@ -143,11 +146,18 @@ def main():
     parser.add_argument("name", nargs="?", default="", help=source_help)
     # Be compatible with old version
     parser.add_argument("-s", "--source", default=DEFAULT, help=source_help)
+    parser.add_argument(
+        "-l", "--list", action="store_true", help="Show available mirrors"
+    )
     parser.add_argument("-y", action="store_true", help="whether replace existing file")
     parser.add_argument("--etc", action="store_true", help="Set conf file to /etc")
     parser.add_argument("-f", action="store_true", help="Force to skip ecs cloud check")
     args = parser.parse_args()
-    init_pip_conf(args.name or args.source, args.y, args.etc, args.f)
+    if args.list:
+        print("There are several mirrors that can be used for pip/poetry:")
+        pprint.pprint(SOURCES)
+    else:
+        init_pip_conf(args.name or args.source, args.y, args.etc, args.f)
 
 
 if __name__ == "__main__":

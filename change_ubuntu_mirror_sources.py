@@ -6,23 +6,31 @@ Usage::
     # ./change_ubuntu_mirror_sources.py
     # ./change_ubuntu_mirror_sources.py tx
     # ./change_ubuntu_mirror_sources.py qinghua
+    # ./change_ubuntu_mirror_sources.py --list
 """
 
 import os
+import pprint
 import re
 import sys
 
 SOURCES = {
     "163": "https://mirrors.163.com",
     "aliyun": "https://mirrors.aliyun.com",
+    "huawei": "https://repo.huaweicloud.com",
     "qinghua": "https://mirrors.tuna.tsinghua.edu.cn",
-    "huawei": "http://repo.huaweicloud.com",
     "tencent": "https://mirrors.cloud.tencent.com",
     "tx": "http://mirrors.tencentyun.com",
 }
-DEFAULT = SOURCES["aliyun"]
+_default = "tencent"
+DEFAULT = SOURCES[_default]
 SOURCE_FILE = "/etc/apt/sources.list"
 RE_SOURCE = re.compile(r"https*://[^/]+/")
+
+try:
+    input = raw_input  # type:ignore
+except NameError:
+    pass
 
 
 def parse_argv(args):
@@ -35,8 +43,22 @@ def parse_argv(args):
     return DEFAULT
 
 
+def show_choices():
+    print("There are several mirrors can be used for ubuntu:")
+    pprint.pprint(SOURCES)
+
+
 def main(fname=SOURCE_FILE):
-    target = parse_argv(sys.argv[1:]).rstrip("/")
+    args = sys.argv[1:]
+    if "-l" in args or "--list" in args:
+        show_choices()
+        sys.exit()
+    if "-h" in args or "--help" in args:
+        show_choices()
+        print(f"\nThis script is to modify mirrors url in {SOURCE_FILE}\n\nUsage::")
+        print(f"    $ ./{sys.argv[0]} {_default}")
+        sys.exit()
+    target = parse_argv(args).rstrip("/")
     with open(fname) as fp:
         s = fp.read()
     if target in s:
@@ -53,10 +75,10 @@ def main(fname=SOURCE_FILE):
     is_origin_mirrors = all("ubuntu" in i for i in current_sources)
     if not is_origin_mirrors:
         if len(current_sources) == 1:
-            print("Current source is `{}`".format(current_sources[0].strip('/')))
+            print("Current source is `{}`".format(current_sources[0].strip("/")))
         else:
             print("Current sources are:\n" + "\n    ".join(current_sources))
-        if '-y' not in sys.argv:
+        if "-y" not in sys.argv:
             a = input("Do you want to replace to `{}`? [y/N] ".format(target))
             if a.lower() != "y":
                 return

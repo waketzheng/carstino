@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Install latest version Python.
-Only work for linux!
+Only work for Linux!
 And python2.7 or python3 is required.
 
 This script do the following steps:
@@ -21,7 +21,7 @@ try:
 except NameError:
     pass
 
-VERSION = "3.10.1"
+VERSION = "3.10.2"
 DOWNLOAD_URL = "https://mirrors.huaweicloud.com/python/{0}/Python-{0}.tar.xz"
 # ipython need sqlite3 enable to store history
 ENABLE_OPTIMIZE = "--enable-optimizations"
@@ -40,7 +40,7 @@ APPEND = "sudo apt install -y python3-dev"
 SHORTCUTS = {
     "3": VERSION,
     "310": VERSION,
-    "39": "3.9.9",
+    "39": "3.9.10",
     "38": "3.8.12",
     "37": "3.7.12",
     "36": "3.6.15",

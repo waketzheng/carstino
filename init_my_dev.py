@@ -76,13 +76,13 @@ def configure_aliases(rc: Path) -> None:
     txt = rc.read_text()
     if ALIAS_FILE not in txt:
         with rc.open("a") as fp:
-            fp.write(f"[[ -f ~/{ALIAS_FILE} ]] && . ~/{ALIAS_FILE}")
+            fp.write(f"\n[[ -f ~/{ALIAS_FILE} ]] && . ~/{ALIAS_FILE}")
     # change nvm node mirrors
     if "--nvm" in sys.argv:
-        nvm = "export NVM_NODEJS_ORG_MIRROR=https://npm.taobao.org/mirrors/node"
+        nvm = "export NVM_NODEJS_ORG_MIRROR=https://repo.huaweicloud.com/nodejs/"
         if nvm not in txt:
             with rc.open("a") as fp:
-                fp.write(f"# For nvm\n{nvm}\n")
+                fp.write(f"\n# For nvm\n{nvm}\n")
 
 
 def main():

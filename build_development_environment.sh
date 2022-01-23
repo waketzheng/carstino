@@ -51,7 +51,7 @@ contains() {
         return 1    # $substring is not in $string
     fi
 }
-contains $* "--upgrade-py" && echo "---- Optional: install python3.8" && ./upgrade_py.py && python3.8 -m pip install --user -U pip -i https://pypi.tuna.tsinghua.edu.cn/simple && export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
+contains $* "--upgrade-py" && echo "---- Optional: install python3.10" && ./upgrade_py.py && python3.10 -m pip install --user -U pip -i https://pypi.tuna.tsinghua.edu.cn/simple && python3.10 -m ensurepip && export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
 
 echo "---- Optional: install zsh"
 sudo apt install -y zsh
@@ -71,25 +71,8 @@ export REMOTE="https://gitee.com/mirrors/oh-my-zsh.git" && sh -c "$(curl -fsSL h
 echo "---- Init python development environment."
 ./init_my_dev.py
 
-# ---- For frontend development
-echo "---- nodejs/npm/yarn/vue for frontend"
-sudo apt install -y nodejs
-sudo apt install -y npm
-sudo npm i -g npm --registry https://registry.npm.taobao.org
-sudo npm i -g yarn --registry https://registry.npm.taobao.org
-yarn config set registry https://registry.npm.taobao.org -g
-yarn config set sass_binary_site http://cdn.npm.taobao.org/dist/node-sass -g
-yarn global add @vue/cli
-
-echo "---- Optional install nvm to manage nodejs version"
-git clone https://gitee.com/waketzheng/nvm.git ~/.nvm && cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`
-./install.sh
-source ./nvm.sh
-cd -
-export NVM_NODEJS_ORG_MIRROR=http://npm.taobao.org/mirrors/node
-nvm install --lts
-npm config set registry https://registry.npm.taobao.org
-# ---- End For
+echo "If you want to configure frontend development evironment, do this:"
+echo "    $ ./frontend_conf.sh"
 
 # Count cost seconds
 endtime=`date +'%Y-%m-%d %H:%M:%S'`
