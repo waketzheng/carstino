@@ -71,6 +71,21 @@ def is_ali_cloud_server():
     return is_pingable("mirrors.cloud.aliyuncs.com")
 
 
+def config_by_cmd(url, conf_cmd=None):
+    if conf_cmd is None:
+        conf_cmd = CONF_CMD
+    if url.startswith("http"):
+        cmd = conf_cmd.split("http")[0] + url
+    else:
+        cmd = conf_cmd.format(url)
+    if "https" not in cmd:
+        print(f"{cmd = }")
+        host = cmd.split("://", 1)[1].split("/", 1)[0]
+        cmd += " && pip config set install.trusted-host " + host
+    print("--> " + cmd)
+    os.system(cmd)
+
+
 def init_pip_conf(
     source=DEFAULT,
     replace=False,
@@ -90,12 +105,14 @@ def init_pip_conf(
                 source = "tx_ecs"
                 template = template.replace("https", "http")
                 conf_cmd = conf_cmd.replace("https", "http")
-    url = SOURCES.get(source, SOURCES[DEFAULT])
+    is_raw_url = source.startswith("http")
+    if is_raw_url:
+        url = source
+    else:
+        url = SOURCES.get(source, SOURCES[DEFAULT])
     is_windows = platform.system() == "Windows"
     if (not at_etc or is_windows) and can_set_global():
-        cmd = conf_cmd.format(url)
-        print("--> " + cmd)
-        os.system(cmd)
+        config_by_cmd(url, conf_cmd)
         return
     if is_windows:
         _pip_conf = ("pip", "pip.ini")
@@ -109,6 +126,8 @@ def init_pip_conf(
     parent = os.path.dirname(conf_file)
     if not os.path.exists(parent):
         os.mkdir(parent)
+    if is_raw_url:
+        url = url.split("://")[-1].split("/simple")[0]
     text = template.format(url, url.split("/")[0])
     if os.path.exists(conf_file):
         with open(conf_file) as fp:
