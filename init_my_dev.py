@@ -25,7 +25,6 @@ def get_cmd_result(cmd: str) -> str:
 
 
 def run_cmd(command: str) -> int:
-    # return os.system(command)
     return subprocess.run(command, shell=True).returncode
 
 
@@ -64,14 +63,6 @@ def set_completions(home: Path, repo: Path, aliases_path: Path) -> Path:
     return target
 
 
-def vim_vue() -> None:
-    folder = "~/.vim/pack/plugins/start"
-    repo_url = "https://github.com/posva/vim-vue.git"
-    cmd = "mkdir -p {0} && git clone {1} {0}/vim-vue".format(folder, repo_url)
-    print("-->", cmd)
-    run_cmd(cmd)
-
-
 def configure_aliases(rc: Path) -> None:
     txt = rc.read_text()
     if ALIAS_FILE not in txt:
@@ -98,9 +89,6 @@ def main():
         repo = Path(".").resolve()
     for fn in FILES:
         run_cmd(f"cp {repo / fn} {home}")
-    sys_argv = sys.argv[1:]
-    if "--vue" in sys_argv:
-        vim_vue()
     s = aliases_path.read_text()
     ss = re.sub(r'(rstrip|prettify)="(.*)"', rf'\1="{repo}/\1.py"', s)
     ss = re.sub(r'(httpa)="(.*)"', rf'\1="{repo}/\1.sh"', s)

@@ -79,7 +79,7 @@ def config_by_cmd(url, conf_cmd=None):
     else:
         cmd = conf_cmd.format(url)
     if "https" not in cmd:
-        print(f"{cmd = }")
+        print("cmd = {}".format(repr(cmd)))
         host = cmd.split("://", 1)[1].split("/", 1)[0]
         cmd += " && pip config set install.trusted-host " + host
     print("--> " + cmd)

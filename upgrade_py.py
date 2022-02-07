@@ -129,9 +129,9 @@ def validated_args():
                 print("Exit! " + tip)
                 sys.exit()
             if can_upgrade:
-                tip += "Do your want to upgrade to {}? [y/N] ".format(version)
+                tip += "Do you want to upgrade to {}? [y/N] ".format(version)
             else:
-                tip += "Do your want to reinstall? [y/N] "
+                tip += "Do you want to reinstall? [y/N] "
             if input(tip).strip().lower() != "y":
                 sys.exit()
     # if system python is py3, replace it, else `make altinstall`
