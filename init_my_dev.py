@@ -111,7 +111,15 @@ def main():
 
     # switch pip source to aliyun
     swith_pip_source = repo / "pip_conf.py"
-    run_cmd(f"{swith_pip_source}")
+    p = Path.home().joinpath(".config/pip/pip.conf")
+    if p.exists():
+        print("pip source already config as follows:\n\n")
+        print(p.read_bytes().decode())
+        tip = f"\nDo you want to rerun ./{swith_pip_source.name}? [y/N] "
+        if input(tip).lower() == "y":
+            run_cmd(f"{swith_pip_source}")
+    else:
+        run_cmd(f"{swith_pip_source}")
     # Install some useful python modules
     if run_cmd(f"python3 -m pip install --upgrade --user {PACKAGES}") != 0:
         if run_cmd(f"sudo pip3 install -U {PACKAGES}") != 0:
