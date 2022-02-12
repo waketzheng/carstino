@@ -32,6 +32,34 @@ def get_shell() -> str:
     return Path(get_cmd_result("echo $SHELL")).name
 
 
+def set_alias_for_git(home: Path) -> None:
+    config = home / ".gitconfig"
+    if not config.exists():
+        _git_unstage()
+        _git_dog()
+    else:
+        content = config.read_bytes()
+        if b"unstage" not in content:
+            _git_unstage()
+        if b"dog" not in content:
+            _git_dog()
+
+
+def _git_unstage():
+    run_cmd("git config --global alias.unstage 'reset HEAD'")
+
+
+def _git_dog():
+    fmt = (
+        "%C(bold blue)%h%C(reset) - "
+        "%C(bold green)(%ar)%C(reset) "
+        "%C(white)%s%C(reset) %C(dim white)- "
+        "%an%C(reset)%C(bold yellow)%d%C(reset)"
+    )
+    dog = f"log --graph --abbrev-commit --decorate --format=format:{fmt!r} --all"
+    run_cmd("git config --global alias.dog {}".format(repr(dog)))
+
+
 def set_completions(home: Path, repo: Path, aliases_path: Path) -> Path:
     # auto complete for command `mg`
     shell = get_shell()
@@ -96,6 +124,7 @@ def main():
         ss += "alias vi=vim\n"
     if s != ss:
         aliases_path.write_text(ss)
+    set_alias_for_git(home)
     mg_completion_path = set_completions(home, repo, aliases_path)
     # activate aliases at .bashrc or .zshrc ...
     names = [".bashrc", ".zshrc", ".profile", ".zprofile", ".bash_profile"]
@@ -158,4 +187,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if sys.argv[1:] and sys.argv[1] == "dog":
+        set_alias_for_git(Path.home())
+    else:
+        main()
