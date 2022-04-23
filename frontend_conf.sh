@@ -1,5 +1,5 @@
 # ---- For frontend development
-echo "---- nodejs/npm/yarn/zx for frontend"
+echo "---- nodejs/npm/yarn/pnpm/zx for frontend"
 if [[ -n $1 ]]; then
   export NPM_MIRROR="$1"
 else
@@ -9,6 +9,8 @@ which node || sudo apt install -y nodejs
 which npm || (sudo apt install -y npm && sudo npm i -g npm --registry $NPM_MIRROR)
 which yarn || sudo npm i -g yarn --registry $NPM_MIRROR
 yarn config set registry $NPM_MIRROR -g
+which pnpm || sudo npm i -g pnpm --registry $NPM_MIRROR
+pnpm config set registry $NPM_MIRROR -g
 # https://github.com/google/zx.git
 if ! command -v zx  &> /dev/null; then
   echo '`zx` not found! Start to install it by `yarn global add`'
