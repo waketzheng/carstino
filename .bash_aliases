@@ -2,7 +2,7 @@
 alias mg='~/.mg.py'
 alias mgshell="mg shell"
 alias mgtest="mg test"
-alias mgrunserver="mg runserver 0:9000"
+alias mgrunserver="mg runserver 0.0.0.0:9000"
 alias mgmakemigrations="mg makemigrations"
 alias mgmigrate="mg migrate"
 alias mgcreatesuperuser="mg createsuperuser"
@@ -11,6 +11,8 @@ alias activate_completion="source /etc/bash_completion.d/django_manage_completio
 
 # python poetry
 alias ve="poetry shell"
+alias peotry=poetry
+alias poerty=poetry
 
 # trim the space at the right side of every line
 alias rstrip="~/archives/carstino/rstrip.py"
