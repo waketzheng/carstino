@@ -148,7 +148,7 @@ def home():
         return pwd.getpwuid(os.getuid()).pw_dir
 
 
-def install_py(folder, url, alt, conf=""):
+def install_py(folder, url, alt, configure_options=""):
     commands = []
     if not folder.startswith("/"):
         folder = folder.replace("~", home())
@@ -168,7 +168,7 @@ def install_py(folder, url, alt, conf=""):
         commands.append("cd " + sub_folder)
     else:
         commands.append("cd " + py_folder)
-    install = INSTALL.format(conf, "alt" if alt else "")
+    install = INSTALL.format(configure_options, "alt" if alt else "")
     return commands + install.split(" && ")
 
 
@@ -199,8 +199,7 @@ def gen_cmds():
     conf = ENABLE_OPTIMIZE + " "
     if not args.no_sqlite:
         conf += ENABLE_SQLITE + " "
-    conf += args.dir
-    cmds.extend(install_py(conf, url, args.alt))
+    cmds.extend(install_py(args.dir, url, args.alt, conf))
     if is_ubuntu:
         cmds.append(APPEND)
     return cmds
