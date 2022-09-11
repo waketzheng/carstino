@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+"""
+Script for pyenv to install python from huawei mirrors.
+Require: python3.7+
+
+Usage::
+    cp pyinstall.py ~/.pyinstall.py
+    alias pyinstall="~/.pyinstall.py"
+    pyinstall 3.10.7
+    pyinstall 3.11.0rc1
+"""
+import functools
+import os
+import re
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+HOST = "https://repo.huaweicloud.com/python/"
+DOWNLOAD_URL = HOST + "{}/Python-{}.tar.xz"
+
+
+def build_url(version: str) -> str:
+    slim_version = ".".join(re.findall(r"\d+", version)[:3])
+    return DOWNLOAD_URL.format(slim_version, version)
+
+
+def humanize(seconds: float) -> str:
+    if seconds < 60:
+        return "{} seconds".format(round(seconds, 1))
+    m = int(seconds // 60)
+    s = int(seconds % 60)
+    if m < 60:
+        return "{}m{}s".format(m, s)
+    h = m // 60
+    m = m % 60
+    return "{}h{}m{}s".format(h, m, s)
+
+
+def say_cost(func):
+    @functools.wraps(func)
+    def deco(*args, **kwargs):
+        start = time.time()
+        res = func(*args, **kwargs)
+        end = time.time()
+        cost = end - start
+        print("Function `{}` cost: {}".format(func.__name__, humanize(cost)))
+        return res
+
+    return deco
+
+
+@say_cost
+def pyinstall(version: str) -> None:
+    cache_dir = Path.home() / ".pyenv" / "cache"
+    cmd = "cd {} && (".format(cache_dir)
+    url = build_url(version)
+    filepath = cache_dir / Path(url).name
+    if filepath.exists():
+        print(filepath, "exists, skip wget")
+    else:
+        if not cache_dir.exists():
+            cache_dir.mkdir(parents=True)
+        cmd += "wget {}&&".format(url)
+    cmd += "pyenv install {0};cd -)".format(version)
+    print("Start runing ...")
+    print("-->", cmd)
+    subprocess.run(cmd, shell=True)
+
+
+def main():
+    version = sys.argv[1:] and sys.argv[1]
+    if version:
+        if version.count(".") > 1:
+            pyinstall(version)
+        else:
+            os.system("pyenv install " + version)
+    else:
+        os.system("pyenv --help")
+
+
+if __name__ == "__main__":
+    main()
