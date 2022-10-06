@@ -10,6 +10,7 @@ This is a repo about init my dev environment
 - change_ubuntu_mirror_sources.sh: change apt mirror sources of ubuntu16/18/19/20
 - createdatabase.py: create database for django project
 - build_development_environment.sh: install packages for python and vue develop environment
+- upgrade_py.sh: make it easy for ubuntu to install python
 
 
 Usage:
