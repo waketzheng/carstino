@@ -7,7 +7,6 @@ alias mgmakemigrations="mg makemigrations"
 alias mgmigrate="mg migrate"
 alias mgcreatesuperuser="mg createsuperuser"
 alias mgcollectstatic='mg collectstatic'
-alias activate_completion="source /etc/bash_completion.d/django_manage_completion.bash"
 
 # python poetry
 alias ve="poetry shell"

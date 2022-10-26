@@ -6,8 +6,8 @@ Require: python3.7+
 Usage::
     cp pyinstall.py ~/.pyinstall.py
     alias pyinstall="~/.pyinstall.py"
-    pyinstall 3.10.7
-    pyinstall 3.11.0rc1
+    pyinstall 3.10.8
+    pyinstall 3.11.0rc2
 """
 import functools
 import os
