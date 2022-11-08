@@ -22,6 +22,24 @@ import platform
 import pprint
 import re
 import socket
+import sys
+
+try:
+    from urllib.request import URLError, urlopen
+except ImportError:
+    from contextlib import contextmanager
+    from urllib import urlopen as _urlopen
+
+    from exceptions import IOError as URLError
+
+    @contextmanager
+    def urlopen(url, timeout):
+        socket.setdefaulttimeout(timeout)
+        try:
+            yield _urlopen(url)
+        finally:
+            pass
+
 
 """
 A sample of the pip.conf/pip.ini:
@@ -52,6 +70,12 @@ SOURCES = {
 }
 SOURCES["tencent"] = SOURCES["tengxun"] = SOURCES["tx"]
 SOURCES["ali"] = SOURCES["aliyun"]
+SOURCES["hw_inner"] = (
+    SOURCES["huawei"]
+    .replace("cloud", "")
+    .replace("/repository", "")
+    .replace("repo", "mirrors.tools")
+)
 CONF_CMD = "pip config set global.index-url https://{}/simple/"
 
 
@@ -71,6 +95,25 @@ def is_ali_cloud_server():
     return is_pingable("mirrors.cloud.aliyuncs.com")
 
 
+def fetch_headers(url, timeout=1):
+    with urlopen(url, timeout=timeout) as f:
+        return str(f.headers)
+
+
+def can_fetch(url):
+    if not url.startswith("http"):
+        url = "http://" + url
+    try:
+        fetch_headers(url)
+    except (URLError, socket.timeout):
+        return False
+    return True
+
+
+def is_hw_inner():
+    return not can_fetch(SOURCES["huawei"]) and can_fetch(SOURCES["hw_inner"])
+
+
 def config_by_cmd(url, conf_cmd=None):
     if conf_cmd is None:
         conf_cmd = CONF_CMD
@@ -86,6 +129,12 @@ def config_by_cmd(url, conf_cmd=None):
     os.system(cmd)
 
 
+def remove_ssl(template, conf_cmd):
+    template = template.replace("https", "http")
+    conf_cmd = conf_cmd.replace("https", "http")
+    return template, conf_cmd
+
+
 def init_pip_conf(
     source=DEFAULT,
     replace=False,
@@ -95,21 +144,29 @@ def init_pip_conf(
     conf_cmd=CONF_CMD,
 ):
     if not force:
-        if "ali" in source:
+        if not sys.argv[1:]:
+            if is_hw_inner():
+                source = "hw_inner"
+            elif is_tx_cloud_server():
+                source = "tx_ecs"
+            elif is_ali_cloud_server():
+                source = "ali_ecs"
+        elif source in ("huawei", "hw"):
+            if is_hw_inner():
+                source = "hw_inner"
+        elif "ali" in source:
             if is_ali_cloud_server():
                 source = "ali_ecs"
-                template = template.replace("https", "http")
-                conf_cmd = conf_cmd.replace("https", "http")
         elif "tx" in source or "ten" in source:
             if is_tx_cloud_server():
                 source = "tx_ecs"
-                template = template.replace("https", "http")
-                conf_cmd = conf_cmd.replace("https", "http")
     is_raw_url = source.startswith("http")
     if is_raw_url:
         url = source
     else:
         url = SOURCES.get(source, SOURCES[DEFAULT])
+        if source in ("hw_inner", "tx_ecs", "ali_ecs"):
+            template, conf_cmd = remove_ssl(template, conf_cmd)
     is_windows = platform.system() == "Windows"
     if (not at_etc or is_windows) and can_set_global():
         config_by_cmd(url, conf_cmd)
