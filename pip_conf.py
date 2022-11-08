@@ -24,23 +24,6 @@ import re
 import socket
 import sys
 
-try:
-    from urllib.request import URLError, urlopen
-except ImportError:
-    from contextlib import contextmanager
-    from urllib import urlopen as _urlopen
-
-    from exceptions import IOError as URLError
-
-    @contextmanager
-    def urlopen(url, timeout):
-        socket.setdefaulttimeout(timeout)
-        try:
-            yield _urlopen(url)
-        finally:
-            pass
-
-
 """
 A sample of the pip.conf/pip.ini:
 ```
@@ -70,8 +53,9 @@ SOURCES = {
 }
 SOURCES["tencent"] = SOURCES["tengxun"] = SOURCES["tx"]
 SOURCES["ali"] = SOURCES["aliyun"]
+SOURCES["hw"] = SOURCES["huawei"]
 SOURCES["hw_inner"] = (
-    SOURCES["huawei"]
+    SOURCES["hw"]
     .replace("cloud", "")
     .replace("/repository", "")
     .replace("repo", "mirrors.tools")
@@ -80,6 +64,8 @@ CONF_CMD = "pip config set global.index-url https://{}/simple/"
 
 
 def is_pingable(domain):
+    if "/" in domain:
+        domain = domain.split("/")[0]
     try:
         socket.gethostbyname(domain)
     except Exception:
@@ -88,30 +74,15 @@ def is_pingable(domain):
 
 
 def is_tx_cloud_server():
-    return is_pingable("mirrors.tencentyun.com")
+    return is_pingable(SOURCES["tx_ecs"])
 
 
 def is_ali_cloud_server():
-    return is_pingable("mirrors.cloud.aliyuncs.com")
-
-
-def fetch_headers(url, timeout=1):
-    with urlopen(url, timeout=timeout) as f:
-        return str(f.headers)
-
-
-def can_fetch(url):
-    if not url.startswith("http"):
-        url = "http://" + url
-    try:
-        fetch_headers(url)
-    except (URLError, socket.timeout):
-        return False
-    return True
+    return is_pingable(SOURCES["ali_ecs"])
 
 
 def is_hw_inner():
-    return not can_fetch(SOURCES["huawei"]) and can_fetch(SOURCES["hw_inner"])
+    return is_pingable(SOURCES["hw_inner"])
 
 
 def config_by_cmd(url, conf_cmd=None):
