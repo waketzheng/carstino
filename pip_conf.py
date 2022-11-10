@@ -13,6 +13,8 @@ Or:
     $ python pip_conf.py douban
     $ python pip_conf.py qinghua
 
+    $ python pip_conf.py https://pypi.mirrors.ustc.edu.cn/simple  # conf with full url
+
     $ python pip_conf.py --list  # show choices
 
     $ sudo python pip_conf.py --etc  # Set conf file to /etc
