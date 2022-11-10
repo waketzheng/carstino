@@ -15,6 +15,7 @@ def main():
         p.write_text(s)
         print(f"{ZSHRC} updated!")
         print("\n" + "+ \n" + f"+ {SH}\n" + "+ \n")
+        print(f"To activate aliases immediately: source ~/{ZSHRC}")
     else:
         print("Already in, skip.")
         cmd = f"grep -rn {NAME} ~/{ZSHRC}"

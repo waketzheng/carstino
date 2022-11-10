@@ -4,8 +4,9 @@ starttime=`date +'%Y-%m-%d %H:%M:%S'`
 
 echo "---- Set default python"
 which python || sudo ln `which python3` /usr/bin/python
+echo "---- Change mirror sources"
 sudo ./change_ubuntu_mirror_sources.sh
-echo "Updating Repo..."
+echo "Updating Repo and install prerequisites..."
 sudo apt update
 sudo apt-get install -y build-essential libssl-dev
 
@@ -33,8 +34,8 @@ sudo systemctl enable rabbitmq-server || (sudo chkconfig --add rabbitmq-server &
 echo "---- Install python development tools"
 sudo apt install -y python3-dev bzip2 libbz2-dev libxml2-dev libxslt1-dev zlib1g-dev libffi-dev
 
-echo "---- Optional: install tree tmux, etc."
-sudo apt install -y tree tmux httpie expect
+echo "---- Optional: install tree expect, etc."
+sudo apt install -y tree httpie expect
 
 # https://stackoverflow.com/questions/2829613/how-do-you-tell-if-a-string-contains-another-string-in-posix-sh
 # contains(string, substring)

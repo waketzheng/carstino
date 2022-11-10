@@ -8,6 +8,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from typing import Optional
 
 FILES = ALIAS_FILE, *_ = [
     ".bash_aliases",
@@ -25,6 +26,7 @@ def get_cmd_result(cmd: str) -> str:
 
 
 def run_cmd(command: str) -> int:
+    print("-->", command)
     return subprocess.run(command, shell=True).returncode
 
 
@@ -60,48 +62,70 @@ def _git_dog():
     run_cmd("git config --global alias.dog {}".format(repr(dog)))
 
 
-def set_completions(home: Path, repo: Path, aliases_path: Path) -> Path:
-    # auto complete for command `mg`
-    shell = get_shell()
-    fname = f".mg_completion.{shell}"
-    fpath = repo / fname
-    target = home / fname
-    sys_completion_path = Path("/etc/bash_completion.d") / fname
-    a = ""  # content of activate_completion alias
-    if fpath.exists():
-        if not target.exists():
-            if sys_completion_path.parent.exists():
-                if not sys_completion_path.exists():
-                    if shell == "bash":
-                        run_cmd(f"sudo cp {fpath} {sys_completion_path}")
-                        a = f"source {sys_completion_path}"
-                else:
-                    a = f"source {sys_completion_path}"
-            else:
-                if shell == "bash":
-                    run_cmd(f"cp {fpath} {target}")
-        else:
-            a = f"source {target}"
-    git_completion_path = Path("/etc/bash_completion.d/git-completion.bash")
-    if git_completion_path.exists():
-        a += f"&&source {git_completion_path}"
-    if a and a not in aliases_path.read_text():
-        # append mg and git completion activate alias to aliases file
-        run_cmd(f"echo 'alias activate_completion=\"{a}\"'>>{aliases_path}")
-    return target
-
-
-def configure_aliases(rc: Path) -> None:
-    txt = rc.read_text()
+def configure_aliases(rc: Path, txt: Optional[str] = None) -> None:
+    if txt is None:
+        txt = rc.read_text()
     if ALIAS_FILE not in txt:
         with rc.open("a") as fp:
-            fp.write(f"\n[[ -f ~/{ALIAS_FILE} ]] && . ~/{ALIAS_FILE}")
+            fp.write("\n[[ -f ~/{0} ]] && . ~/{0}".format(ALIAS_FILE))
     # change nvm node mirrors
     if "--nvm" in sys.argv:
         nvm = "export NVM_NODEJS_ORG_MIRROR=https://repo.huaweicloud.com/nodejs/"
         if nvm not in txt:
             with rc.open("a") as fp:
                 fp.write(f"\n# For nvm\n{nvm}\n")
+
+
+def configure_path(rc: Path, txt: Optional[str] = None) -> None:
+    if txt is None:
+        txt = rc.read_text()
+    if "/.local" not in txt:
+        line = "export PATH=$HOME/.local/bin:$PATH"
+        with rc.open("a") as fp:
+            fp.write(f"\n{line}\n")
+
+
+def get_dirpath() -> Path:
+    try:
+        return Path(__file__).parent.resolve()
+    except NameError:
+        return Path(".").resolve()
+
+
+def update_aliases(repo: Path, aliases_path: Path, home) -> str:
+    s = aliases_path.read_text()
+    ss = re.sub(r'(rstrip|prettify)="(.*)"', rf'\1="{repo}/\1.py"', s)
+    ss = re.sub(r'(httpa)="(.*)"', rf'\1="{repo}/\1.sh"', s)
+    if run_cmd("which vi") and "alias vi=" not in get_cmd_result("alias"):
+        ss += "alias vi=vim\n"
+    if s != ss:
+        aliases_path.write_text(ss)
+    set_alias_for_git(home)
+    return ss
+
+
+def get_rc_file(home) -> Path:
+    names = [".zshrc", ".bashrc", ".profile", ".zprofile", ".bash_profile"]
+    for name in names:
+        rc = home / name
+        if rc.exists():
+            break
+    else:
+        raise Exception(f"Startup file not found, including {names!r}")
+    return rc
+
+
+def init_pip_source(home: Path, repo: Path) -> None:
+    swith_pip_source = repo / "pip_conf.py"
+    p = home.joinpath(".config/pip/pip.conf")
+    if p.exists():
+        print("pip source already config as follows:\n\n")
+        print(p.read_bytes().decode())
+        tip = f"\nDo you want to rerun ./{swith_pip_source.name}? [y/N] "
+        if input(tip).lower() == "y":
+            run_cmd(f"{swith_pip_source}")
+    else:
+        run_cmd(f"{swith_pip_source}")
 
 
 def main():
@@ -111,78 +135,29 @@ def main():
         a = input(f"`{aliases_path}` exists. Continue and replace it?[y/(n)] ")
         if not a.lower().strip().startswith("y"):
             return
-    try:
-        repo = Path(__file__).parent.resolve()
-    except NameError:
-        repo = Path(".").resolve()
+    run_init(home, aliases_path)
+
+
+def run_init(home, aliases_path):
+    repo = get_dirpath()
+    init_pip_source(home, repo)
     for fn in FILES:
         run_cmd(f"cp {repo / fn} {home}")
-    s = aliases_path.read_text()
-    ss = re.sub(r'(rstrip|prettify)="(.*)"', rf'\1="{repo}/\1.py"', s)
-    ss = re.sub(r'(httpa)="(.*)"', rf'\1="{repo}/\1.sh"', s)
-    if run_cmd("which vi") and "alias vi=" not in get_cmd_result("alias"):
-        ss += "alias vi=vim\n"
-    if s != ss:
-        aliases_path.write_text(ss)
-    set_alias_for_git(home)
-    mg_completion_path = set_completions(home, repo, aliases_path)
+    txt = update_aliases(repo, aliases_path, home)
     # activate aliases at .bashrc or .zshrc ...
-    names = [".bashrc", ".zshrc", ".profile", ".zprofile", ".bash_profile"]
-    if get_shell() == "zsh":
-        names = names[1:] + names[:1]
-    for name in names:
-        rc = home / name
-        if rc.exists():
-            break
-    else:
-        raise Exception(f"Startup file not found, including {names!r}")
-    configure_aliases(rc)
-
-    # switch pip source to aliyun
-    swith_pip_source = repo / "pip_conf.py"
-    p = Path.home().joinpath(".config/pip/pip.conf")
-    if p.exists():
-        print("pip source already config as follows:\n\n")
-        print(p.read_bytes().decode())
-        tip = f"\nDo you want to rerun ./{swith_pip_source.name}? [y/N] "
-        if input(tip).lower() == "y":
-            run_cmd(f"{swith_pip_source}")
-    else:
-        run_cmd(f"{swith_pip_source}")
+    rc = get_rc_file(home)
+    configure_aliases(rc, txt)
     # Install some useful python modules
     if run_cmd(f"python3 -m pip install --upgrade --user {PACKAGES}") != 0:
         if run_cmd(f"sudo pip3 install -U {PACKAGES}") != 0:
             print("Please install python3-pip and then rerun this script.")
-            return
-    # avoid pyc
-    b = "export PYTHONDONTWRITEBYTECODE=1"
-    ps = home.glob(".*profile")
-    for p in ps:
-        if p.name not in (".profile", ".bash_profile"):
-            continue
-        s = p.read_text()
-        if b in s:
-            print(f"`{b}` already in {p}")
-            continue
-        for i in (b,):
-            if i in s:
-                print(f"`{i}` already in {p}")
-            else:
-                run_cmd(f"echo >> {p}")  # add empty line
-                cmd = f"echo '{i}'>>{p}"
-                run_cmd(cmd)
-                print(cmd)
-        run_cmd(f"bash {p}")
-        print(f"`{p}` activated")
-        break
-    else:
-        p = rc
-        run_cmd(f". {rc}")
-        print(f"`{rc}` activated")
-    if mg_completion_path.exists():
-        if mg_completion_path.name not in p.read_text():
-            a = f"[[ -f {mg_completion_path} ]] && . {mg_completion_path}"
-            run_cmd(f"echo -e '\n# django manage completion\n{a}'>>{p}")
+            sys.exit(1)
+    # Activate installed python package scripts, such as: ipython, flake8
+    configure_path(rc, txt)
+    # Reactive rc file
+    sh = "zsh" if "zsh" in rc.name else "bash"
+    run_cmd(f"{sh} {rc}")
+    print(f"`{rc}` activated")
     print("Done!")
 
 
