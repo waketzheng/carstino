@@ -9,9 +9,10 @@ alias mgcreatesuperuser="mg createsuperuser"
 alias mgcollectstatic='mg collectstatic'
 
 # python poetry
-alias ve="poetry shell"
 alias peotry=poetry
 alias poerty=poetry
+alias ve="echo '--> poetry shell' && poetry shell"
+alias vv='echo "--> source venv/*/activate" && source venv/*/activate'
 
 # trim the space at the right side of every line
 alias rstrip="~/archives/carstino/rstrip.py"
