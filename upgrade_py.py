@@ -183,7 +183,7 @@ def gen_cmds():
     is_mac = sys.platform == "darwin"
     if is_mac:
         print("For MacOS, try this:\n")
-        print("    brew update&&brew upgrade pyenv&&brew install " + args.version)
+        print("    brew update&&brew upgrade pyenv&&./pyinstall.py " + args.version)
         print("\nSee more at https://github.com/pyenv/pyenv\n")
         sys.exit()
     cmds = []
