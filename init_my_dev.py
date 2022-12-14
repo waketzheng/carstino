@@ -17,7 +17,7 @@ FILES = ALIAS_FILE, *_ = [
     ".lint.sh",
 ]
 
-PACKAGES = "ipython flake8 black isort mypy autoflake"
+PACKAGES = "ipython ruff black isort mypy autoflake"
 
 
 def get_cmd_result(cmd: str) -> str:
@@ -152,7 +152,7 @@ def run_init(home, aliases_path):
         if run_cmd(f"sudo pip3 install -U {PACKAGES}") != 0:
             print("Please install python3-pip and then rerun this script.")
             sys.exit(1)
-    # Activate installed python package scripts, such as: ipython, flake8
+    # Activate installed python package scripts, such as: ipython, ruff
     configure_path(rc, txt)
     # Reactive rc file
     sh = "zsh" if "zsh" in rc.name else "bash"
