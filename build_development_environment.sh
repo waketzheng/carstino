@@ -52,7 +52,7 @@ contains() {
         return 1    # $substring is not in $string
     fi
 }
-contains $* "--upgrade-py" && echo "---- Optional: install python3.10" && ./upgrade_py.py && python3.10 -m pip install --user -U pip -i https://pypi.tuna.tsinghua.edu.cn/simple && python3.10 -m ensurepip && export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
+contains $* "--upgrade-py" && echo "---- Optional: install python3.11" && ./upgrade_py.py && python3.11 -m pip install --user -U pip -i https://pypi.tuna.tsinghua.edu.cn/simple && python3.11 -m ensurepip && export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
 
 echo "---- Optional: install zsh"
 sudo apt install -y zsh
