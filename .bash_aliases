@@ -11,7 +11,14 @@ alias mgcollectstatic='mg collectstatic'
 # python poetry
 alias peotry=poetry
 alias poerty=poetry
-alias ve="echo '--> poetry shell' && poetry shell"
+getVenv() {
+  if [ -f ~/archives/carstino/get_venv.py ]; then
+    python ~/archives/carstino/get_venv.py
+  else
+    echo 'poetry shell'
+  fi
+}
+alias ve='echo "--> $(getVenv)" && $(getVenv)'
 alias vv='echo "--> source venv/*/activate" && source venv/*/activate'
 
 # trim the space at the right side of every line
