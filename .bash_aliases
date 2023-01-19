@@ -63,3 +63,10 @@ alias httpa="~/archives/carstino/httpa.sh"
 
 # reformat py file
 alias lint="~/.lint.sh"
+
+# For windows to open directory
+if [ -f /usr/bin/open ]; then
+  alias explorer=open
+else
+  alias open=explorer
+fi
