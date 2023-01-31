@@ -25,7 +25,8 @@ def get_venv():
             if cache_dir:
                 venv_dir = Path(cache_dir).as_posix()
     if venv_dir:
-        return "source {}/*/activate".format(venv_dir)
+        bin_dir = "*" if is_windows else "bin"
+        return "source {}/{}/activate".format(venv_dir, bin_dir)
     return "poetry shell"
 
 
