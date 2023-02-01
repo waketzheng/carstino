@@ -16,6 +16,15 @@ SETTINGS_ENV = "DJANGO_SETTINGS_MODULE"
 SQL = "create database {} CHARACTER SET {}"
 
 
+def secho(*args, **kw):
+    try:
+        from click import secho as print
+    except ImportError:
+        pass
+
+    print(" ".join(str(i) for i in args), **kw)
+
+
 def configure_settings():
     p = Path("manage.py")
     MAX_NESTED = 5  # make `mg` work at sub directory
@@ -62,7 +71,7 @@ def creat_db(config, db_name, engine, drop=False):
         mysql(config, db_name, drop)
     elif "postgres" in engine:
         postgres(config, db_name, drop)
-    elif "sqlite3" in engine:
+    elif "sqlite" in engine:
         sqlite(config, db_name, drop)
     else:
         raise Exception(f"Not handle database engine ``{engine}`` yet..")
@@ -76,15 +85,27 @@ def mysql(config, db_name, drop=False):
         cur = conn.cursor()
         if drop:
             cur.execute(f"drop database {db_name}")
-            print(f"success to execute `drop database {db_name};`")
+            secho(f"success to execute `drop database {db_name};`")
         command = SQL.format(db_name, config["charset"])
         cur.execute(command)
-        print(f"success to execute `{command};`")
+        secho(f"success to execute `{command};`")
         conn.commit()
         cur.close()
         conn.close()
     except Exception as e:
-        print(f"SQL Error: {e}")
+        secho(f"SQL Error: {e}")
+
+
+def prompt_mysql_create_db(name, user: str):
+    sql = (
+        f"CREATE DATABASE IF NOT EXISTS {name}"
+        " DEFAULT CHARACTER SET utf8"
+        " DEFAULT COLLATE utf8_chinese_ci;"
+    )
+    secho(f"Run the following line inside mysql client:\n\n{sql}")
+    connect_db = f"mysql -u{user} -p"
+    secho("\n-->", connect_db)
+    os.system(connect_db)
 
 
 def postgres(config, db_name, drop=False):
@@ -92,17 +113,23 @@ def postgres(config, db_name, drop=False):
     option = "encoding='utf-8'"
     if drop:
         cmd = f'{who}"drop database {db_name};"'
-        print("\n-->", cmd, "...")
+        secho("\n-->", cmd, "...")
         os.system(f"cd /tmp && {cmd}")
     cmd = f'{who}"create database {db_name} {option};"'
-    print("\n-->", cmd, "...")
+    secho("\n-->", cmd, "...")
     os.system(f"cd /tmp && {cmd}")
 
 
 def sqlite(config, db_name, drop=False):
     if drop:
-        os.remove(db_name)
-        print(f"{db_name} was deleted.")
+        try:
+            os.remove(db_name)
+        except FileNotFoundError:
+            secho(f"sqlite3 file `{db_name}` not exist!")
+        else:
+            secho(f"{db_name} was deleted.")
+    else:
+        secho("sqlite3 no need to create db.")
 
 
 def main():
@@ -130,23 +157,47 @@ def main():
         default="default",
         help="the alias of the database(default:default)",
     )
+    parser.add_argument(
+        "--name",
+        default="auto",
+        help="the db name to be created(default:auto detect from manage.py)",
+    )
+    parser.add_argument(
+        "--user",
+        default="root",
+        help="the engine client user name(default:root)",
+    )
+    parser.add_argument(
+        "--engine",
+        "--client",
+        dest="engine",
+        default="postgres",
+        choices=("mysql", "postgres", "sqlite"),
+        help="What's the database engine(default:postgres)",
+    )
     args, unknown = parser.parse_known_args()
-    manage_path = configure_settings()
-    sys.path.insert(0, str(manage_path.parent))
-    print("Reading DATABASES configure from django settings...")
-    if args.all:
-        aliases, dbs = get_db(all_=True)
+    if args.name != "auto":
+        if args.engine == "mysql":
+            return prompt_mysql_create_db(args.name, args.user)
+        aliases = ["default"]
+        dbs = [{"NAME": args.name, "ENGINE": args.engine}]
     else:
-        aliases, dbs = [args.alias], [get_db(args.alias)]
+        manage_path = configure_settings()
+        sys.path.insert(0, str(manage_path.parent))
+        secho("Reading DATABASES configure from django settings...")
+        if args.all:
+            aliases, dbs = get_db(all_=True)
+        else:
+            aliases, dbs = [args.alias], [get_db(args.alias)]
     for db in dbs:
         creat_db(*getconf(db), drop=args.delete)
     if args.migrate:
         cmd = f"python {manage_path} makemigrations"
-        print("\n-->", cmd, "...")
+        secho("\n-->", cmd, "...")
         os.system(cmd)
         for alias in aliases:
             cmd = f"python {manage_path} migrate --database={alias}"
-            print("\n-->", cmd, "...")
+            secho("\n-->", cmd, "...")
             os.system(cmd)
 
 
