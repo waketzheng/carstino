@@ -17,7 +17,7 @@ FILES = ALIAS_FILE, *_ = [
     ".lint.sh",
 ]
 
-PACKAGES = "ipython ruff black isort mypy autoflake"
+PACKAGES = "ipython ruff black isort mypy"
 
 
 def get_cmd_result(cmd: str) -> str:

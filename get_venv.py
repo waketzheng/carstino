@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import os
 import platform
-from pathlib import Path
 
 
 def run_cmd(command):
@@ -14,7 +13,7 @@ def get_venv():
     common_venv_names = ("venv", ".venv") if is_windows else ("venv",)
     venv_dir = ""
     for dirname in common_venv_names:
-        if Path(dirname).exists():
+        if os.path.exists(dirname):
             venv_dir = dirname
             break
     else:
@@ -23,6 +22,13 @@ def get_venv():
             # after running `poetry shell`, so use `source ../activate` instead
             cache_dir = run_cmd("poetry env info --path")
             if cache_dir:
+                try:
+                    from pathlib import Path
+                except ImportError:
+                    import sys
+
+                    sys.exit(os.system("python3 " + sys.argv[0]))
+
                 venv_dir = Path(cache_dir).as_posix()
     if venv_dir:
         bin_dir = "*" if is_windows else "bin"
