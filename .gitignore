@@ -114,3 +114,6 @@ venv.bak/
 
 # vagrant
 .vagrant/
+
+# cache file
+pyversion*.html

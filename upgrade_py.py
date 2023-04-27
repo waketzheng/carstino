@@ -13,8 +13,10 @@ This script do the following steps:
 """
 import argparse
 import os
+import re
 import sys
 import time
+from datetime import date
 
 try:
     input = raw_input  # type:ignore
@@ -46,6 +48,34 @@ SHORTCUTS = {
     "37": "3.7.16",
     "36": "3.6.15",
 }
+
+
+def update_versions_by_http():
+    global VERSION
+    filename = "pyversions_{}.html".format(date.today())
+    if os.path.exists(filename):
+        with open(filename) as f:
+            text = f.read()
+    else:
+        try:
+            import requests
+        except ImportError:
+            print("WARNING: skip version fetch because of `requests` missing")
+            return
+        url = "https://repo.huaweicloud.com/python/"
+        text = requests.get(url).text
+        with open(filename, "w") as f:
+            f.write(text)
+    minors = [k[1:] for k in SHORTCUTS if k[1:]]
+    for i in minors:
+        pattern = r'<a href="3.{}.(\d+)/"'.format(i)
+        patches = sorted(int(i) for i in re.findall(pattern, text))
+        if patches:
+            latest = "3.{}.{}".format(i, patches[-1])
+            SHORTCUTS["3{}".format(i)] = latest
+            if latest.split(".")[:2] == VERSION.split(".")[:2]:
+                if latest != VERSION:
+                    SHORTCUTS["3"] = VERSION = latest
 
 
 def python_version(py="python"):
@@ -185,7 +215,7 @@ def gen_cmds():
         print("For MacOS, try this:\n")
         print("    brew update&&brew upgrade pyenv&&./pyinstall.py " + args.version)
         print("\nSee more at https://github.com/pyenv/pyenv\n")
-        sys.exit()
+        sys.exit(1)
     cmds = []
     is_ubuntu = is_ubuntu_sys()
     if is_ubuntu:
@@ -207,6 +237,7 @@ def gen_cmds():
 
 
 def main():
+    update_versions_by_http()
     cmds = gen_cmds()
     is_root_user = home() == "/root"
     if is_root_user:
