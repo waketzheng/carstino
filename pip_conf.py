@@ -39,10 +39,10 @@ trusted-host = mirrors.cloud.tencent.com
 
 TEMPLATE = """
 [global]
-index-url = https://{}/simple/
+index-url = {}
 [install]
 trusted-host = {}
-""".strip()
+""".lstrip()
 DEFAULT = "tx"
 SOURCES = {
     "aliyun": "mirrors.aliyun.com/pypi",
@@ -56,13 +56,14 @@ SOURCES = {
 SOURCES["tencent"] = SOURCES["tengxun"] = SOURCES["tx"]
 SOURCES["ali"] = SOURCES["aliyun"]
 SOURCES["hw"] = SOURCES["huawei"]
-SOURCES["hw_inner"] = (
+SOURCES["hw_inner"] = SOURCES["hw_ecs"] = (
     SOURCES["hw"]
     .replace("cloud", "")
     .replace("/repository", "")
     .replace("repo", "mirrors.tools")
 )
-CONF_CMD = "pip config set global.index-url https://{}/simple/"
+CONF_PIP = "pip config set global.index-url "
+INDEX_URL = "https://{}/simple/"
 
 
 def is_pingable(domain):
@@ -87,25 +88,50 @@ def is_hw_inner():
     return is_pingable(SOURCES["hw_inner"])
 
 
-def config_by_cmd(url, conf_cmd=None):
-    if conf_cmd is None:
-        conf_cmd = CONF_CMD
-    if url.startswith("http"):
-        cmd = conf_cmd.split("http")[0] + url
-    else:
-        cmd = conf_cmd.format(url)
-    if "https" not in cmd:
+def parse_host(url):
+    return url.split("://", 1)[1].split("/", 1)[0]
+
+
+def config_by_cmd(url):
+    cmd = CONF_PIP + url
+    if not url.startswith("https"):
         print("cmd = {}".format(repr(cmd)))
-        host = cmd.split("://", 1)[1].split("/", 1)[0]
-        cmd += " && pip config set install.trusted-host " + host
+        cmd += " && pip config set install.trusted-host " + parse_host(url)
     print("--> " + cmd)
-    os.system(cmd)
+    return os.system(cmd)
 
 
-def remove_ssl(template, conf_cmd):
-    template = template.replace("https", "http")
-    conf_cmd = conf_cmd.replace("https", "http")
-    return template, conf_cmd
+def detect_inner_net(source):
+    args = sys.argv[1:]
+    if not args or not [i for i in args if not i.startswith("-")]:
+        if is_hw_inner():
+            source = "hw_inner"
+        elif is_tx_cloud_server():
+            source = "tx_ecs"
+        elif is_ali_cloud_server():
+            source = "ali_ecs"
+    elif source in ("huawei", "hw"):
+        if is_hw_inner():
+            source = "hw_inner"
+    elif "ali" in source:
+        if is_ali_cloud_server():
+            source = "ali_ecs"
+    elif "tx" in source or "ten" in source:
+        if is_tx_cloud_server():
+            source = "tx_ecs"
+    return source
+
+
+def build_index_url(source, force):
+    if source.startswith("http"):
+        return source
+    if not force:
+        source = detect_inner_net(source)
+    host = SOURCES.get(source, SOURCES[DEFAULT])
+    url = INDEX_URL.format(host)
+    if source in ("hw_inner", "hw_ecs", "tx_ecs", "ali_ecs"):
+        url = url.replace("https", "http")
+    return url
 
 
 def init_pip_conf(
@@ -113,37 +139,12 @@ def init_pip_conf(
     replace=False,
     at_etc=False,
     force=False,
-    template=TEMPLATE,
-    conf_cmd=CONF_CMD,
+    write=False,
 ):
-    if not force:
-        if not sys.argv[1:]:
-            if is_hw_inner():
-                source = "hw_inner"
-            elif is_tx_cloud_server():
-                source = "tx_ecs"
-            elif is_ali_cloud_server():
-                source = "ali_ecs"
-        elif source in ("huawei", "hw"):
-            if is_hw_inner():
-                source = "hw_inner"
-        elif "ali" in source:
-            if is_ali_cloud_server():
-                source = "ali_ecs"
-        elif "tx" in source or "ten" in source:
-            if is_tx_cloud_server():
-                source = "tx_ecs"
-    is_raw_url = source.startswith("http")
-    if is_raw_url:
-        url = source
-    else:
-        url = SOURCES.get(source, SOURCES[DEFAULT])
-        if source in ("hw_inner", "tx_ecs", "ali_ecs"):
-            template, conf_cmd = remove_ssl(template, conf_cmd)
+    url = build_index_url(source, force)
     is_windows = platform.system() == "Windows"
-    if (not at_etc or is_windows) and can_set_global():
-        config_by_cmd(url, conf_cmd)
-        return
+    if not write and (not at_etc or is_windows) and can_set_global():
+        sys.exit(config_by_cmd(url))
     if is_windows:
         _pip_conf = ("pip", "pip.ini")
         conf_file = os.path.join(os.path.expanduser("~"), *_pip_conf)
@@ -156,9 +157,7 @@ def init_pip_conf(
     parent = os.path.dirname(conf_file)
     if not os.path.exists(parent):
         os.mkdir(parent)
-    if is_raw_url:
-        url = url.split("://")[-1].split("/simple")[0]
-    text = template.format(url, url.split("/")[0])
+    text = TEMPLATE.format(url, parse_host(url))
     if os.path.exists(conf_file):
         with open(conf_file) as fp:
             s = fp.read()
@@ -201,12 +200,13 @@ def main():
     parser.add_argument("-y", action="store_true", help="whether replace existing file")
     parser.add_argument("--etc", action="store_true", help="Set conf file to /etc")
     parser.add_argument("-f", action="store_true", help="Force to skip ecs cloud check")
+    parser.add_argument("--write", action="store_true", help="Conf by write file")
     args = parser.parse_args()
     if args.list:
         print("There are several mirrors that can be used for pip/poetry:")
         pprint.pprint(SOURCES)
     else:
-        init_pip_conf(args.name or args.source, args.y, args.etc, args.f)
+        init_pip_conf(args.name or args.source, args.y, args.etc, args.f, args.write)
 
 
 if __name__ == "__main__":
