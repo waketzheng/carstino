@@ -1,14 +1,14 @@
 [tool.poetry]
-name = "app"
+name = "carstino"
 version = "0.1.0"
 description = ""
 authors = []
 
-[[tool.poetry.source]]
-name = "tx"
-url = "https://mirrors.cloud.tencent.com/pypi/simple/"
-default = true
-secondary = false
+# Use `poetry-plugin-pypi-mirror` instead
+#[[tool.poetry.source]]
+#name = "tx"
+#url = "https://mirrors.cloud.tencent.com/pypi/simple/"
+#default = true
 
 [tool.poetry.dependencies]
 python = "^3.10"

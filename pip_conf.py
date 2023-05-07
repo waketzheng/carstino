@@ -16,8 +16,9 @@ Or:
     $ python pip_conf.py https://pypi.mirrors.ustc.edu.cn/simple  # conf with full url
 
     $ python pip_conf.py --list  # show choices
+    $ python pip_conf.py --poetry # set mirrors in poetry's config.toml
 
-    $ sudo python pip_conf.py --etc  # Set conf file to /etc
+    $ sudo python pip_conf.py --etc  # Set conf to /etc/pip.[conf|ini]
 """
 import os
 import platform
@@ -134,17 +135,7 @@ def build_index_url(source, force):
     return url
 
 
-def init_pip_conf(
-    source=DEFAULT,
-    replace=False,
-    at_etc=False,
-    force=False,
-    write=False,
-):
-    url = build_index_url(source, force)
-    is_windows = platform.system() == "Windows"
-    if not write and (not at_etc or is_windows) and can_set_global():
-        sys.exit(config_by_cmd(url))
+def get_conf_path(is_windows, at_etc):
     if is_windows:
         _pip_conf = ("pip", "pip.ini")
         conf_file = os.path.join(os.path.expanduser("~"), *_pip_conf)
@@ -157,7 +148,86 @@ def init_pip_conf(
     parent = os.path.dirname(conf_file)
     if not os.path.exists(parent):
         os.mkdir(parent)
+    return conf_file
+
+
+def capture_output(cmd):
+    with os.popen(cmd) as p:
+        return p.read().strip()
+
+
+def get_dirpath(is_windows):
+    if os.system("which poetry") != 0:
+        print("poetry not found!\nYou can install it by:")
+        print("    pip install --user pipx")
+        print("    pipx install poetry\n")
+        return
+    plugins = capture_output("poetry self show plugins")
+    mirror_plugin = "poetry-plugin-pypi-mirror"
+    if mirror_plugin not in plugins:
+        install_plugin = "pipx inject poetry "
+        if os.system("which pipx") != 0:
+            install_plugin = "poetry self install "
+        if os.system(install_plugin + mirror_plugin) != 0:
+            print("Failed to install plugin: {}".format(repr(mirror_plugin)))
+            return
+    dirpath = "~/Library/Preferences/pypoetry/"
+    if is_windows:
+        dirpath = os.getenv("APPDATA", "") + "/pypoetry/"
+    elif platform.system() != "Darwin":
+        dirpath = "~/.config/pypoetry/"
+    return os.path.expanduser(dirpath)
+
+
+def set_poetry_global_mirrors(url, is_windows, replace):
+    filename = "config.toml"
+    dirpath = get_dirpath(is_windows)
+    if not dirpath:
+        return 1
+    config_toml_path = dirpath + filename
+    item = "[plugins.pypi_mirror]"
+    text = item + '\nurl = "{}"'.format(url)
+    if os.path.exists(config_toml_path):
+        with open(config_toml_path) as f:
+            content = f.read().strip()
+        if text in content:
+            print("poetry mirror set as expected. Skip!")
+            return
+        if item in content:
+            pattern = r'\[plugins\.pypi_mirror\].url = "([^"]*)"'
+            m = re.search(pattern, content, re.S)
+            if m:
+                already = m.group(1)
+                if not replace:
+                    print("The poetry's config.toml content:")
+                    print(m.group())
+                    print('If you want to replace it, rerun with "-y" in args.\nExit!')
+                    return
+                text = content.replace(already, url)
+    elif not os.path.exists(dirpath):
+        parent = os.path.dirname(dirpath)
+        if not os.path.exists(parent):
+            os.mkdir(parent)
+        os.mkdir(dirpath)
+    do_write(config_toml_path, text)
+
+
+def init_pip_conf(
+    source=DEFAULT,
+    replace=False,
+    at_etc=False,
+    force=False,
+    write=False,
+    poetry=False,
+):
+    url = build_index_url(source, force)
+    is_windows = platform.system() == "Windows"
+    if poetry:
+        return set_poetry_global_mirrors(url, is_windows, replace)
+    if not write and (not at_etc or is_windows) and can_set_global():
+        return config_by_cmd(url)
     text = TEMPLATE.format(url, parse_host(url))
+    conf_file = get_conf_path(is_windows, at_etc)
     if os.path.exists(conf_file):
         with open(conf_file) as fp:
             s = fp.read()
@@ -169,21 +239,22 @@ def init_pip_conf(
             print(s)
             print('If you want to replace it, rerun with "-y" in args.\nExit!')
             return
+    do_write(conf_file, text)
+
+
+def do_write(conf_file, text):
     with open(conf_file, "w") as fp:
         fp.write(text + "\n")
     print("Write lines to `{}` as below:\n{}\n".format(conf_file, text))
-    print("Done!")
+    print("Done.")
 
 
 def can_set_global():
-    with os.popen("pip --version") as p:
-        s = p.read()
-    version = re.search(r"^pip (\d+)\.(\d+).(\d+)", s)
-    if not version:
-        version = re.search(r"^pip (\d+)\.(\d+)", s)
-    if version and [int(i) for i in version.groups()] >= [10, 1, 0]:
-        return True
-    return False
+    s = capture_output("pip --version")
+    m = re.search(r"^pip (\d+)\.(\d+)", s)
+    if not m:
+        return False
+    return [int(i) for i in m.groups()] >= [10, 1]
 
 
 def main():
@@ -201,12 +272,16 @@ def main():
     parser.add_argument("--etc", action="store_true", help="Set conf file to /etc")
     parser.add_argument("-f", action="store_true", help="Force to skip ecs cloud check")
     parser.add_argument("--write", action="store_true", help="Conf by write file")
+    parser.add_argument("--poetry", action="store_true", help="Set mirrors for poetry")
     args = parser.parse_args()
     if args.list:
         print("There are several mirrors that can be used for pip/poetry:")
         pprint.pprint(SOURCES)
     else:
-        init_pip_conf(args.name or args.source, args.y, args.etc, args.f, args.write)
+        source = args.name or args.source
+        sys.exit(
+            init_pip_conf(source, args.y, args.etc, args.f, args.write, args.poetry)
+        )
 
 
 if __name__ == "__main__":
