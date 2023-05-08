@@ -93,13 +93,18 @@ def parse_host(url):
     return url.split("://", 1)[1].split("/", 1)[0]
 
 
+def run_and_echo(cmd):
+    print("--> " + cmd)
+    sys.stdout.flush()
+    return os.system(cmd)
+
+
 def config_by_cmd(url):
     cmd = CONF_PIP + url
     if not url.startswith("https"):
         print("cmd = {}".format(repr(cmd)))
         cmd += " && pip config set install.trusted-host " + parse_host(url)
-    print("--> " + cmd)
-    return os.system(cmd)
+    return run_and_echo(cmd)
 
 
 def detect_inner_net(source):
@@ -157,7 +162,7 @@ def capture_output(cmd):
 
 
 def get_dirpath(is_windows):
-    if os.system("which poetry") != 0:
+    if run_and_echo("which poetry") != 0:
         print("poetry not found!\nYou can install it by:")
         print("    pip install --user pipx")
         print("    pipx install poetry\n")
@@ -166,9 +171,9 @@ def get_dirpath(is_windows):
     mirror_plugin = "poetry-plugin-pypi-mirror"
     if mirror_plugin not in plugins:
         install_plugin = "pipx inject poetry "
-        if os.system("which pipx") != 0:
+        if run_and_echo("which pipx") != 0:
             install_plugin = "poetry self install "
-        if os.system(install_plugin + mirror_plugin) != 0:
+        if run_and_echo(install_plugin + mirror_plugin) != 0:
             print("Failed to install plugin: {}".format(repr(mirror_plugin)))
             return
     dirpath = "~/Library/Preferences/pypoetry/"
