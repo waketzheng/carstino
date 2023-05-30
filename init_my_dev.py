@@ -19,7 +19,7 @@ FILES = ALIAS_FILE, *_ = [
 ]
 
 PACKAGES = "ipython ruff black isort mypy"
-IS_WINDOWS = platform().lower().startswith('win')
+IS_WINDOWS = platform().lower().startswith("win")
 
 
 def get_cmd_result(cmd: str) -> str:
@@ -66,7 +66,7 @@ def _git_dog():
 
 def configure_aliases(rc: Path, txt: Optional[str] = None) -> None:
     if txt is None:
-        txt = rc.read_text('utf8')
+        txt = rc.read_text("utf8")
     if ALIAS_FILE not in txt:
         with rc.open("a") as fp:
             fp.write("\n[[ -f ~/{0} ]] && . ~/{0}".format(ALIAS_FILE))
@@ -80,7 +80,7 @@ def configure_aliases(rc: Path, txt: Optional[str] = None) -> None:
 
 def configure_path(rc: Path, txt: Optional[str] = None) -> None:
     if txt is None:
-        txt = rc.read_text('utf8')
+        txt = rc.read_text("utf8")
     if "/.local" not in txt:
         line = "export PATH=$HOME/.local/bin:$PATH"
         with rc.open("a") as fp:
@@ -143,8 +143,12 @@ def init_pip_source(home: Path, repo: Path) -> None:
         run_cmd(f"{swith_pip_source}")
 
 
-def upgrade_pip() -> None:
-    run_cmd('python -m pip install --upgrade --user pip')
+def upgrade_pip_and_install_pipx() -> None:
+    run_cmd("python3 -m pip install --upgrade --user pip")
+    run_cmd("python3 -m pip install --user --upgrade pipx")
+    run_cmd("python3 -m pipx ensurepath")
+    if run_cmd("pipx install --upgrade poetry") == 0:
+        run_cmd("./pip_conf.py --poetry")
 
 
 def main():
@@ -160,7 +164,7 @@ def main():
 def run_init(home, aliases_path):
     repo = get_dirpath()
     init_pip_source(home, repo)
-    upgrade_pip()
+    upgrade_pip_and_install_pipx()
     for fn in FILES:
         run_cmd(f"cp {repo / fn} {home}")
     update_aliases(repo, aliases_path, home)

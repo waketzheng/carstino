@@ -17,10 +17,7 @@ python = "^3.10"
 ruff = "*"
 isort = "*"
 black = "*"
-
-[tool.poetry.group.dev.dependencies.mypy]
-version = "^0.991"
-allow-prereleases = true
+mypy = "*"
 
 [tool.isort]
 profile = "black"
