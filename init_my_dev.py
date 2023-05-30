@@ -8,6 +8,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from platform import platform
 from typing import Optional
 
 FILES = ALIAS_FILE, *_ = [
@@ -18,6 +19,7 @@ FILES = ALIAS_FILE, *_ = [
 ]
 
 PACKAGES = "ipython ruff black isort mypy"
+IS_WINDOWS = platform().lower().startswith('win')
 
 
 def get_cmd_result(cmd: str) -> str:
@@ -64,7 +66,7 @@ def _git_dog():
 
 def configure_aliases(rc: Path, txt: Optional[str] = None) -> None:
     if txt is None:
-        txt = rc.read_text()
+        txt = rc.read_text('utf8')
     if ALIAS_FILE not in txt:
         with rc.open("a") as fp:
             fp.write("\n[[ -f ~/{0} ]] && . ~/{0}".format(ALIAS_FILE))
@@ -78,7 +80,7 @@ def configure_aliases(rc: Path, txt: Optional[str] = None) -> None:
 
 def configure_path(rc: Path, txt: Optional[str] = None) -> None:
     if txt is None:
-        txt = rc.read_text()
+        txt = rc.read_text('utf8')
     if "/.local" not in txt:
         line = "export PATH=$HOME/.local/bin:$PATH"
         with rc.open("a") as fp:
@@ -93,9 +95,18 @@ def get_dirpath() -> Path:
 
 
 def update_aliases(repo: Path, aliases_path: Path, home) -> str:
-    s = aliases_path.read_text()
-    ss = re.sub(r'(rstrip|prettify)="(.*)"', rf'\1="{repo}/\1.py"', s)
-    ss = re.sub(r'(httpa)="(.*)"', rf'\1="{repo}/\1.sh"', s)
+    ss = s = aliases_path.read_text("utf8")
+    for script in ("rstrip.py", "httpa.sh"):
+        stem = Path(script).stem
+        pattern = rf'{stem}="(.*)"'
+        m = re.search(pattern, ss)
+        if m:
+            path = m.group(1)
+            p = Path(path).expanduser()
+            if not p.exists():
+                script_path = repo / script
+                new_path = script_path.as_posix().replace(Path.home().as_posix(), "~")
+                ss = ss.replace(f'{stem}="{path}"', f'{stem}="{new_path}"')
     if run_cmd("which vi") and "alias vi=" not in get_cmd_result("alias"):
         ss += "alias vi=vim\n"
     if s != ss:
@@ -111,6 +122,10 @@ def get_rc_file(home) -> Path:
         if rc.exists():
             break
     else:
+        if IS_WINDOWS:
+            rc = home / names[-1]
+            rc.touch()
+            return rc
         raise Exception(f"Startup file not found, including {names!r}")
     return rc
 
@@ -128,6 +143,10 @@ def init_pip_source(home: Path, repo: Path) -> None:
         run_cmd(f"{swith_pip_source}")
 
 
+def upgrade_pip() -> None:
+    run_cmd('python -m pip install --upgrade --user pip')
+
+
 def main():
     home = Path.home()
     aliases_path = home / ALIAS_FILE
@@ -141,19 +160,24 @@ def main():
 def run_init(home, aliases_path):
     repo = get_dirpath()
     init_pip_source(home, repo)
+    upgrade_pip()
     for fn in FILES:
         run_cmd(f"cp {repo / fn} {home}")
-    txt = update_aliases(repo, aliases_path, home)
+    update_aliases(repo, aliases_path, home)
     # activate aliases at .bashrc or .zshrc ...
     rc = get_rc_file(home)
-    configure_aliases(rc, txt)
+    configure_aliases(rc)
     # Install some useful python modules
     if run_cmd(f"python3 -m pip install --upgrade --user {PACKAGES}") != 0:
-        if run_cmd(f"sudo pip3 install -U {PACKAGES}") != 0:
+        if IS_WINDOWS:
+            a = input(f"Failed to install {PACKAGES}. Continue?[(y)/n] ")
+            if a.lower().strip().startswith("n"):
+                sys.exit(1)
+        elif run_cmd(f"sudo pip3 install -U {PACKAGES}") != 0:
             print("Please install python3-pip and then rerun this script.")
             sys.exit(1)
     # Activate installed python package scripts, such as: ipython, ruff
-    configure_path(rc, txt)
+    configure_path(rc)
     # Reactive rc file
     sh = "zsh" if "zsh" in rc.name else "bash"
     run_cmd(f"{sh} {rc}")
