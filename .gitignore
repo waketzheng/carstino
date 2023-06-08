@@ -117,3 +117,6 @@ venv.bak/
 
 # cache file
 pyversion*.html
+
+# poetry lock file
+poetry.lock
