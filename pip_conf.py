@@ -278,6 +278,11 @@ def main():
     parser.add_argument("-f", action="store_true", help="Force to skip ecs cloud check")
     parser.add_argument("--write", action="store_true", help="Conf by write file")
     parser.add_argument("--poetry", action="store_true", help="Set mirrors for poetry")
+    if not sys.argv[1:]:
+        # In case of runing by curl result, try to get args from ENV
+        env = os.getenv("PIP_CONF_ARGS")
+        if env:
+            sys.argv.extend(env.split())
     args = parser.parse_args()
     if args.list:
         print("There are several mirrors that can be used for pip/poetry:")
