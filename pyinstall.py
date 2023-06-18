@@ -17,7 +17,7 @@ import sys
 import time
 from pathlib import Path
 
-HOST = "https://repo.huaweicloud.com/python/"
+HOST = os.getenv("PYTHON_MIRROR", "https://repo.huaweicloud.com/python/")
 DOWNLOAD_URL = HOST + "{}/Python-{}.tar.xz"
 
 

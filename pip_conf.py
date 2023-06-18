@@ -295,4 +295,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        from kitty import timeit
+    except ImportError:
+        main()
+    else:
+        timeit(main)()

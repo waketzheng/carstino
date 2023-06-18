@@ -4,7 +4,7 @@ version = "0.1.0"
 description = ""
 authors = []
 
-# Use `poetry-plugin-pypi-mirror` instead
+# Use `poetry-plugin-pypi-mirror` instead (python pip_conf.py --poetry)
 #[[tool.poetry.source]]
 #name = "tx"
 #url = "https://mirrors.cloud.tencent.com/pypi/simple/"
