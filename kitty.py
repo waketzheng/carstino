@@ -16,11 +16,24 @@ try:
 
         return anyio.run(runner, coro)
 
+    async def gather(*coros):
+        results = [None] * len(coros)
+
+        async def runner(coro, i):
+            results[i] = await coro
+
+        async with anyio.create_task_group() as tg:
+            for i, coro in enumerate(coros):
+                tg.start_soon(runner, coro, i)
+
+        return results
+
 except ImportError:
     import asyncio
 
-    run_async = asyncio.run
     sleep = asyncio.sleep
+    run_async = asyncio.run
+    gather = asyncio.gather
 
 
 @contextlib.contextmanager
