@@ -25,6 +25,7 @@ import platform
 import pprint
 import re
 import socket
+import subprocess
 import sys
 
 """
@@ -157,12 +158,15 @@ def get_conf_path(is_windows, at_etc):
 
 
 def capture_output(cmd):
+    if hasattr(subprocess, "run"):  # For python3
+        r = subprocess.run(cmd, shell=True, capture_output=True)
+        return r.stdout.decode().strip()
     with os.popen(cmd) as p:
         return p.read().strip()
 
 
 def get_dirpath(is_windows):
-    if run_and_echo("which poetry") != 0:
+    if run_and_echo("poetry --version") != 0:
         print("poetry not found!\nYou can install it by:")
         print("    pip install --user pipx")
         print("    pipx install poetry\n")
@@ -171,7 +175,7 @@ def get_dirpath(is_windows):
     mirror_plugin = "poetry-plugin-pypi-mirror"
     if mirror_plugin not in plugins:
         install_plugin = "pipx inject poetry "
-        if run_and_echo("which pipx") != 0:
+        if run_and_echo("pipx --version") != 0:
             install_plugin = "poetry self install "
         if run_and_echo(install_plugin + mirror_plugin) != 0:
             print("Failed to install plugin: {}".format(repr(mirror_plugin)))
