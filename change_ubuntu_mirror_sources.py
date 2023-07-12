@@ -55,8 +55,8 @@ def main(fname=SOURCE_FILE):
         sys.exit()
     if "-h" in args or "--help" in args:
         show_choices()
-        print(f"\nThis script is to modify mirrors url in {SOURCE_FILE}\n\nUsage::")
-        print(f"    $ ./{sys.argv[0]} {_default}")
+        print("\nThis script is to modify mirrors url in {}\n\nUsage::".format(SOURCE_FILE))
+        print("    $ ./{} {}".format(sys.argv[0], _default))
         sys.exit()
     target = parse_argv(args).rstrip("/")
     with open(fname) as fp:
