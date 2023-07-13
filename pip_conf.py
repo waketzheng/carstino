@@ -165,60 +165,91 @@ def capture_output(cmd):
         return p.read().strip()
 
 
-def get_dirpath(is_windows):
-    if run_and_echo("poetry --version") != 0:
-        print("poetry not found!\nYou can install it by:")
-        print("    pip install --user pipx")
-        print("    pipx install poetry\n")
-        return
-    plugins = capture_output("poetry self show plugins")
-    mirror_plugin = "poetry-plugin-pypi-mirror"
-    if mirror_plugin not in plugins:
-        install_plugin = "pipx inject poetry "
-        if run_and_echo("pipx --version") != 0:
-            install_plugin = "poetry self install "
-        if run_and_echo(install_plugin + mirror_plugin) != 0:
-            print("Failed to install plugin: {}".format(repr(mirror_plugin)))
-            return
-    dirpath = "~/Library/Preferences/pypoetry/"
-    if is_windows:
-        dirpath = os.getenv("APPDATA", "") + "/pypoetry/"
-    elif platform.system() != "Darwin":
-        dirpath = "~/.config/pypoetry/"
-    return os.path.expanduser(dirpath)
+class PoetryMirror:
+    def __init__(self, url, is_windows, replace):
+        self.url = url
+        self.is_windows = is_windows
+        self.replace = replace
 
+    @staticmethod
+    def unset():
+        print("By pipx:\n", "pipx runpip poetry uninstall <plugin-name>")
+        print("By poetry self:\n", "poetry self remove <plugin-name>")
 
-def set_poetry_global_mirrors(url, is_windows, replace):
-    filename = "config.toml"
-    dirpath = get_dirpath(is_windows)
-    if not dirpath:
-        return 1
-    config_toml_path = dirpath + filename
-    item = "[plugins.pypi_mirror]"
-    text = item + '\nurl = "{}"'.format(url)
-    if os.path.exists(config_toml_path):
-        with open(config_toml_path) as f:
-            content = f.read().strip()
-        if text in content:
-            print("poetry mirror set as expected. Skip!")
+    def get_dirpath(self, is_windows, url):
+        if run_and_echo("poetry --version") != 0:
+            print("poetry not found!\nYou can install it by:")
+            print("    pip install --user pipx")
+            print("    pipx install poetry\n")
             return
-        if item in content:
-            pattern = r'\[plugins\.pypi_mirror\].url = "([^"]*)"'
-            m = re.search(pattern, content, re.S)
-            if m:
-                already = m.group(1)
-                if not replace:
-                    print("The poetry's config.toml content:")
-                    print(m.group())
-                    print('If you want to replace it, rerun with "-y" in args.\nExit!')
-                    return
-                text = content.replace(already, url)
-    elif not os.path.exists(dirpath):
-        parent = os.path.dirname(dirpath)
-        if not os.path.exists(parent):
-            os.mkdir(parent)
-        os.mkdir(dirpath)
-    do_write(config_toml_path, text)
+        plugins = capture_output("poetry self show plugins")
+        mirror_plugin = "poetry-plugin-pypi-mirror"
+        if mirror_plugin not in plugins:
+            if run_and_echo("pipx --version") == 0:
+                install_plugin = "pipx inject poetry "
+            else:
+                config_path = self._get_dirpath(is_windows)
+                if not os.path.exists(os.path.join(config_path, "pyproject.toml")):
+                    try:
+                        from poetry.console.commands.self.self_command import (
+                            SelfCommand,
+                        )
+                    except (ImportError, ModuleNotFoundError):
+                        pass
+                    else:
+                        SelfCommand().generate_system_pyproject()
+                set_self_pypi_mirror = (
+                    "cd {} && poetry source add -v --priority=default pypi_mirror {}"
+                )
+                run_and_echo(set_self_pypi_mirror.format(config_path, url))
+                install_plugin = "poetry self add "
+            if run_and_echo(install_plugin + mirror_plugin) != 0:
+                print("Failed to install plugin: {}".format(repr(mirror_plugin)))
+                return
+        return self._get_dirpath(is_windows)
+
+    def _get_dirpath(self, is_windows):
+        dirpath = "~/Library/Preferences/pypoetry/"
+        if is_windows:
+            dirpath = os.getenv("APPDATA", "") + "/pypoetry/"
+        elif platform.system() != "Darwin":
+            dirpath = "~/.config/pypoetry/"
+        return os.path.expanduser(dirpath)
+
+    def set(self):
+        filename = "config.toml"
+        dirpath = self.get_dirpath(self.is_windows, self.url)
+        if not dirpath:
+            return 1
+        config_toml_path = os.path.join(dirpath, filename)
+        item = "[plugins.pypi_mirror]"
+        text = item + '{}url = "{}"'.format(os.linesep, self.url)
+        if os.path.exists(config_toml_path):
+            with open(config_toml_path) as f:
+                content = f.read().strip()
+            if text in content:
+                print("poetry mirror set as expected. Skip!")
+                return
+            if item in content:
+                pattern = r'\[plugins\.pypi_mirror\].url = "([^"]*)"'
+                m = re.search(pattern, content, re.S)
+                if m:
+                    already = m.group(1)
+                    if not self.replace:
+                        print("The poetry's config.toml content:")
+                        print(m.group())
+                        print('If you want to replace it, rerun with "-y" in args.')
+                        print("Exit!")
+                        return
+                    text = content.replace(already, self.url)
+            else:
+                text = content + os.linesep + text
+        elif not os.path.exists(dirpath):
+            parent = os.path.dirname(dirpath)
+            if not os.path.exists(parent):
+                os.mkdir(parent)
+            os.mkdir(dirpath)
+        do_write(config_toml_path, text)
 
 
 def init_pip_conf(
@@ -232,7 +263,7 @@ def init_pip_conf(
     url = build_index_url(source, force)
     is_windows = platform.system() == "Windows"
     if poetry:
-        return set_poetry_global_mirrors(url, is_windows, replace)
+        return PoetryMirror(url, is_windows, replace).set()
     if not write and (not at_etc or is_windows) and can_set_global():
         return config_by_cmd(url)
     text = TEMPLATE.format(url, parse_host(url))
@@ -301,7 +332,7 @@ def main():
 if __name__ == "__main__":
     try:
         from kitty import timeit
-    except ImportError:
+    except (ImportError, ModuleNotFoundError):
         main()
     else:
         timeit(main)()
