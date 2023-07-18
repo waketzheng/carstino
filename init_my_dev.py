@@ -168,6 +168,12 @@ def run_init(home, aliases_path):
     for fn in FILES:
         run_cmd(f"cp {repo / fn} {home}")
     update_aliases(repo, aliases_path, home)
+    if "macos" in platform().lower():
+        ctl_name = "systemctl.py"
+        ctl_path = repo / ctl_name
+        ln_ctl_path = home / ("." + ctl_name)
+        if ctl_path.exists() and not ln_ctl_path.exists():
+            run_cmd(f"ln -s {ctl_path} {ln_ctl_path}")
     # activate aliases at .bashrc or .zshrc ...
     rc = get_rc_file(home)
     configure_aliases(rc)

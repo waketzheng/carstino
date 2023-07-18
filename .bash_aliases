@@ -70,3 +70,8 @@ if [ -f /usr/bin/open ]; then
 else
   alias open=explorer
 fi
+
+# For MacOS to manage databases
+if [ -f $HOME/.systemctl.py ]; then
+  alias systemctl=$HOME/.systemctl.py
+fi

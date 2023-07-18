@@ -18,6 +18,7 @@ ruff = "*"
 isort = "*"
 black = "*"
 mypy = "*"
+typer = {version = "*", platform = "darwin"}
 
 [tool.isort]
 profile = "black"
