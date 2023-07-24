@@ -8,9 +8,19 @@ def run_cmd(command):
         return p.read().strip()
 
 
+def read_content(filename):
+    if not os.path.exists(filename):
+        return b""
+    with open(filename, "rb") as f:
+        return f.read()
+
+
 def get_venv():
     is_windows = platform.platform().lower().startswith("windows")
-    common_venv_names = ("venv", ".venv") if is_windows else ("venv",)
+    filename = "pyproject.toml"
+    common_venv_names = ["venv"]
+    if is_windows or b"[tool.poetry]" not in read_content(filename):
+        common_venv_names += [".venv"]
     venv_dir = ""
     for dirname in common_venv_names:
         if os.path.exists(dirname):
