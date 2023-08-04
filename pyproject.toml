@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "carstino"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 authors = []
 
@@ -11,7 +11,7 @@ authors = []
 #default = true
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "*"
@@ -27,7 +27,7 @@ skip = "build,.tox,.venv,migrations,.git,.pytest_cache,.mypy_cache,__init__.py"
 
 [tool.black]
 line-length = 88
-target-version = ['py310', 'py311']
+target-version = ['py311']
 extend-exclude = '''
 # A regex preceded with ^/ will apply only to files and directories
 # in the root of the project.

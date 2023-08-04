@@ -16,7 +16,8 @@ Or:
     $ python pip_conf.py https://pypi.mirrors.ustc.edu.cn/simple  # conf with full url
 
     $ python pip_conf.py --list  # show choices
-    $ python pip_conf.py --poetry # set mirrors in poetry's config.toml
+    $ python pip_conf.py --poetry  # set mirrors in poetry's config.toml
+    $ python pip_conf.py --pdm  # set pypi.url for pdm
 
     $ sudo python pip_conf.py --etc  # Set conf to /etc/pip.[conf|ini]
 """
@@ -54,6 +55,7 @@ SOURCES = {
     "tx_ecs": "mirrors.tencentyun.com/pypi",
     "huawei": "repo.huaweicloud.com/repository/pypi",
     "ali_ecs": "mirrors.cloud.aliyuncs.com/pypi",
+    "pypi": "pypi.org",
 }
 SOURCES["tencent"] = SOURCES["tengxun"] = SOURCES["tx"]
 SOURCES["ali"] = SOURCES["aliyun"]
@@ -165,11 +167,25 @@ def capture_output(cmd):
         return p.read().strip()
 
 
+class PdmMirror:
+    @staticmethod
+    def set(url):
+        cmd = "pdm config pypi.url " + url
+        if url.startswith("http:"):
+            cmd += " && pdm config pypi.verify_ssl false"
+        return run_and_echo(cmd)
+
+
 class PoetryMirror:
     def __init__(self, url, is_windows, replace):
         self.url = url
         self.is_windows = is_windows
         self.replace = replace
+
+    @staticmethod
+    def get_poetry_version():
+        v = capture_output("poetry --version")
+        return v.replace("Poetry (version ", "")
 
     @staticmethod
     def unset():
@@ -214,6 +230,8 @@ class PoetryMirror:
             dirpath = os.getenv("APPDATA", "") + "/pypoetry/"
         elif platform.system() != "Darwin":
             dirpath = "~/.config/pypoetry/"
+        elif self.get_poetry_version() >= "1.5":
+            dirpath = "~/Library/Application Support/pypoetry/"
         return os.path.expanduser(dirpath)
 
     def set(self):
@@ -253,17 +271,18 @@ class PoetryMirror:
 
 
 def init_pip_conf(
-    source=DEFAULT,
+    url,
     replace=False,
     at_etc=False,
-    force=False,
     write=False,
     poetry=False,
+    pdm=False,
 ):
-    url = build_index_url(source, force)
     is_windows = platform.system() == "Windows"
     if poetry:
         return PoetryMirror(url, is_windows, replace).set()
+    if pdm:
+        return PdmMirror.set(url)
     if not write and (not at_etc or is_windows) and can_set_global():
         return config_by_cmd(url)
     text = TEMPLATE.format(url, parse_host(url))
@@ -313,6 +332,8 @@ def main():
     parser.add_argument("-f", action="store_true", help="Force to skip ecs cloud check")
     parser.add_argument("--write", action="store_true", help="Conf by write file")
     parser.add_argument("--poetry", action="store_true", help="Set mirrors for poetry")
+    parser.add_argument("--pdm", action="store_true", help="Set pypi.url for pdm")
+    parser.add_argument("--url", action="store_true", help="Show mirrors url")
     if not sys.argv[1:]:
         # In case of runing by curl result, try to get args from ENV
         env = os.getenv("PIP_CONF_ARGS")
@@ -324,15 +345,20 @@ def main():
         pprint.pprint(SOURCES)
     else:
         source = args.name or args.source
-        sys.exit(
-            init_pip_conf(source, args.y, args.etc, args.f, args.write, args.poetry)
-        )
+        url = build_index_url(source, args.f)
+        if args.url:
+            print(url)
+            return
+        if init_pip_conf(url, args.y, args.etc, args.write, args.poetry, args.pdm):
+            sys.exit(1)
 
 
 if __name__ == "__main__":
-    try:
-        from kitty import timeit
-    except (ImportError, ModuleNotFoundError):
-        main()
-    else:
-        timeit(main)()
+    if "--url" not in sys.argv:
+        try:
+            from kitty import timeit
+        except (ImportError, ModuleNotFoundError):
+            pass
+        else:
+            main = timeit(main)
+    main()
