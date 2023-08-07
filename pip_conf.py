@@ -21,6 +21,8 @@ Or:
 
     $ sudo python pip_conf.py --etc  # Set conf to /etc/pip.[conf|ini]
 """
+__version__ = "0.1"
+__author__ = "waketzheng@gmail.com"
 import os
 import platform
 import pprint

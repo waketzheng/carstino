@@ -75,3 +75,8 @@ fi
 if [ -f $HOME/.systemctl.py ]; then
   alias systemctl=$HOME/.systemctl.py
 fi
+
+# Shortcut for pip install
+if [ -f $HOME/.pipi.py ]; then
+  alias pipi=$HOME/.pipi.py
+fi
