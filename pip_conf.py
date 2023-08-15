@@ -21,8 +21,9 @@ Or:
 
     $ sudo python pip_conf.py --etc  # Set conf to /etc/pip.[conf|ini]
 """
-__version__ = "0.1"
 __author__ = "waketzheng@gmail.com"
+__updated_at__ = "2023.08.16"
+__version__ = "0.2.0"
 import os
 import platform
 import pprint
@@ -104,11 +105,21 @@ def run_and_echo(cmd):
     return os.system(cmd)
 
 
-def config_by_cmd(url):
+def config_by_cmd(url, is_windows=False):
+    if not is_windows and platform.system() == "Darwin":
+        # MacOS need sudo to avoid PermissionError
+        _config_by_cmd(url, sudo=True)
+    else:
+        _config_by_cmd(url)
+
+
+def _config_by_cmd(url, sudo=False):
     cmd = CONF_PIP + url
     if not url.startswith("https"):
         print("cmd = {}".format(repr(cmd)))
         cmd += " && pip config set install.trusted-host " + parse_host(url)
+    if sudo:
+        cmd = " && ".join("sudo " + i.strip() for i in cmd.split("&&"))
     return run_and_echo(cmd)
 
 
@@ -162,11 +173,13 @@ def get_conf_path(is_windows, at_etc):
 
 
 def capture_output(cmd):
-    if hasattr(subprocess, "run"):  # For python3
+    try:
         r = subprocess.run(cmd, shell=True, capture_output=True)
+    except (TypeError, AttributeError):  # For python<=3.6
+        with os.popen(cmd) as p:
+            return p.read().strip()
+    else:
         return r.stdout.decode().strip()
-    with os.popen(cmd) as p:
-        return p.read().strip()
 
 
 class PdmMirror:
@@ -286,7 +299,7 @@ def init_pip_conf(
     if pdm:
         return PdmMirror.set(url)
     if not write and (not at_etc or is_windows) and can_set_global():
-        return config_by_cmd(url)
+        return config_by_cmd(url, is_windows)
     text = TEMPLATE.format(url, parse_host(url))
     conf_file = get_conf_path(is_windows, at_etc)
     if os.path.exists(conf_file):
@@ -358,8 +371,12 @@ def main():
 if __name__ == "__main__":
     if "--url" not in sys.argv:
         try:
+            ImportError = ModuleNotFoundError
+        except NameError:  # For python2
+            pass
+        try:
             from kitty import timeit
-        except (ImportError, ModuleNotFoundError):
+        except (ImportError, SyntaxError, AttributeError):
             pass
         else:
             main = timeit(main)
