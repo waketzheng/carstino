@@ -55,10 +55,17 @@ def main(fname=SOURCE_FILE):
         sys.exit()
     if "-h" in args or "--help" in args:
         show_choices()
-        print("\nThis script is to modify mirrors url in {}\n\nUsage::".format(SOURCE_FILE))
+        tip = "\nThis script is to modify mirrors url in {filepath}\n\nUsage::"
+        print(tip.format(filepath=SOURCE_FILE))
         print("    $ ./{} {}".format(sys.argv[0], _default))
         sys.exit()
+    use_http = False
+    if "--http" in args:
+        use_http = True
+        args = [i for i in args if i != "--http"]
     target = parse_argv(args).rstrip("/")
+    if use_http:
+        target = target.replace("https:", "http:")
     with open(fname) as fp:
         s = fp.read()
     if target in s:

@@ -6,7 +6,7 @@ fi
 MIRROR="repo.huaweicloud.com"
 
 do_sed() {
-  # cd到源列表所在目录 -->  备份原文件 --> 替换为华为源
+  # cd to sources directory -->  backup origin file --> change mirror url
   cd /etc/apt  && \
     ([ -f sources.list.origin ] || ${SUDO} cp sources.list sources.list.origin ) && \
     ${SUDO} sed -i 's/^\(deb\|deb-src\) \([^ ]*\) \(.*\)/\1 http:\/\/'$MIRROR'\/ubuntu\/ \3/' sources.list
