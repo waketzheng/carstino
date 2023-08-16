@@ -11,6 +11,11 @@ alias mgcollectstatic='mg collectstatic'
 # python poetry
 alias peotry=poetry
 alias poerty=poetry
+alias poetryrun='poetry run'
+alias prun='poetry run'
+# `poetry install` not work at GitBash for Windows, so add psync to install dependencies
+alias poetrysync='poetry export --with=dev --without-hashes -o dev_requirements.txt && pip install -r dev_requirements.txt'
+alias psync='poetrysync'
 getVenv() {
   if [ -f ~/archives/carstino/get_venv.py ]; then
     python ~/archives/carstino/get_venv.py
