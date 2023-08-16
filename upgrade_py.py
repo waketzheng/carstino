@@ -14,6 +14,7 @@ This script do the following steps:
 import argparse
 import os
 import re
+import socket
 import sys
 import time
 from datetime import date
@@ -24,19 +25,42 @@ except NameError:
     pass
 
 VERSION = "3.11.1"
-DOWNLOAD_URL = "https://mirrors.huaweicloud.com/python/{0}/Python-{0}.tar.xz"
-# ipython need sqlite3 enable to store history
+HOST = "https://mirrors.huaweicloud.com/python/"
+DOWNLOAD_PATH = "{0}/Python-{0}.tar.xz"
 ENABLE_OPTIMIZE = "--enable-optimizations"
+# ipython need sqlite3 enable to store history
 ENABLE_SQLITE = "--enable-loadable-sqlite-extensions"
 INSTALL = "./configure {} && make && sudo make {}install"
 DEFAULT_DIR = "~/softwares"
 
-# Only for ubuntu
-EXTEND = (
-    "build-essential libssl-dev bzip2 libbz2-dev libxml2-dev "
-    "libxslt1-dev zlib1g-dev libffi-dev"
-)
-APPEND = "sudo apt install -y python3-dev"
+PREDEPENDS = {
+    "apt": [
+        (
+            "sudo apt install -y wget build-essential libssl-dev bzip2 libbz2-dev"
+            " libxml2-dev libxslt1-dev zlib1g-dev libffi-dev"
+        )
+    ],
+    "yum": [
+        "sudo yum update -y",
+        'sudo yum groups mark install "Development Tools"',
+        'sudo yum groups mark convert "Development Tools"',
+        'sudo yum groupinstall -y "Development Tools"',
+        (
+            "sudo yum install -y wget make cmake gcc bzip2-devel"
+            " tk-devel db4-devel uuid-devel xz-devel sqlite-devel"
+            " readline-devel gdbm-devel libpcap-devel ncurses-devel"
+            " openssl-devel openssl11 openssl11-devel"
+            " libffi-devel"
+            " zlib*"
+        ),
+        "export CFLAGS=$(pkg-config --cflags openssl11)",
+        "export LDFLAGS=$(pkg-config --libs openssl11)",
+    ],
+}
+APPENDS = {
+    "apt": "python3-dev",
+    "yum": "python3-devel",
+}
 
 # To install python2, just run `sudo apt install python2`
 SHORTCUTS = {
@@ -48,22 +72,47 @@ SHORTCUTS = {
     "37": "3.7.16",
     "36": "3.6.15",
 }
+SHORTCUTS.update({k[0] + "." + k[1:]: v for k, v in SHORTCUTS.items() if len(k) > 1})
+
+
+def is_pingable(domain):
+    if "/" in domain:
+        domain = domain.split("/")[0]
+    try:
+        socket.gethostbyname(domain)
+    except Exception:
+        return False
+    return True
+
+
+def fetch_html(url):
+    try:
+        from urllib.request import urlopen
+    except ImportError:  # For python2
+        from urllib import urlopen
+    html = urlopen(url).read().strip()
+    if not isinstance(html, str):
+        return html.decode()  # For python3
+    return html
 
 
 def update_versions_by_http():
     global VERSION
+    global HOST
+    domain = (
+        HOST.split("://")[-1].split("/")[0].replace("cloud", "").replace("s", "s.tools")
+    )
+    if is_pingable(domain):
+        HOST = "http://" + domain + "/python/"
     filename = "pyversions_{}.html".format(date.today())
-    if os.path.exists(filename):
-        with open(filename) as f:
-            text = f.read()
+    for _ in range(1):
+        if os.path.exists(filename):
+            with open(filename) as f:
+                text = f.read().strip()
+                if text:
+                    break
     else:
-        try:
-            import requests
-        except ImportError:
-            print("WARNING: skip version fetch because of `requests` missing")
-            return
-        url = "https://repo.huaweicloud.com/python/"
-        text = requests.get(url).text
+        text = fetch_html(HOST)
         with open(filename, "w") as f:
             f.write(text)
     minors = [k[1:] for k in SHORTCUTS if k[1:]]
@@ -115,6 +164,9 @@ def parse_args():
         "--dep", action="store_true", help="Install some ubuntu packages"
     )
     parser.add_argument(
+        "--dry", action="store_true", help="Only print command without run it"
+    )
+    parser.add_argument(
         "-f",
         "--force",
         action="store_true",
@@ -135,9 +187,9 @@ def parse_args():
     return parser.parse_args()
 
 
-def validated_args():
+def validated_args(ret_pre=False):
     args = parse_args()
-    if "." in args.version:
+    if args.version.count(".") > 1:
         assert args.version >= "3", "Only support Python3 install"
     elif args.version not in SHORTCUTS:
         raise AssertionError("Version should be in " + repr(list(SHORTCUTS.keys())))
@@ -146,15 +198,15 @@ def validated_args():
     version = args.version
     target_version = version.rsplit(".", 1)[0]
     current_version = default_python_version()
+    has_same_version = current_version.startswith(target_version)
     if not args.force:
         pyx = "python" + target_version
-        has_same_version = current_version.startswith(target_version)
         can_upgrade = current_version < version
         if not has_same_version:
             if silently_run("which {}".format(pyx)).strip():
                 has_same_version = True
                 can_upgrade = python_version(pyx) < version
-        if has_same_version:
+        if has_same_version and not args.dry:
             tip = "\n{} already installed. ".format(pyx.title())
             if args.no_input:
                 print("Exit! " + tip)
@@ -167,6 +219,11 @@ def validated_args():
                 sys.exit()
     # if system python is py3, replace it, else `make altinstall`
     args.alt = args.alt or not current_version.startswith("3")
+    if ret_pre:
+        prefer_to_prepare = (
+            not has_same_version and target_version == VERSION.rsplit(".", 1)[0]
+        )
+        return args, prefer_to_prepare
     return args
 
 
@@ -203,13 +260,20 @@ def install_py(folder, url, alt, configure_options=""):
     return commands + install.split(" && ")
 
 
-def is_ubuntu_sys():
-    r = silently_run("which apt-get")
+def get_tool_name():
+    for name in PREDEPENDS:
+        if detect_command(name):
+            return name
+    return ""
+
+
+def detect_command(name):
+    r = silently_run("which {name}".format(name=name))
     return r and "not found" not in r
 
 
-def gen_cmds():
-    args = validated_args()
+def gen_cmds(ret_dry=False):
+    args, prefer_to_prepare = validated_args(True)
     is_mac = sys.platform == "darwin"
     if is_mac:
         print("For MacOS, try this:\n")
@@ -217,40 +281,47 @@ def gen_cmds():
         print("\nSee more at https://github.com/pyenv/pyenv\n")
         sys.exit(1)
     cmds = []
-    is_ubuntu = is_ubuntu_sys()
-    if is_ubuntu:
-        dep = "sudo apt install -y " + EXTEND
-        if args.dep:
-            cmds.append(dep)
-        elif not args.no_input:
-            tip = "Do you want to install these: {}? [Y/n] ".format(EXTEND)
+    tool = get_tool_name()
+    should_prepare = args.dep or args.no_input or prefer_to_prepare
+    if tool:
+        deps = PREDEPENDS[tool]
+        if not should_prepare:
+            tip = "Do you want to install these: {}? [Y/n] ".format(
+                "\n  " + "\n  ".join(deps) + "\n"
+            )
             if input(tip).lower() != "n":
-                cmds.append(dep)
-    url = DOWNLOAD_URL.format(args.version)
+                should_prepare = True
+        if should_prepare:
+            cmds.extend(deps)
+    url = (HOST + DOWNLOAD_PATH).format(args.version)
     conf = ENABLE_OPTIMIZE + " "
     if not args.no_sqlite:
         conf += ENABLE_SQLITE + " "
     cmds.extend(install_py(args.dir, url, args.alt, conf))
-    if is_ubuntu:
-        cmds.append(APPEND)
+    if tool and should_prepare:
+        cmds.append("sudo {} install -y ".format(tool) + APPENDS[tool])
+    if ret_dry:
+        return cmds, args.dry
     return cmds
 
 
 def main():
     update_versions_by_http()
-    cmds = gen_cmds()
+    cmds, dry = gen_cmds(True)
     is_root_user = home() == "/root"
     if is_root_user:
-        cmds = [i.replace("sudo ", "") for i in cmds]
+        cmds = [i.replace("sudo ", "").replace(ENABLE_OPTIMIZE, "") for i in cmds]
     print("The following commands will be executed to install python:")
     print("\n    " + "\n    ".join(cmds) + "\n")
+    if dry:
+        return
     if not is_root_user:
         print("They need sudo permission.")
         if os.system("sudo echo going on ............") != 0:
             sys.exit()
     start = time.time()
     if run_and_echo("&&".join(cmds)) != 0:
-        sys.exit()
+        sys.exit(1)
     print("Done! Cost: " + friendly_time(int(time.time() - start)))
 
 
