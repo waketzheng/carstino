@@ -4,8 +4,14 @@ import platform
 
 
 def run_cmd(command):
-    with os.popen(command) as p:
-        return p.read().strip()
+    with os.popen(command) as fp:
+        if not hasattr(fp, "_stream"):  # For python2
+            return fp.read().strip()
+        bf = fp._stream.buffer.read().strip()
+    try:
+        return bf.decode()
+    except UnicodeDecodeError:
+        return bf.decode("gbk")
 
 
 def read_content(filename):

@@ -1,26 +1,32 @@
+#!/bin/bash
 # ---- For frontend development
-echo "---- Initial nodejs/npm/yarn/pnpm/zx for frontend"
+SUDO=""
+if [ $USER ] && [ $USER != "root" ]; then
+  SUDO="sudo"
+fi
 
-# which node || sudo apt install -y nodejs
-# which npm || (sudo apt install -y npm && sudo npm i -g npm --registry $NPM_MIRROR)
-# which yarn || sudo npm i -g yarn --registry $NPM_MIRROR
-# yarn config set registry $NPM_MIRROR -g
-# which pnpm || sudo npm i -g pnpm --registry $NPM_MIRROR
-# pnpm config set registry $NPM_MIRROR -g
+if [[ $NPM_MIRROR == "tx" ]]; then
+  export NPM_MIRROR="http://mirrors.cloud.tencent.com/npm/"
+elif [[ $NPM_MIRROR == "hw" ]]; then
+  export NPM_MIRROR=http://mirrors.tools.huawei.com/npm/
+elif [[ $NPM_MIRROR == "ali" ]]; then
+  export NPM_MIRROR=https://registry.npm.taobao.org
+elif [ $NPM_MIRROR ]; then
+  echo npm mirror is $NPM_MIRROR
+else
+  export NPM_MIRROR=http://repo.huaweicloud.com/repository/npm/
+fi
 
-# to be optimize: Use `zx` to make nvm installation as optional
-if ! command -v nvm  &> /dev/null; then
-  if [[ -n $1 ]]; then
-    export NPM_MIRROR="$1"
-    echo Using $1 as npm mirror
-  elif [[ $NPM_MIRROR == "tx" ]]; then
-    export NPM_MIRROR=http://mirrors.cloud.tencent.com/npm/
-  elif [ $NPM_MIRROR ]; then
-    echo npm mirror is $NPM_MIRROR
-  else
-    export NPM_MIRROR=http://repo.huaweicloud.com/repository/npm/
+(echo "---- Initial nodejs/npm/yarn/pnpm/zx for frontend")
+if [[ $1 == "apt" ]] || [[ $1 == "yum" ]]; then
+  if ! command -v node  &> /dev/null; then
+    $SUDO $1 install -y nodejs
   fi
-  echo "---- Installing nvm to manage nodejs version"
+  if ! command -v npm  &> /dev/null; then
+    $SUDO $1 install -y npm
+  fi
+elif ! command -v nvm  &> /dev/null; then
+  (echo "---- Installing nvm to manage nodejs version")
   if [ $NVM_NODEJS_ORG_MIRROR ]; then
     echo NVM_NODEJS_ORG_MIRROR is $NVM_NODEJS_ORG_MIRROR
   else
@@ -36,9 +42,9 @@ if ! command -v nvm  &> /dev/null; then
     export NVM_REPO_URL="https://gitee.com/mirrors/nvm.git"
   fi
   export NVM_DIR="$HOME/.nvm" && (
-    git clone $NVM_REPO_URL "$NVM_DIR"
+    [ -f nvm-master.zip ] && unzip nvm-master.zip && mv nvm-master $NVM_DIR || git clone $NVM_REPO_URL "$NVM_DIR"
     cd "$NVM_DIR"
-    git checkout `git describe --abbrev=0 --tags --match "v[0-9]*" $(git rev-list --tags --max-count=1)`
+    [ -f .git/index ] && git checkout `git describe --abbrev=0 --tags --match "v[0-9]*" $(git rev-list --tags --max-count=1)`
   ) && \. "$NVM_DIR/nvm.sh"
   RC_FILE=$HOME/.bashrc
   if [ -f $HOME/.zshrc ]; then
@@ -51,21 +57,19 @@ export NVM_DIR="$HOME/.nvm"
 ' >> $RC_FILE
   source $RC_FILE
   nvm install --lts && node -v
-  if ! command -v npm  &> /dev/null; then
-    echo npm not ready yet.
-  else
-    npm config set registry $NPM_MIRROR
-    npm config set disturl $NVM_NODEJS_ORG_MIRROR
-    npm -v
-    npm i -g yarn pnpm
-    yarn config set registry $NPM_MIRROR -g
-    pnpm config set registry $NPM_MIRROR -g
-    # https://github.com/google/zx.git
-    if ! command -v zx  &> /dev/null; then
-      echo '`zx` not found! Start to install it by `yarn global add`'
-      yarn global add zx
-    fi
-  fi
 else
   echo '`nvm` already installed. Skip!'
+fi
+
+if command -v npm  &> /dev/null; then
+  npm i -g npm@latest --registry $NPM_MIRROR
+  npm config set registry $NPM_MIRROR -g
+  if ! command -v yarn  &> /dev/null; then
+    $SUDO npm i -g yarn --registry $NPM_MIRROR
+  fi
+  if ! command -v pnpm  &> /dev/null; then
+    $SUDO npm i -g pnpm --registry $NPM_MIRROR
+  fi
+  yarn config set registry $NPM_MIRROR -g
+  pnpm config set registry $NPM_MIRROR -g
 fi

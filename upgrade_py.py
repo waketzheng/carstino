@@ -138,9 +138,14 @@ def default_python_version():
 
 
 def silently_run(cmd):
-    with os.popen(cmd) as p:
-        s = p.read()
-    return s
+    with os.popen(cmd) as fp:
+        if not hasattr(fp, "_stream"):  # For python2
+            return fp.read().strip()
+        bf = fp._stream.buffer.read().strip()
+    try:
+        return bf.decode()
+    except UnicodeDecodeError:
+        return bf.decode("gbk")
 
 
 def run_and_echo(cmd):
