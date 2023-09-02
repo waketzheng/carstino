@@ -57,7 +57,9 @@ def timer(message: str, decimal_places=1):
         yield
     finally:
         end = time.time()
-        cost = round(end - start, decimal_places)
+        cost = end - start
+        if decimal_places is not None:
+            cost = round(cost, decimal_places)
         print(message, "Cost:", cost, "seconds")
 
 

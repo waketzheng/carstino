@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script for pyenv to install python from huawei mirrors.
+Script for pyenv to install python from huaweicloud mirror.
 Require: python3.7+
 
 Usage::
@@ -8,6 +8,9 @@ Usage::
     alias pyinstall="~/.pyinstall.py"
     pyinstall 3.10.8
     pyinstall 3.11.0rc2
+
+Or just::
+    python pyinstall.py 3.11.5
 """
 import functools
 import os
@@ -64,7 +67,7 @@ def pyinstall(version: str) -> None:
             cache_dir.mkdir(parents=True)
         cmd += "wget {}&&".format(url)
     cmd += "pyenv install {0};cd -)".format(version)
-    print("Start runing ...")
+    print("Start running ...")
     print("-->", cmd)
     subprocess.run(cmd, shell=True)
 
