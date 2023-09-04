@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "carstino"
-version = "0.2.1"
+version = "0.2.2"
 description = ""
-authors = []
+authors = ["waketzheng@gmail.com"]
 
 # Use `poetry-plugin-pypi-mirror` instead (python pip_conf.py --poetry)
 #[[tool.poetry.source]]
@@ -14,11 +14,7 @@ authors = []
 python = "^3.11"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "*"
-isort = "*"
-black = "*"
-mypy = "*"
-typer = {version = "*", platform = "darwin"}
+fast-tort-cli = {extras = ["all"], version = "^0.1.0"}
 
 [tool.isort]
 profile = "black"
