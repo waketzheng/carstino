@@ -4,6 +4,11 @@ IP_OR_DOMAIN=43.139.125.122
 USER=ubuntu
 #PORT=22
 #PRI=~/.ssh/id_rsa
+#passwd='my password is xxx'
+
+if [ "$passwd" ]; then
+  echo "$passwd"
+fi
 
 HOST=$USER@$IP_OR_DOMAIN
 if [ $1 ]; then
