@@ -1,8 +1,13 @@
 import functools
 import inspect
 import time
-from contextlib import asynccontextmanager, contextmanager
-from typing import Callable, Coroutine
+from contextlib import (
+    AbstractAsyncContextManager,
+    AbstractContextManager,
+    asynccontextmanager,
+    contextmanager,
+)
+from typing import Any, Callable, Coroutine, Union
 
 try:
     import anyio
@@ -60,31 +65,99 @@ except ImportError:
             t.cancel()
 
 
-@contextmanager
-def timer(message: str, decimal_places=1):
+class Timer(AbstractContextManager, AbstractAsyncContextManager):
     """Print time cost of the function.
 
     Usage::
-        >>> @timer("Message")
+        >>> @Timer
         >>> async def main():
-        ...     # ... async code ...
+        ...     # ... async code or sync code ...
 
-        >>> @timer('sync function')
+        >>> @Timer
         >>> def read_text(filename):
         ...     return Path(filename).read_text()
 
-        >>> with timer('do sth ...'):
-        ...     # ... async code or sync code ...
+        >>> with Timer('do sth ...'):
+        ...     # ... sync code ...
+
+        >>> async with Timer('do sth ...'):
+        ...     # ... async code ...
     """
-    start = time.time()
-    try:
-        yield
-    finally:
+
+    def __init__(self, message: Union[str, Callable], decimal_places=1):
+        func = None
+        if callable(message):  # Use as decorator
+            func = message
+            if hasattr(func, "__name__"):
+                self.__name__ = message = func.__name__
+            else:
+                message = str(func)
+        self.message = message
+        self.func = func
+        self.decimal_places = decimal_places
+        self.end = self.start = time.time()
+
+    def _echo(self):
+        self.end = self.echo_cost(self.start, self.decimal_places, self.message)
+
+    @staticmethod
+    def echo_cost(start: float, decimal_places: int, message: str) -> float:
         end = time.time()
         cost = end - start
         if decimal_places is not None:
             cost = round(cost, decimal_places)
         print(message, "Cost:", cost, "seconds")
+        return end
+
+    async def __aenter__(self):
+        return self.__enter__()
+
+    async def __aexit__(self, *args, **kwargs):
+        self.__exit__(*args, **kwargs)
+
+    def __enter__(self):
+        self.start = time.time()
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        self._echo()
+
+    def _recreate_cm(self):
+        return self.__class__(self.func or self.message, self.decimal_places)
+
+    def __call__(self, *args, **kwargs) -> Any:
+        if self.func is None:
+            return
+        if inspect.iscoroutinefunction(self.func):
+
+            @functools.wraps(self.func)
+            async def inner(*args, **kwds):
+                async with self._recreate_cm():
+                    return await self.func(*args, **kwargs)
+
+            return inner(*args, **kwargs)
+        else:
+            with self._recreate_cm():
+                return self.func(*args, **kwargs)
+
+
+@contextmanager
+def timer(message: str, decimal_places=1):
+    """Print time cost of the function.
+
+    Usage::
+        >>> @timer('message')
+        >>> def read_text(filename):
+        ...     return Path(filename).read_text()
+
+        >>> with timer('do sth ...'):
+        ...     # ... sync code ...
+    """
+    start = time.time()
+    try:
+        yield
+    finally:
+        Timer.echo_cost(start, decimal_places, message)
 
 
 def timeit(func):
@@ -102,20 +175,19 @@ def timeit(func):
         >>> res = timeit(sync_func)(*args, **kwargs)
         >>> result = await timeit(async_func)(*args, **kwargs)
     """
-
     func_name = getattr(func, "__name__", str(func))
     if inspect.iscoroutinefunction(func):
 
         @functools.wraps(func)
         async def deco(*args, **kwargs):
-            with timer(func_name):
+            async with Timer(func_name):
                 return await func(*args, **kwargs)
 
     else:
 
         @functools.wraps(func)
         def deco(*args, **kwargs):
-            with timer(func_name):
+            with Timer(func_name):
                 return func(*args, **kwargs)
 
     return deco
@@ -125,47 +197,85 @@ def _test():
     from datetime import datetime
 
     @timeit
-    async def do_sth():
+    async def do_sth(seconds):
         print(111, datetime.now())
-        await sleep(0.5)
+        await sleep(seconds)
         return datetime.now()
 
-    print(run_async(do_sth()))
+    now = datetime.now()
+    print(f"Start at: {now}")
+    seconds = 0.1
+    later = run_async(do_sth(seconds))
+    delta = later - now
+    assert delta.seconds == 0, "sleep too long"
+    assert round(delta.microseconds / 10**6, 1) == seconds
+    print(later, "await sleep and return as expected.")
     print("-------------------")
 
     @timeit
     def foo(*args, **kwargs):
         print(222, datetime.now())
-        time.sleep(0.3)
+        time.sleep(args[0])
         return args, kwargs, datetime.now()
 
-    print(foo(1, a=2))
+    seconds = 0.2
+    now = datetime.now()
+    foo(seconds, 1, a=2)
+    later = datetime.now()
+    delta = later - now
+    assert delta.seconds == 0, "sleep too long"
+    assert round(delta.microseconds / 10**6, 1) == seconds
+    print(later, "block sleep with {seconds=}")
     print("-------------------")
 
-    @timer("Wonderful")
-    async def async_func():
+    @Timer
+    async def async_func(seconds):
         print(333, datetime.now())
-        await sleep(0.2)
+        await sleep(seconds)
         return datetime.now()
 
-    print(run_async(async_func()))
+    seconds = 0.3
+    now = datetime.now()
+    later = run_async(async_func(seconds))
+    delta = later - now
+    assert delta.seconds == 0, "sleep too long"
+    assert round(delta.microseconds / 10**6, 1) == seconds
+    print(later, "Decorater for async func worked.")
     print("-------------------")
 
     @timer("Beautiful")
-    def func():
-        print(444, datetime.now())
-        time.sleep(0.1)
+    def func(seconds):
+        print(444.1, datetime.now())
+        time.sleep(seconds)
         return datetime.now()
 
-    print(func())
+    seconds = 0.4
+    now = datetime.now()
+    later = func(seconds)
+    delta = later - now
+    assert delta.seconds == 0, "sleep too long"
+    assert round(delta.microseconds / 10**6, 1) == seconds
+
+    @Timer
+    def func_with_timer_class(seconds):
+        print(444.2, datetime.now())
+        time.sleep(seconds)
+        return datetime.now()
+
+    now = datetime.now()
+    later = func_with_timer_class(seconds)
+    delta = later - now
+    assert delta.seconds == 0, "sleep too long"
+    assert round(delta.microseconds / 10**6, 1) == seconds
+
+    print(later, "Decorater for sync func worked.")
     print("-------------------")
 
     async def test_start_tasks():
-        async with start_tasks(async_func(), do_sth()):
+        async with start_tasks(async_func(0.2), do_sth(0.5)):
             print(555, "tasks started.")
 
     run_async(test_start_tasks())
-
 
 if __name__ == "__main__":
     _test()
