@@ -116,13 +116,13 @@ files = [
 
 [[package]]
 name = "fast-tort-cli"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 optional = false
 python-versions = ">=3.11,<4.0"
 files = [
-    {file = "fast_tort_cli-0.1.0-py3-none-any.whl", hash = "sha256:34aceca20a1d93f452f5c6de60cdecbbb7ba19f26759feb677791f9ea18a8723"},
-    {file = "fast_tort_cli-0.1.0.tar.gz", hash = "sha256:9230787a1e67019294faa2ff7f1ed108219408a53f11196a513e7363c8a5f9c2"},
+    {file = "fast_tort_cli-0.1.1-py3-none-any.whl", hash = "sha256:aeabe4ea4f24de7ae58bf45a97d4a152c4245e747d8e3b71173d069d56dbe22e"},
+    {file = "fast_tort_cli-0.1.1.tar.gz", hash = "sha256:bbc5af0da728b6b5601a4fd3159ff8dfe983fd0c5cc0d3d5de4b5a3e2de1ab0e"},
 ]
 
 [package.dependencies]
@@ -412,4 +412,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "854cbb7aaee94b91291b9f343aa1eac4e0dae82176816b2d7de3c69d5f08c458"
+content-hash = "e6617369a109559496f8af0de8c2eb89c7ca22acd7b054e8b4661c658d4653ea"

@@ -371,10 +371,6 @@ def main():
 if __name__ == "__main__":
     if "--url" not in sys.argv:
         try:
-            ImportError = ModuleNotFoundError
-        except NameError:  # For python2
-            pass
-        try:
             from kitty import timeit
         except (ImportError, SyntaxError, AttributeError):
             pass

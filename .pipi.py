@@ -42,7 +42,7 @@ def main():
         cmd = "pip i " + " ".join(args)
         print("-->", cmd)
         subprocess.run(cmd, shell=True)
-        print(f"Use this instead:\n\n  pip i {packages}\n")
+        print(f"Next time you can use this instead:\n\n  pip i {packages}\n")
 
 
 if __name__ == "__main__":

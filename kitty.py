@@ -1,7 +1,8 @@
-import contextlib
 import functools
 import inspect
 import time
+from contextlib import asynccontextmanager, contextmanager
+from typing import Callable, Coroutine
 
 try:
     import anyio
@@ -28,6 +29,22 @@ try:
 
         return results
 
+    def be_afunc(coro: Coroutine) -> Callable:
+        async def do_await():
+            return await coro
+
+        return do_await
+
+    @asynccontextmanager
+    async def start_tasks(coro, *more):
+        async with anyio.create_task_group() as tg:
+            with anyio.CancelScope(shield=True):
+                tg.start_soon(be_afunc(coro))
+                for c in more:
+                    tg.start_soon(be_afunc(c))
+                yield
+                tg.cancel_scope.cancel()
+
 except ImportError:
     import asyncio
 
@@ -35,8 +52,15 @@ except ImportError:
     run_async = asyncio.run
     gather = asyncio.gather
 
+    @asynccontextmanager
+    async def start_tasks(coro, *more):
+        tasks = [asyncio.create_task(i) for i in (coro, *more)]
+        yield
+        for t in tasks:
+            t.cancel()
 
-@contextlib.contextmanager
+
+@contextmanager
 def timer(message: str, decimal_places=1):
     """Print time cost of the function.
 
@@ -75,7 +99,8 @@ def timeit(func):
         >>> def read_text(filename):
         ...     return Path(filename).read_text()
 
-        >>> text = timeit(async_or_sync_func)(*args, **kwargs)
+        >>> res = timeit(sync_func)(*args, **kwargs)
+        >>> result = await timeit(async_func)(*args, **kwargs)
     """
 
     func_name = getattr(func, "__name__", str(func))
@@ -134,6 +159,12 @@ def _test():
 
     print(func())
     print("-------------------")
+
+    async def test_start_tasks():
+        async with start_tasks(async_func(), do_sth()):
+            print(555, "tasks started.")
+
+    run_async(test_start_tasks())
 
 
 if __name__ == "__main__":

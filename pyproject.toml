@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "carstino"
-version = "0.2.2"
+version = "0.2.3"
 description = ""
 authors = ["waketzheng@gmail.com"]
 
@@ -14,7 +14,7 @@ authors = ["waketzheng@gmail.com"]
 python = "^3.11"
 
 [tool.poetry.group.dev.dependencies]
-fast-tort-cli = {extras = ["all"], version = "^0.1.0"}
+fast-tort-cli = {extras = ["all"], version = "^0.1.1"}
 
 [tool.isort]
 profile = "black"
