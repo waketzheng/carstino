@@ -9,9 +9,10 @@ alias mgcreatesuperuser="mg createsuperuser"
 alias mgcollectstatic='mg collectstatic'
 
 # python poetry
-alias peotry=poetry
-alias poerty=poetry
+alias peotry="poetry"
+alias poerty="poetry"
 alias poetryrun='poetry run'
+alias poetryinstall='poetry install'
 alias prun='poetry run'
 # `poetry install` not work at GitBash for Windows, so add psync to install dependencies
 alias poetrysync='poetry export --with=dev --without-hashes -o dev_requirements.txt && pip install -r dev_requirements.txt'
@@ -71,17 +72,26 @@ alias lint="~/.lint.sh"
 
 # For windows to open directory
 if [ -f /usr/bin/open ]; then
-  alias explorer=open
+  alias explorer="open"
 else
-  alias open=explorer
+  alias open="explorer"
+fi
+
+if [ -f /sbin/shutdown ]; then
+  if [ -f /sbin/poweroff ]; then
+    alias poweroff='python -c "import this;print()" && echo "Lets say that we have a dream ..."'
+  else
+    # For mac to shutdown
+    alias poweroff='echo Shutdown need root privilege, FBA WARNING: DONT forgot to save files!;sudo shutdown -h now'
+  fi
 fi
 
 # For MacOS to manage databases
 if [ -f $HOME/.systemctl.py ]; then
-  alias systemctl=$HOME/.systemctl.py
+  alias systemctl="$HOME/.systemctl.py"
 fi
 
 # Shortcut for pip install
 if [ -f $HOME/.pipi.py ]; then
-  alias pipi=$HOME/.pipi.py
+  alias pipi="$HOME/.pipi.py"
 fi

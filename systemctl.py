@@ -1,19 +1,28 @@
-#!/usr/bin/env python3.11
+#!/usr/local/bin/python3.11
 """
-For MacOS to manage databases
+For MacOS to manage databases/docker service
 """
+import os
 import subprocess
+import sys
 from enum import StrEnum
 
-import typer
+from ensure_import import EnsureImport as _EI
+
+while (_ei := _EI(_no_venv=True)).trying:
+    with _ei:
+        import typer
 
 cli = typer.Typer()
+
+DRY = False
 
 
 class Engine(StrEnum):
     mysql = "mysql"
     postgres = "postgres"
     mssql = "mssql"
+    docker = "docker"
 
 
 class Create(StrEnum):
@@ -30,17 +39,36 @@ class Create(StrEnum):
         " -e ACCEPT_EULA=Y -e SA_PASSWORD: Abcd12345678"
         " mcr.microsoft.com/mssql/server:latest"
     )
+    docker = "brew install colima"
 
 
 class Start(StrEnum):
     mysql = "docker start mysql_latest"
     postgres = "docker start postgres_latest"
     mssql = "docker start mssql_latest"
+    # https://apple.stackexchange.com/questions/373888/how-do-i-start-the-docker-daemon-on-macos
+    docker = "colima start"
+
+
+def run_and_echo(cmd: str, dry=False, **kw) -> int:
+    typer.echo(f"--> Executing shell command:\n {cmd}")
+    if dry:
+        return 0
+    kw.setdefault("shell", True)
+    return subprocess.run(cmd, **kw).returncode
+
+
+def exit_if_run_failed(cmd: str, env=None, _exit=False, dry=False, **kw) -> None:
+    if env is not None:
+        env = {**os.environ, **env}
+    if rc := run_and_echo(cmd, env=env, dry=dry, **kw):
+        if _exit or "typer" not in locals():
+            sys.exit(rc)
+        raise typer.Exit(rc)
 
 
 def run_shell(cmd: str) -> None:
-    print("--> Executing shell command:\n", cmd, flush=True)
-    subprocess.run(cmd, shell=True)
+    exit_if_run_failed(cmd, _exit=True, dry=DRY)
 
 
 @cli.command()
@@ -53,5 +81,13 @@ def start(db: Engine):
     run_shell(Start[db])
 
 
-if __name__ == "__main__":
+def main():
+    if (f := "--dry") in sys.argv:
+        global DRY
+        DRY = True
+        sys.argv.pop(sys.argv.index(f))
     cli()
+
+
+if __name__ == "__main__":
+    main()

@@ -22,8 +22,8 @@ Or:
     $ sudo python pip_conf.py --etc  # Set conf to /etc/pip.[conf|ini]
 """
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2023.08.16"
-__version__ = "0.2.0"
+__updated_at__ = "2023.09.12"
+__version__ = "0.2.1"
 import os
 import platform
 import pprint
@@ -192,10 +192,48 @@ class PdmMirror:
 
 
 class PoetryMirror:
+    plugin_name = "poetry-plugin-pypi-mirror"
+
     def __init__(self, url, is_windows, replace):
         self.url = url
         self.is_windows = is_windows
         self.replace = replace
+        self._version = ""
+
+    def fix_poetry_v1_6_error(self, version):
+        if version < "1.6":
+            return
+        pipx_envs = capture_output("pipx environment")
+        key = "PIPX_HOME"
+        module = self.plugin_name.replace("-", "_")
+        filename = "plugins.py"
+        if key in pipx_envs:
+            path = pipx_envs.split(key + "=")[1].splitlines()[0]
+            lib = os.path.join(path, "venvs/poetry/lib")
+            ds = os.listdir(lib)
+            file = os.path.join(lib, ds[0], "site-packages", module, filename)
+        else:
+            code = "import {} as m;print(m.__file__)".format(module)
+            path = capture_output("python -c {}".format(repr(code)))
+            file = os.path.join(os.path.dirname(path), filename)
+        if not os.path.exists(file):
+            print("WARNING: plugin file not found {}".format(file))
+            return
+        s = "semver"
+        with open(file) as f:
+            text = f.read()
+        if s in text:
+            text = text.replace(s, "constraints")
+            with open(file, "w") as f:
+                f.write(text)
+            print("pypi mirror plugin error fixed.")
+
+    @property
+    def poetry_version(self):
+        if not self._version:
+            self._version = self.get_poetry_version()
+        self.fix_poetry_v1_6_error(self._version)
+        return self._version
 
     @staticmethod
     def get_poetry_version():
@@ -214,7 +252,7 @@ class PoetryMirror:
             print("    pipx install poetry\n")
             return
         plugins = capture_output("poetry self show plugins")
-        mirror_plugin = "poetry-plugin-pypi-mirror"
+        mirror_plugin = self.plugin_name
         if mirror_plugin not in plugins:
             if run_and_echo("pipx --version") == 0:
                 install_plugin = "pipx inject poetry "
@@ -225,7 +263,7 @@ class PoetryMirror:
                         from poetry.console.commands.self.self_command import (
                             SelfCommand,
                         )
-                    except (ImportError, ModuleNotFoundError):
+                    except ImportError:
                         pass
                     else:
                         SelfCommand().generate_system_pyproject()
@@ -237,6 +275,7 @@ class PoetryMirror:
             if run_and_echo(install_plugin + mirror_plugin) != 0:
                 print("Failed to install plugin: {}".format(repr(mirror_plugin)))
                 return
+
         return self._get_dirpath(is_windows)
 
     def _get_dirpath(self, is_windows):
@@ -245,7 +284,7 @@ class PoetryMirror:
             dirpath = os.getenv("APPDATA", "") + "/pypoetry/"
         elif platform.system() != "Darwin":
             dirpath = "~/.config/pypoetry/"
-        elif self.get_poetry_version() >= "1.5":
+        elif self.poetry_version >= "1.5":
             dirpath = "~/Library/Application Support/pypoetry/"
         return os.path.expanduser(dirpath)
 
