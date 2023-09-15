@@ -7,49 +7,13 @@ from contextlib import (
     asynccontextmanager,
     contextmanager,
 )
-from typing import Any, Callable, Coroutine, Union
+from typing import Any, Callable, Union
 
 try:
-    import anyio
+    from anyio import sleep
+    from asyncur import gather, run_async, start_tasks
 
     print("Using anyio")
-
-    sleep = anyio.sleep
-
-    def run_async(coro):
-        async def runner(coro):
-            return await coro
-
-        return anyio.run(runner, coro)
-
-    async def gather(*coros):
-        results = [None] * len(coros)
-
-        async def runner(coro, i):
-            results[i] = await coro
-
-        async with anyio.create_task_group() as tg:
-            for i, coro in enumerate(coros):
-                tg.start_soon(runner, coro, i)
-
-        return results
-
-    def be_afunc(coro: Coroutine) -> Callable:
-        async def do_await():
-            return await coro
-
-        return do_await
-
-    @asynccontextmanager
-    async def start_tasks(coro, *more):
-        async with anyio.create_task_group() as tg:
-            with anyio.CancelScope(shield=True):
-                tg.start_soon(be_afunc(coro))
-                for c in more:
-                    tg.start_soon(be_afunc(c))
-                yield
-                tg.cancel_scope.cancel()
-
 except ImportError:
     import asyncio
 
@@ -276,6 +240,7 @@ def _test():
             print(555, "tasks started.")
 
     run_async(test_start_tasks())
+
 
 if __name__ == "__main__":
     _test()
