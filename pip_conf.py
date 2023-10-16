@@ -22,8 +22,8 @@ Or:
     $ sudo python pip_conf.py --etc  # Set conf to /etc/pip.[conf|ini]
 """
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2023.09.12"
-__version__ = "0.2.1"
+__updated_at__ = "2023.10.16"
+__version__ = "0.2.2"
 import os
 import platform
 import pprint
@@ -81,6 +81,13 @@ def is_pingable(domain):
     except Exception:
         return False
     return True
+
+
+def load_bool(name):
+    v = os.getenv(name)
+    if not v:
+        return False
+    return v.lower() in ("1", "yes", "on", "true", "y")
 
 
 def is_tx_cloud_server():
@@ -333,7 +340,7 @@ def init_pip_conf(
     pdm=False,
 ):
     is_windows = platform.system() == "Windows"
-    if poetry:
+    if poetry or load_bool("SET_POETRY"):
         return PoetryMirror(url, is_windows, replace).set()
     if pdm:
         return PdmMirror.set(url)
