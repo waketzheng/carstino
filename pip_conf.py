@@ -83,6 +83,13 @@ def is_pingable(domain):
     return True
 
 
+def load_bool(name):
+    v = os.getenv(name)
+    if not v:
+        return False
+    return v.lower() in ("1", "yes", "on", "true", "y")
+
+
 def is_tx_cloud_server():
     return is_pingable(SOURCES["tx_ecs"])
 
@@ -340,7 +347,7 @@ def init_pip_conf(
     pdm=False,
 ):
     is_windows = platform.system() == "Windows"
-    if poetry:
+    if poetry or load_bool("SET_POETRY"):
         return PoetryMirror(url, is_windows, replace).set()
     if pdm:
         return PdmMirror.set(url)
