@@ -217,9 +217,13 @@ class PoetryMirror:
     def fix_poetry_v1_6_error(self, version):
         if version < "1.6":
             return
+        self.fix_v1_6_error()
+
+    @classmethod
+    def fix_v1_6_error(cls):
         pipx_envs = capture_output("pipx environment")
         key = "PIPX_HOME"
-        module = self.plugin_name.replace("-", "_")
+        module = cls.plugin_name.replace("-", "_")
         filename = "plugins.py"
         if key in pipx_envs:
             path = pipx_envs.split(key + "=")[1].splitlines()[0]
