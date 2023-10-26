@@ -130,7 +130,7 @@ def _config_by_cmd(url, sudo=False):
             extra_index = SOURCES["hw_inner"].replace(host, extra_host)
             extra_index_url = INDEX_URL.replace("https", "http").format(extra_index)
             cmd += " && pip config set global.extra-index-url " + extra_index_url
-            host = f'"{host} {extra_host}"'
+            host = '"{host} {extra_host}"'.format(host=host, extra_host=extra_host)
         cmd += " && pip config set install.trusted-host " + host
     if sudo:
         cmd = " && ".join("sudo " + i.strip() for i in cmd.split("&&"))
