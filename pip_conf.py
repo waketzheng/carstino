@@ -406,6 +406,9 @@ def main():
     parser.add_argument("--poetry", action="store_true", help="Set mirrors for poetry")
     parser.add_argument("--pdm", action="store_true", help="Set pypi.url for pdm")
     parser.add_argument("--url", action="store_true", help="Show mirrors url")
+    parser.add_argument(
+        "--fix", action="store_true", help="Fix poetry pypi mirror plugin error"
+    )
     if not sys.argv[1:]:
         # In case of runing by curl result, try to get args from ENV
         env = os.getenv("PIP_CONF_ARGS")
@@ -415,6 +418,8 @@ def main():
     if args.list:
         print("There are several mirrors that can be used for pip/poetry:")
         pprint.pprint(SOURCES)
+    elif args.fix:
+        PoetryMirror.fix_v1_6_error()
     else:
         source = args.name or args.source
         url = build_index_url(source, args.f)
