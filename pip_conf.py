@@ -22,8 +22,8 @@ Or:
     $ sudo python pip_conf.py --etc  # Set conf to /etc/pip.[conf|ini]
 """
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2023.09.12"
-__version__ = "0.2.1"
+__updated_at__ = "2023.10.26"
+__version__ = "0.3.0"
 import os
 import platform
 import pprint
@@ -117,7 +117,14 @@ def _config_by_cmd(url, sudo=False):
     cmd = CONF_PIP + url
     if not url.startswith("https"):
         print("cmd = {}".format(repr(cmd)))
-        cmd += " && pip config set install.trusted-host " + parse_host(url)
+        host = parse_host(url)
+        if host in SOURCES["hw_inner"]:
+            extra_host = host.replace("mirrors", "socapi").replace("tools", "cloudbu")
+            extra_index = SOURCES["hw_inner"].replace(host, extra_host)
+            extra_index_url = INDEX_URL.replace("https", "http").format(extra_index)
+            cmd += " && pip config set global.extra-index-url " + extra_index_url
+            host = f'"{host} {extra_host}"'
+        cmd += " && pip config set install.trusted-host " + host
     if sudo:
         cmd = " && ".join("sudo " + i.strip() for i in cmd.split("&&"))
     return run_and_echo(cmd)

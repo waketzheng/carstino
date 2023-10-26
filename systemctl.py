@@ -9,7 +9,7 @@ from enum import StrEnum
 
 from ensure_import import EnsureImport as _EI
 
-while (_ei := _EI(_no_venv=True)).trying:
+while _ei := _EI(_no_venv=True):
     with _ei:
         import typer
 
