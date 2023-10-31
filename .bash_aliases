@@ -73,6 +73,7 @@ alias lint="~/.lint.sh"
 # For windows to open directory
 if [ -f /usr/bin/open ]; then
   alias explorer="open"
+  alias py="python3"
 else
   alias open="explorer"
 fi

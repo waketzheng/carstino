@@ -18,8 +18,8 @@ except ImportError:
     import asyncio
 
     sleep = asyncio.sleep
-    run_async = asyncio.run
-    gather = asyncio.gather
+    run_async = asyncio.run  # type:ignore[assignment]
+    gather = asyncio.gather  # type:ignore[assignment]
 
     @asynccontextmanager
     async def start_tasks(coro, *more):

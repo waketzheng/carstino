@@ -11,11 +11,11 @@ authors = ["waketzheng@gmail.com"]
 #default = true
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.11,<3.13"
 
 [tool.poetry.group.dev.dependencies]
-fast-tort-cli = {extras = ["all"], version = "^0.3.7"}
-asyncur = "^0.2.0"
+fast-tort-cli = {extras = ["all"], version = "^0.4.1"}
+asyncur = "^0.3.0"
 
 [tool.isort]
 profile = "black"
