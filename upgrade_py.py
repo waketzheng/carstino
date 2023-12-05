@@ -24,7 +24,7 @@ try:
 except NameError:
     pass
 
-VERSION = "3.11.1"
+VERSION = "3.11.6"
 HOST = "https://mirrors.huaweicloud.com/python/"
 # Mirror of> https://www.python.org/ftp/python/
 DOWNLOAD_PATH = "{0}/Python-{0}.tar.xz"
@@ -167,7 +167,7 @@ def parse_args():
         help="Python version to be installed",
     )
     parser.add_argument(
-        "--dep", action="store_true", help="Install some ubuntu packages"
+        "--dep", action="store_true", help="Install some ubuntu/centos packages"
     )
     parser.add_argument(
         "--dry", action="store_true", help="Only print command without run it"
@@ -184,6 +184,11 @@ def parse_args():
         help="Do not enable sqlite option",
     )
     parser.add_argument(
+        "--no-ops",
+        action="store_true",
+        help="Do not enable optimizations",
+    )
+    parser.add_argument(
         "-n",
         "--no-input",
         action="store_true",
@@ -194,6 +199,8 @@ def parse_args():
 
 
 def validated_args(ret_pre=False):
+    if sys.argv[1:] and sys.argv[1].startswith("3"):
+        sys.argv.insert(1, "-v")
     args = parse_args()
     if args.version.count(".") > 1:
         assert args.version >= "3", "Only support Python3 install"
@@ -300,7 +307,9 @@ def gen_cmds(ret_dry=False):
         if should_prepare:
             cmds.extend(deps)
     url = (HOST + DOWNLOAD_PATH).format(args.version)
-    conf = ENABLE_OPTIMIZE + " "
+    conf = ""
+    if not args.no_ops:
+        conf += ENABLE_OPTIMIZE + " "
     if not args.no_sqlite:
         conf += ENABLE_SQLITE + " "
     cmds.extend(install_py(args.dir, url, args.alt, conf))

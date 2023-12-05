@@ -57,6 +57,7 @@ exclude = [
     "dist",
     "node_modules",
     "venv",
+    ".bak",
 ]
 
 [tool.ruff.per-file-ignores]
@@ -69,6 +70,7 @@ exclude = [
     "^fabfile\\.py$",  # TOML's double-quoted strings require escaping backslashes
     'two\.pyi$',  # but TOML's single-quoted strings do not
     '^\.venv',
+    '*.bak',
 ]
 [[tool.mypy.overrides]]
 module = "*.migrations.*"
