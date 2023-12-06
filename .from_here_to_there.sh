@@ -59,5 +59,7 @@ if [ "$SSH_PASS" ]; then
       echo "$SSH_PASS"
     fi
   fi
+else
+  echo "--> $cmd"
 fi
 sh -c "$cmd"
