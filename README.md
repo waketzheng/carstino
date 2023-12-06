@@ -38,3 +38,27 @@ cd carstino
 ```bash
 ./build_development_environment.sh
 ```
+## SSH script
+- Initial
+```bash
+cd
+mkdir archives
+cd archives
+git clone https://github.com/waketzheng/carstino.git
+cd carstino
+cp to_my_server.sh ${ANY_PATH}/any_name.sh
+vi ${ANY_PATH}/any_name.sh  # change the var of `IP_OR_DOMAIN`
+```
+- Usage
+1. ssh to your server
+```bash
+sh ${ANY_PATH}/any_name.sh
+```
+2. scp file or directory to your server
+```bash
+sh ${ANY_PATH}/any_name.sh /path/to/file_or_directory
+```
+3. scp file or directory from server to local
+```bash
+sh ${ANY_PATH}/any_name.sh /path/in/server/file_or_directory /local/path/
+```
