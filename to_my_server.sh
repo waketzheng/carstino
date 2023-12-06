@@ -1,6 +1,7 @@
 #!/bin/bash
-#IP_OR_DOMAIN=www.mydomain.com
+# Doc: https://github.com/waketzheng/carstino#ssh-script
 IP_OR_DOMAIN=43.139.125.122
+#IP_OR_DOMAIN=www.mydomain.com
 #SSH_USER=ubuntu
 #PORT=22
 #PRI=~/.ssh/id_rsa

@@ -1,0 +1,12 @@
+#!/usr/bin/expect -f
+set cmd  [ lindex $argv 0  ]
+set passwd  [ lindex $argv 1  ]
+spawn sh -c "$cmd"
+expect {
+    "yes/no" { send "yes\r"; exp_continue}
+    "password:" { send "$passwd\r" }
+}
+
+#expect "$ "
+#send "cd coding/$project \r"
+interact

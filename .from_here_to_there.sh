@@ -2,9 +2,6 @@
 # Usage::
 # DEST=$IP_OR_DOMAIN ~/archives/carstino/.from_here_to_there.sh $1 $2
 
-if [ "$SSH_PASS" ]; then
-  echo "$SSH_PASS"
-fi
 if [ "$SSH_USER" ]; then
   HOST=$SSH_USER@$DEST
 else
@@ -43,5 +40,24 @@ else
   cmd="$cmd $HOST"
 fi
 
-echo "--> $cmd"
+if [ "$SSH_PASS" ]; then
+  if [ -f /usr/bin/expect ]; then
+    EXP_FILE=".do_ssh_scp.exp"
+    if [ -f ~/archives/carstino/$EXP_FILE ]; then
+      EXP_FILE="~/archives/carstino/$EXP_FILE"
+    elif [ -f ~/$EXP_FILE ]; then
+      EXP_FILE="~/$EXP_FILE"
+    elif [ -f $EXP_FILE ]; then
+      EXP_FILE="./$EXP_FILE"
+    else
+      EXP_FILE=""
+    fi
+    if [ "$EXP_FILE" ]; then
+      cmd="$EXP_FILE '$cmd' $SSH_PASS"
+    else
+      echo "--> $cmd"
+      echo "$SSH_PASS"
+    fi
+  fi
+fi
 sh -c "$cmd"
