@@ -22,8 +22,8 @@ Or:
     $ sudo python pip_conf.py --etc  # Set conf to /etc/pip.[conf|ini]
 """
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2023.10.26"
-__version__ = "0.3.0"
+__updated_at__ = "2023.12.08"
+__version__ = "0.3.1"
 import os
 import platform
 import pprint
@@ -263,11 +263,30 @@ class PoetryMirror:
         print("By pipx:\n", "pipx runpip poetry uninstall <plugin-name>")
         print("By poetry self:\n", "poetry self remove <plugin-name>")
 
-    def get_dirpath(self, is_windows, url):
+    def check_installed(self):
         if run_and_echo("poetry --version") != 0:
             print("poetry not found!\nYou can install it by:")
             print("    pip install --user pipx")
             print("    pipx install poetry\n")
+            return True
+
+    def set_self_pypi_mirror(self, is_windows, url):
+        config_path = self._get_dirpath(is_windows)
+        if not os.path.exists(os.path.join(config_path, "pyproject.toml")):
+            try:
+                from poetry.console.commands.self.self_command import SelfCommand
+            except ImportError:
+                pass
+            else:
+                SelfCommand().generate_system_pyproject()
+        cmds = [
+            "cd {}".format(config_path),
+            "poetry source add -v --priority=default pypi_mirror {}".format(url),
+        ]
+        run_and_echo(" && ".join(cmds))
+
+    def get_dirpath(self, is_windows, url):
+        if self.check_installed():
             return
         plugins = capture_output("poetry self show plugins")
         mirror_plugin = self.plugin_name
@@ -275,20 +294,7 @@ class PoetryMirror:
             if run_and_echo("pipx --version") == 0:
                 install_plugin = "pipx inject poetry "
             else:
-                config_path = self._get_dirpath(is_windows)
-                if not os.path.exists(os.path.join(config_path, "pyproject.toml")):
-                    try:
-                        from poetry.console.commands.self.self_command import (
-                            SelfCommand,
-                        )
-                    except ImportError:
-                        pass
-                    else:
-                        SelfCommand().generate_system_pyproject()
-                set_self_pypi_mirror = (
-                    "cd {} && poetry source add -v --priority=default pypi_mirror {}"
-                )
-                run_and_echo(set_self_pypi_mirror.format(config_path, url))
+                self.set_self_pypi_mirror(is_windows, url)
                 install_plugin = "poetry self add "
             if run_and_echo(install_plugin + mirror_plugin) != 0:
                 print("Failed to install plugin: {}".format(repr(mirror_plugin)))
