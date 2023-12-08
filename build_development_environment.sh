@@ -1,41 +1,46 @@
-echo "This script need root permission."
-sudo echo "Go ahead..."
+SUDO="sudo"
+if [ "$USER" = "root" ]; then
+  SUDO=""
+else
+  echo "This script need root permission."
+  sudo echo "Go ahead..."
+fi
 starttime=`date +'%Y-%m-%d %H:%M:%S'`
 
 echo "---- Set default python"
-which python || sudo ln `which python3` /usr/bin/python
+which python || $SUDO ln `which python3` /usr/bin/python
 echo "---- Change mirror sources"
-sudo ./change_ubuntu_mirror_sources.sh
+$SUDO ./change_ubuntu_mirror_sources.sh
 echo "Updating Repo and install prerequisites..."
-sudo apt update
-sudo apt-get install -y build-essential libssl-dev
+$SUDO apt update
+$SUDO apt-get install -y build-essential libssl-dev
 
 echo "---- Install rabbitmq/postgresql/redis/pip"
-sudo apt install -y rabbitmq-server  # for Celery
-sudo apt install -y postgresql
-sudo apt install -y redis-server
-sudo apt install -y python3-pip
+$SUDO apt install -y rabbitmq-server  # for Celery
+$SUDO apt install -y postgresql
+$SUDO apt install -y redis-server
+$SUDO apt install -y python3-pip
 
 echo "---- [postgres] change default password to postgres"
-sudo -u postgres psql -U postgres -d postgres -c "alter user postgres with password 'postgres';"
-# sudo -u postgres psql -U postgres -d postgres -c "create database carstino_dev encoding='utf-8';"
+$SUDO -u postgres psql -U postgres -d postgres -c "alter user postgres with password 'postgres';"
+# $SUDO -u postgres psql -U postgres -d postgres -c "create database carstino_dev encoding='utf-8';"
 
 echo "---- Setup RabbitMQ"
-sudo rabbitmqctl add_user waket 123456
-sudo rabbitmqctl set_user_tags waket administrator
-# sudo rabbitmqctl add_vhost carstino
-# sudo rabbitmqctl set_permissions -p carstino waket ".*" ".*" ".*"
+$SUDO rabbitmqctl add_user waket 123456
+$SUDO rabbitmqctl set_user_tags waket administrator
+# $SUDO rabbitmqctl add_vhost carstino
+# $SUDO rabbitmqctl set_permissions -p carstino waket ".*" ".*" ".*"
 
 echo "---- Set auto start services"
-sudo systemctl enable postgresql || (sudo chkconfig --add postgresql && sudo chkconfig postgresql on)
-sudo systemctl enable redis-server || (sudo chkconfig --add redis-server && sudo chkconfig redis-server on)
-sudo systemctl enable rabbitmq-server || (sudo chkconfig --add rabbitmq-server && sudo chkconfig rabbitmq-server)
+$SUDO systemctl enable postgresql || ($SUDO chkconfig --add postgresql && $SUDO chkconfig postgresql on)
+$SUDO systemctl enable redis-server || ($SUDO chkconfig --add redis-server && $SUDO chkconfig redis-server on)
+$SUDO systemctl enable rabbitmq-server || ($SUDO chkconfig --add rabbitmq-server && $SUDO chkconfig rabbitmq-server)
 
 echo "---- Install python development tools"
-sudo apt install -y python3-dev bzip2 libbz2-dev libxml2-dev libxslt1-dev zlib1g-dev libffi-dev
+$SUDO apt install -y python3-dev bzip2 libbz2-dev libxml2-dev libxslt1-dev zlib1g-dev libffi-dev
 
 echo "---- Optional: install tree expect, etc."
-sudo apt install -y tree httpie expect
+$SUDO apt install -y tree httpie expect
 
 # https://stackoverflow.com/questions/2829613/how-do-you-tell-if-a-string-contains-another-string-in-posix-sh
 # contains(string, substring)
@@ -55,11 +60,11 @@ contains() {
 contains $* "--upgrade-py" && echo "---- Optional: install python3.11" && ./upgrade_py.py && python3.11 -m pip install --user -U pip -i https://pypi.tuna.tsinghua.edu.cn/simple && python3.11 -m ensurepip && export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
 
 echo "---- Optional: install zsh"
-sudo apt install -y zsh
+$SUDO apt install -y zsh
 if [ -f /etc/pam.d/chsh ]; then
   # Make `chsh` no need to input password
-  # sudo python -c "fn='/etc/pam.d/chsh';a,b='required','sufficient';fp=open(fn,'a+');s=fp.read();fp.truncate();fp.write(s.replace(b,a));fp.close()"
-  sudo python -c "fn='/etc/pam.d/chsh';a,b='required','sufficient';fp=open(fn);s=fp.read();fp.close();fp=open(fn,'w');fp.write(s.replace(a,b));fp.close()"
+  # $SUDO python -c "fn='/etc/pam.d/chsh';a,b='required','sufficient';fp=open(fn,'a+');s=fp.read();fp.truncate();fp.write(s.replace(b,a));fp.close()"
+  $SUDO python -c "fn='/etc/pam.d/chsh';a,b='required','sufficient';fp=open(fn);s=fp.read();fp.close();fp=open(fn,'w');fp.write(s.replace(a,b));fp.close()"
 fi
 chsh -s $(which zsh)
 sh -c 'echo "[ -s \$HOME/.bash_aliases ] && source \$HOME/.bash_aliases" >> $HOME/.zshrc'

@@ -27,7 +27,16 @@ if [ $1 ]; then
       cmd="$cmd $HOST:~/$1 $2"
     fi
   else
-    cmd="$cmd $1 $HOST:~/"
+    if [ "$SCP_DIR" ]; then
+      echo $SCP_DIR |grep -q '/'
+      if [ $? -eq 0 ]; then
+        cmd="$cmd $1 $HOST:$SCP_DIR"
+      else
+        cmd="$cmd $1 $HOST:~/$SCP_DIR"
+      fi
+    else
+      cmd="$cmd $1 $HOST:~/"
+    fi
   fi
 else
   cmd="ssh"
