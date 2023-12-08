@@ -2,7 +2,7 @@
 # Doc: https://github.com/waketzheng/carstino#ssh-script
 IP_OR_DOMAIN=43.139.125.122
 #IP_OR_DOMAIN=www.mydomain.com
-#SSH_USER=ubuntu
+#SSH_USER=root
 #PORT=22
 #PRI=~/.ssh/id_rsa
 #passwd='my password is xxx'

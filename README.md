@@ -56,7 +56,10 @@ sh ${ANY_PATH}/any_name.sh
 ```
 2. scp file or directory to your server
 ```bash
-sh ${ANY_PATH}/any_name.sh /path/to/file_or_directory
+# scp -r local_file user@host:~/
+sh ${ANY_PATH}/any_name.sh /path/to/local/file_or_directory
+# scp -r local_file user@host:~/subpath
+SCP_DIR="subpath" sh ${ANY_PATH}/any_name.sh /path/to/local/file_or_directory
 ```
 3. scp file or directory from server to local
 ```bash
