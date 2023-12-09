@@ -1,5 +1,10 @@
 #!/bin/bash
-# Sometimes there has `python3` instead of `python` in system
+# ----------------------------------------
+# This script resolve the following cases:
+# 1. Sometimes there is no `python` command in the system,
+#    but actually it does have python executable, and the name is `python3`.
+# 2. When the py script not exist, wget it from HTTP.
+# ----------------------------------------
 
 GITHUB_RAW="https://raw.githubusercontent.com/waketzheng/carstino/master"
 if [ $RAW_URL ]; then

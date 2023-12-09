@@ -18,7 +18,7 @@ FILES = ALIAS_FILE, *_ = [
     ".lint.sh",
 ]
 
-PACKAGES = "ipython ruff black isort mypy"
+PACKAGES = "ipython fast-tort-cli[all]"
 IS_WINDOWS = platform().lower().startswith("win")
 
 
@@ -144,8 +144,7 @@ def init_pip_source(home: Path, repo: Path) -> None:
 
 
 def upgrade_pip_and_install_pipx() -> None:
-    run_cmd("python3 -m pip install --upgrade --user pip")
-    run_cmd("python3 -m pip install --user --upgrade pipx")
+    run_cmd("python3 -m pip install --upgrade --user pip pipx")
     run_cmd("python3 -m pipx ensurepath")
     if run_cmd("pipx install --upgrade poetry") == 0:
         run_cmd("./pip_conf.py --poetry")

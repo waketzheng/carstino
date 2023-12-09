@@ -1,10 +1,16 @@
 #!/bin/bash
+# ----------------------------------------
+# This script resolve the following cases:
+# 1. Sometimes there is no `python` command in the system,
+#    but actually it does have python executable, and the name is `python3`.
+# 2. When current user is not root, the py script should be run with `sudo` prefix.
+# ----------------------------------------
+MIRROR="repo.huaweicloud.com"
+
 SUDO=""
 if [ $USER ] && [ $USER != "root" ]; then
   SUDO="sudo"
 fi
-MIRROR="repo.huaweicloud.com"
-
 do_sed() {
   # cd to sources directory -->  backup origin file --> change mirror url
   cd /etc/apt  && \
