@@ -23,16 +23,27 @@ import re
 import sys
 
 try:
-    ImportError = ModuleNotFoundError
-except NameError:  # For python2
-    pass
-try:
     from enum import StrEnum
 except ImportError:
-    from enum import Enum
+    try:
+        from enum import Enum
+    except ImportError:  # For python2
 
-    class StrEnum(str, Enum):  # type:ignore
-        __str__ = str.__str__
+        class AttrIter(type):
+            def __iter__(cls):
+                return [
+                    v
+                    for k, v in cls.__dict__.items()
+                    if not k.startswith("_") and isinstance(v, str)
+                ]
+
+        class StrEnum(object):  # type:ignore
+            __metaclass__ = AttrIter
+
+    else:
+
+        class StrEnum(str, Enum):  # type:ignore
+            __str__ = str.__str__
 
 
 class LineBreakChoices(StrEnum):
