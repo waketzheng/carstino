@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+"""Generate virtual environment activate shell command.
+
+1. If venv/*/activate exists: print `source venv/*/activate`
+2. elif it's a poetry project: print `poetry shell`
+3. elif .venv/*/activate exists: print `source .venv/*/activate`
+"""
 import os
 import platform
 

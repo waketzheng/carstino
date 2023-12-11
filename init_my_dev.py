@@ -7,6 +7,7 @@ And python3.6+ is required.
 import re
 import subprocess
 import sys
+from functools import lru_cache
 from pathlib import Path
 from platform import platform
 from typing import Optional
@@ -20,6 +21,11 @@ FILES = ALIAS_FILE, *_ = [
 
 PACKAGES = "ipython fast-tort-cli[all]"
 IS_WINDOWS = platform().lower().startswith("win")
+
+
+@lru_cache(8)
+def no_input() -> bool:
+    return "--no-input" in sys.argv
 
 
 def get_cmd_result(cmd: str) -> str:
@@ -126,7 +132,7 @@ def get_rc_file(home) -> Path:
             rc = home / names[-1]
             rc.touch()
             return rc
-        raise Exception(f"Startup file not found, including {names!r}")
+        raise OSError(f"Startup file not found, including {names!r}")
     return rc
 
 
@@ -137,7 +143,7 @@ def init_pip_source(home: Path, repo: Path) -> None:
         print("pip source already config as follows:\n\n")
         print(p.read_bytes().decode())
         tip = f"\nDo you want to rerun ./{swith_pip_source.name}? [y/N] "
-        if input(tip).lower() == "y":
+        if not no_input() and input(tip).lower() == "y":
             run_cmd(f"{swith_pip_source}")
     else:
         run_cmd(f"{swith_pip_source}")
@@ -145,8 +151,7 @@ def init_pip_source(home: Path, repo: Path) -> None:
 
 def upgrade_pip_and_install_pipx() -> None:
     run_cmd("python3 -m pip install --upgrade --user pip pipx")
-    run_cmd("python3 -m pipx ensurepath")
-    if run_cmd("pipx install --upgrade poetry") == 0:
+    if run_cmd("pipx install poetry") == 0:
         run_cmd("./pip_conf.py --poetry")
 
 
@@ -155,7 +160,7 @@ def main():
     aliases_path = home / ALIAS_FILE
     if aliases_path.exists():
         a = input(f"`{aliases_path}` exists. Continue and replace it?[y/(n)] ")
-        if not a.lower().strip().startswith("y"):
+        if not no_input() and not a.lower().strip().startswith("y"):
             return
     run_init(home, aliases_path)
 
@@ -180,7 +185,7 @@ def run_init(home, aliases_path):
     if run_cmd(f"python3 -m pip install --upgrade --user {PACKAGES}") != 0:
         if IS_WINDOWS:
             a = input(f"Failed to install {PACKAGES}. Continue?[(y)/n] ")
-            if a.lower().strip().startswith("n"):
+            if not no_input() and a.lower().strip().startswith("n"):
                 sys.exit(1)
         elif run_cmd(f"sudo pip3 install -U {PACKAGES}") != 0:
             print("Please install python3-pip and then rerun this script.")
