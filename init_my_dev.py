@@ -149,16 +149,17 @@ def init_pip_source(home: Path, repo: Path) -> None:
         run_cmd(f"python {swith_pip_source}")
 
 
-def upgrade_pip_and_install_pipx(home) -> None:
+def upgrade_pip_and_install_pipx(home) -> str:
+    pipx = "pipx"
+    if run_cmd("which pipx") != 0:
+        run_cmd("python3 -m pip install --upgrade --user pipx")
+        pipx_file = home / ".local/bin/pipx"
+        if pipx_file.exists():
+            pipx = pipx_file.as_posix()
     if run_cmd("which poetry") != 0:
-        pipx = "pipx"
-        if run_cmd("which pipx") != 0:
-            run_cmd("python3 -m pip install --upgrade --user pipx")
-            pipx_file = home / ".local/bin/pipx"
-            if pipx_file.exists():
-                pipx = pipx_file.as_posix()
         if run_cmd(f"{pipx} install poetry") == 0:
             run_cmd("python pip_conf.py --poetry")
+    return pipx
 
 
 def main():
@@ -174,7 +175,7 @@ def main():
 def run_init(home, aliases_path):
     repo = get_dirpath()
     init_pip_source(home, repo)
-    upgrade_pip_and_install_pipx(home)
+    pipx = upgrade_pip_and_install_pipx(home)
     for fn in FILES:
         run_cmd(f"cp {repo / fn} {home}")
     update_aliases(repo, aliases_path, home)
@@ -188,15 +189,16 @@ def run_init(home, aliases_path):
     rc = get_rc_file(home)
     configure_aliases(rc)
     # Install some useful python modules
-    if "--prod" not in sys.argv:
-        if run_cmd(f"python3 -m pip install --upgrade --user {PACKAGES}") != 0:
-            if IS_WINDOWS:
-                a = input(f"Failed to install {PACKAGES}. Continue?[(y)/n] ")
-                if not no_input() and a.lower().strip().startswith("n"):
+    if "--prod" not in sys.argv and PACKAGES:
+        for pkg in PACKAGES.split():
+            if run_cmd(f"{pipx} install {pkg}") != 0:
+                if IS_WINDOWS:
+                    a = input(f"Failed to install {PACKAGES}. Continue?[(y)/n] ")
+                    if not no_input() and a.lower().strip().startswith("n"):
+                        sys.exit(1)
+                elif run_cmd(f"pip3 install --upgrade --user {PACKAGES}") != 0:
+                    print("Please install python3-pip and then rerun this script.")
                     sys.exit(1)
-            elif run_cmd(f"sudo pip3 install -U {PACKAGES}") != 0:
-                print("Please install python3-pip and then rerun this script.")
-                sys.exit(1)
     # Activate installed python package scripts, such as: ipython, ruff
     configure_path(rc)
     # Reactive rc file
