@@ -19,7 +19,7 @@ FILES = ALIAS_FILE, *_ = [
     ".lint.sh",
 ]
 
-PACKAGES = "ipython fast-tort-cli[all]"
+PACKAGES = "ipython 'fast-tort-cli[all]'"
 IS_WINDOWS = platform().lower().startswith("win")
 
 
@@ -28,7 +28,7 @@ def no_input() -> bool:
     return "--no-input" in sys.argv
 
 
-def get_cmd_result(cmd: str) -> str:
+def get_cmd_output(cmd: str) -> str:
     ret = subprocess.run(cmd, shell=True, capture_output=True)
     return ret.stdout.decode().strip()
 
@@ -39,7 +39,7 @@ def run_cmd(command: str) -> int:
 
 
 def get_shell() -> str:
-    return Path(get_cmd_result("echo $SHELL")).name
+    return Path(get_cmd_output("echo $SHELL")).name
 
 
 def set_alias_for_git(home: Path) -> None:
@@ -113,7 +113,7 @@ def update_aliases(repo: Path, aliases_path: Path, home) -> str:
                 script_path = repo / script
                 new_path = script_path.as_posix().replace(Path.home().as_posix(), "~")
                 ss = ss.replace(f'{stem}="{path}"', f'{stem}="{new_path}"')
-    if run_cmd("which vi") and "alias vi=" not in get_cmd_result("alias"):
+    if run_cmd("which vi") and "alias vi=" not in get_cmd_output("alias"):
         ss += "alias vi=vim\n"
     if s != ss:
         aliases_path.write_text(ss)
@@ -144,15 +144,21 @@ def init_pip_source(home: Path, repo: Path) -> None:
         print(p.read_bytes().decode())
         tip = f"\nDo you want to rerun ./{swith_pip_source.name}? [y/N] "
         if not no_input() and input(tip).lower() == "y":
-            run_cmd(f"{swith_pip_source}")
+            run_cmd(f"python {swith_pip_source}")
     else:
-        run_cmd(f"{swith_pip_source}")
+        run_cmd(f"python {swith_pip_source}")
 
 
-def upgrade_pip_and_install_pipx() -> None:
-    run_cmd("python3 -m pip install --upgrade --user pip pipx")
-    if run_cmd("pipx install poetry") == 0:
-        run_cmd("./pip_conf.py --poetry")
+def upgrade_pip_and_install_pipx(home) -> None:
+    if run_cmd("which poetry") != 0:
+        pipx = "pipx"
+        if run_cmd("which pipx") != 0:
+            run_cmd("python3 -m pip install --upgrade --user pipx")
+            pipx_file = home / ".local/bin/pipx"
+            if pipx_file.exists():
+                pipx = pipx_file.as_posix()
+        if run_cmd(f"{pipx} install poetry") == 0:
+            run_cmd("python pip_conf.py --poetry")
 
 
 def main():
@@ -168,7 +174,7 @@ def main():
 def run_init(home, aliases_path):
     repo = get_dirpath()
     init_pip_source(home, repo)
-    upgrade_pip_and_install_pipx()
+    upgrade_pip_and_install_pipx(home)
     for fn in FILES:
         run_cmd(f"cp {repo / fn} {home}")
     update_aliases(repo, aliases_path, home)
@@ -182,14 +188,15 @@ def run_init(home, aliases_path):
     rc = get_rc_file(home)
     configure_aliases(rc)
     # Install some useful python modules
-    if run_cmd(f"python3 -m pip install --upgrade --user {PACKAGES}") != 0:
-        if IS_WINDOWS:
-            a = input(f"Failed to install {PACKAGES}. Continue?[(y)/n] ")
-            if not no_input() and a.lower().strip().startswith("n"):
+    if "--prod" not in sys.argv:
+        if run_cmd(f"python3 -m pip install --upgrade --user {PACKAGES}") != 0:
+            if IS_WINDOWS:
+                a = input(f"Failed to install {PACKAGES}. Continue?[(y)/n] ")
+                if not no_input() and a.lower().strip().startswith("n"):
+                    sys.exit(1)
+            elif run_cmd(f"sudo pip3 install -U {PACKAGES}") != 0:
+                print("Please install python3-pip and then rerun this script.")
                 sys.exit(1)
-        elif run_cmd(f"sudo pip3 install -U {PACKAGES}") != 0:
-            print("Please install python3-pip and then rerun this script.")
-            sys.exit(1)
     # Activate installed python package scripts, such as: ipython, ruff
     configure_path(rc)
     # Reactive rc file
