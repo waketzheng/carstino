@@ -40,8 +40,8 @@ def get_venv():
             break
     else:
         if is_windows:
-            # I use Git Base at Windows, which does not show venv prefix
-            # after running `poetry shell`, so use `source ../activate` instead
+            # If use Git Base at Windows, which does not show venv prefix
+            # after running `poetry shell`, should use `source ../activate` instead
             cache_dir = run_cmd("poetry env info --path")
             if cache_dir:
                 try:

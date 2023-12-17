@@ -2,10 +2,10 @@
 filetype plugin indent on
 
 " c语言，C++，Python用4格缩进，其他用两格
-"set tabstop=2 softtabstop=2 shiftwidth=2
-"autocmd FileType c,cpp,py set shiftwidth=4 tabstop=4 softtabstop=4
-set tabstop=4 softtabstop=4 shiftwidth=4
-autocmd FileType HTML,javascript set shiftwidth=2 tabstop=2 softtabstop=2
+set tabstop=2 softtabstop=2 shiftwidth=2
+autocmd FileType c,cpp,py set shiftwidth=4 tabstop=4 softtabstop=4
+"set tabstop=4 softtabstop=4 shiftwidth=4
+"autocmd FileType HTML,javascript set shiftwidth=2 tabstop=2 softtabstop=2
 
 
 " 由于 Tab 键在不同的编辑器缩进不一致，该设置自动将 Tab 转为空格。

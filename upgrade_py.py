@@ -25,8 +25,8 @@ except NameError:
     pass
 
 VERSION = "3.11.6"
-HOST = "https://mirrors.huaweicloud.com/python/"
 # Mirror of> https://www.python.org/ftp/python/
+HOST = "https://mirrors.huaweicloud.com/python/"
 DOWNLOAD_PATH = "{0}/Python-{0}.tar.xz"
 ENABLE_OPTIMIZE = "--enable-optimizations"
 # ipython need sqlite3 enable to store history
