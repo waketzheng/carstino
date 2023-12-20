@@ -51,7 +51,10 @@ fi
 
 if [ "$SSH_PASS" ]; then
   if [ -f /usr/bin/expect ]; then
-    EXP_FILE=".do_ssh_scp.exp"
+    EXP_FILE=".do_ssh.exp"
+    if [ $1 ]; then
+      EXP_FILE=".do_scp.exp"
+    fi
     if [ -f ~/archives/carstino/$EXP_FILE ]; then
       EXP_FILE="~/archives/carstino/$EXP_FILE"
     elif [ -f ~/$EXP_FILE ]; then

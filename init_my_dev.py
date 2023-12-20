@@ -14,8 +14,8 @@ from typing import Optional
 
 FILES = ALIAS_FILE, *_ = [
     ".bash_aliases",
-    ".mg.py",
     ".vimrc",
+    ".mg.py",
     ".lint.sh",
 ]
 
@@ -121,7 +121,7 @@ def update_aliases(repo: Path, aliases_path: Path, home) -> str:
     return ss
 
 
-def get_rc_file(home) -> Path:
+def get_rc_file(home: Path) -> Path:
     names = [".zshrc", ".bashrc", ".profile", ".zprofile", ".bash_profile"]
     for name in names:
         rc = home / name
@@ -149,20 +149,23 @@ def init_pip_source(home: Path, repo: Path) -> None:
         run_cmd(f"python {swith_pip_source}")
 
 
-def upgrade_pip_and_install_pipx(home) -> str:
+def upgrade_pip_and_install_pipx(home: Path) -> str:
     pipx = "pipx"
     if run_cmd("which pipx") != 0:
-        run_cmd("python3 -m pip install --upgrade --user pipx")
         pipx_file = home / ".local/bin/pipx"
         if pipx_file.exists():
             pipx = pipx_file.as_posix()
+        else:
+            r = run_cmd("python3 -m pip install --upgrade --user pipx")
+            if r == 0 and pipx_file.exists():
+                pipx = pipx_file.as_posix()
     if run_cmd("which poetry") != 0:
         if run_cmd(f"{pipx} install poetry") == 0:
             run_cmd("python pip_conf.py --poetry")
     return pipx
 
 
-def main():
+def main() -> None:
     home = Path.home()
     aliases_path = home / ALIAS_FILE
     if aliases_path.exists():
@@ -172,12 +175,19 @@ def main():
     run_init(home, aliases_path)
 
 
-def run_init(home, aliases_path):
+def run_init(home: Path, aliases_path: Path) -> None:
     repo = get_dirpath()
     init_pip_source(home, repo)
     pipx = upgrade_pip_and_install_pipx(home)
-    for fn in FILES:
-        run_cmd(f"cp {repo / fn} {home}")
+    user_special_files = FILES[:2]
+    general_files = FILES[2:]
+    if not IS_WINDOWS:
+        general_files.append(".pipi.py")
+    for fp in user_special_files:
+        run_cmd(f"cp {repo/fp} {home}")
+    for fn in general_files:
+        if run_cmd(f"ln -s {repo/fn} {home/fn}") == 0:
+            run_cmd("chmod +x {home/fn}")
     update_aliases(repo, aliases_path, home)
     if "macos" in platform().lower():
         ctl_name = "systemctl.py"
