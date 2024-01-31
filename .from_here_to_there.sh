@@ -40,6 +40,9 @@ if [ $1 ]; then
   fi
 else
   cmd="ssh"
+  if [ $T_HOST ]; then
+      cmd="$cmd -t $T_HOST"
+  fi
   if [ $PRI ]; then
     cmd="$cmd -i $PRI"
   fi

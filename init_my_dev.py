@@ -187,7 +187,7 @@ def run_init(home: Path, aliases_path: Path) -> None:
         run_cmd(f"cp {repo/fp} {home}")
     for fn in general_files:
         if run_cmd(f"ln -s {repo/fn} {home/fn}") == 0:
-            run_cmd("chmod +x {home/fn}")
+            run_cmd(f"chmod +x {home/fn}")
     update_aliases(repo, aliases_path, home)
     if "macos" in platform().lower():
         ctl_name = "systemctl.py"
