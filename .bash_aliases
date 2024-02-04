@@ -1,5 +1,5 @@
 # Shortcuts for `python manage.py` and its completion
-alias mg='~/.mg.py'
+alias mg='python ~/.mg.py'
 alias mgshell="mg shell"
 alias mgtest="mg test"
 alias mgrunserver="mg runserver 0.0.0.0:9000"
@@ -28,7 +28,7 @@ alias ve='echo "--> $(getVenv)" && $(getVenv)'
 alias vv='echo "--> source venv/*/activate" && source venv/*/activate'
 
 # trim the space at the right side of every line
-alias rstrip="~/archives/carstino/rstrip.py"
+alias rstrip="python ~/archives/carstino/rstrip.py"
 
 # some useful aliases
 alias cd..="cd .."
@@ -94,5 +94,5 @@ fi
 
 # Shortcut for pip install
 if [ -f $HOME/.pipi.py ]; then
-  alias pipi="$HOME/.pipi.py"
+  alias pipi="python $HOME/.pipi.py"
 fi
