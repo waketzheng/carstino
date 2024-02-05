@@ -40,8 +40,8 @@ def capture_output(cmd):
         return r.stdout.decode().strip()
 
 
-def patch_it(filename):
-    # type: (str) -> Optional[int]
+def patch_it(filename, tip="pip i package-name"):
+    # type: (str, str) -> Optional[int]
     with open(filename) as f:
         text = f.read()
     if "install" not in text:
@@ -53,7 +53,7 @@ def patch_it(filename):
         except IOError:
             print("Failed to write lines to {}:\n{}".format(filename, TEXT))
             return 1
-        print("i command was configured!\n\nUsage::\n\n    pip i package-name\n")
+        print("i command was configured!\n\nUsage::\n\n    {}\n".format(tip))
 
 
 def main():
@@ -66,6 +66,9 @@ def main():
     if patch_it(pip_file):
         return 1
     elif not args:
+        poetry_file = capture_output("which poetry")
+        if poetry_file and os.path.exists(poetry_file):
+            patch_it(poetry_file, "poetry i")
         return run_and_echo("pip install")
     if args:
         cmd = "pip i " + " ".join(args)
