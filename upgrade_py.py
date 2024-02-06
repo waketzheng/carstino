@@ -78,6 +78,7 @@ SHORTCUTS.update({k[0] + "." + k[1:]: v for k, v in SHORTCUTS.items() if len(k) 
 
 
 def is_pingable(domain):
+    # type: (str) -> bool
     if "/" in domain:
         domain = domain.split("/")[0]
     try:
@@ -88,10 +89,11 @@ def is_pingable(domain):
 
 
 def fetch_html(url):
+    # type: (str) -> str
     try:
         from urllib.request import urlopen
     except ImportError:  # For python2
-        from urllib import urlopen
+        from urllib import urlopen  # type:ignore[attr-defined,no-redef]
     html = urlopen(url).read().strip()
     if not isinstance(html, str):
         return html.decode()  # For python3
@@ -99,6 +101,7 @@ def fetch_html(url):
 
 
 def update_versions_by_http():
+    # type: () -> None
     global VERSION
     global HOST
     domain = (
@@ -130,15 +133,19 @@ def update_versions_by_http():
 
 
 def python_version(py="python"):
+    # type: (str) -> str
     return silently_run("{} -V".format(py)).replace("Python ", "")
 
 
 def default_python_version():
-    print("Default python version:")
-    return python_version()
+    # type: () -> str
+    v = python_version()
+    print("Default python version: " + v)
+    return v
 
 
 def silently_run(cmd):
+    # type: (str) -> str
     with os.popen(cmd) as fp:
         if not hasattr(fp, "_stream"):  # For python2
             return fp.read().strip()
@@ -150,11 +157,13 @@ def silently_run(cmd):
 
 
 def run_and_echo(cmd):
+    # type: (str) -> int
     print("--> " + cmd)
     return os.system(cmd)
 
 
 def parse_args():
+    # type: () -> argparse.Namespace
     """parse custom arguments and set default value"""
     parser = argparse.ArgumentParser(description="Install python by source")
     parser.add_argument(
@@ -200,6 +209,7 @@ def parse_args():
 
 
 def validated_args(ret_pre=False):
+    # type: (bool) -> tuple[argparse.Namespace, bool]
     if sys.argv[1:] and sys.argv[1].startswith("3"):
         sys.argv.insert(1, "-v")
     args = parse_args()
@@ -238,10 +248,11 @@ def validated_args(ret_pre=False):
             not has_same_version and target_version == VERSION.rsplit(".", 1)[0]
         )
         return args, prefer_to_prepare
-    return args
+    return args, False
 
 
 def home():
+    # type: () -> str
     try:
         return os.environ["HOME"]
     except KeyError:
@@ -251,6 +262,7 @@ def home():
 
 
 def install_py(folder, url, alt, configure_options=""):
+    # type: (str, str, bool, str) -> list[str]
     commands = []
     if not folder.startswith("/"):
         folder = folder.replace("~", home())
@@ -275,6 +287,7 @@ def install_py(folder, url, alt, configure_options=""):
 
 
 def get_tool_name():
+    # type: () -> str
     for name in PREDEPENDS:
         if detect_command(name):
             return name
@@ -282,17 +295,27 @@ def get_tool_name():
 
 
 def detect_command(name):
+    # type: (str) -> bool
     r = silently_run("which {name}".format(name=name))
-    return r and "not found" not in r
+    return bool(r) and "not found" not in r
 
 
 def gen_cmds(ret_dry=False):
+    # type: (bool) -> tuple[list[str], bool]
     args, prefer_to_prepare = validated_args(True)
+    version = args.version
     is_mac = sys.platform == "darwin"
     if is_mac:
         print("For MacOS, try this:\n")
-        print("    brew update&&brew upgrade pyenv&&./pyinstall.py " + args.version)
-        print("\nSee more at https://github.com/pyenv/pyenv\n")
+        if silently_run("which pyenv"):
+            print("    brew update&&brew upgrade pyenv&&./pyinstall.py " + version)
+            print("\nSee more at https://github.com/pyenv/pyenv\n")
+        else:
+            minor_version = ".".join(version.split(".")[:2])
+            if silently_run("which python" + minor_version):
+                print("    brew upgrade python@" + minor_version)
+            else:
+                print("    brew install python@" + minor_version)
         sys.exit(1)
     cmds = []
     tool = get_tool_name()
@@ -307,7 +330,7 @@ def gen_cmds(ret_dry=False):
                 should_prepare = True
         if should_prepare:
             cmds.extend(deps)
-    url = (HOST + DOWNLOAD_PATH).format(args.version)
+    url = (HOST + DOWNLOAD_PATH).format(version)
     conf = ""
     if not args.no_ops:
         conf += ENABLE_OPTIMIZE + " "
@@ -318,10 +341,11 @@ def gen_cmds(ret_dry=False):
         cmds.append("sudo {} install -y ".format(tool) + APPENDS[tool])
     if ret_dry:
         return cmds, args.dry
-    return cmds
+    return cmds, False
 
 
 def main():
+    # type: () -> None
     update_versions_by_http()
     cmds, dry = gen_cmds(True)
     is_root_user = home() == "/root"
@@ -342,6 +366,7 @@ def main():
 
 
 def friendly_time(cost):
+    # type: (float) -> str
     if cost >= 3600:
         return ">= {}h".format(cost // 3600)
     elif cost > 60:
