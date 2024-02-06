@@ -81,6 +81,14 @@ def start(db: Engine):
     run_shell(Start[db])
 
 
+@cli.command()
+def status(db: Engine):
+    if db == Engine.docker:
+        run_shell('colima status')
+    else:
+        run_shell(f'docker ps |grep {db}')
+
+
 def main():
     if (f := "--dry") in sys.argv:
         global DRY
