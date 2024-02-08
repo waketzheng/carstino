@@ -22,6 +22,7 @@ class Engine(StrEnum):
     mysql = "mysql"
     postgres = "postgres"
     mssql = "mssql"
+    mongo = "mongo"
     docker = "docker"
 
 
@@ -39,6 +40,7 @@ class Create(StrEnum):
         " -e ACCEPT_EULA=Y -e SA_PASSWORD: Abcd12345678"
         " mcr.microsoft.com/mssql/server:latest"
     )
+    mongo = "docker run -d -p 27017:27017 --name mongo_latest mongo:latest"
     docker = "brew install colima"
 
 
@@ -46,6 +48,7 @@ class Start(StrEnum):
     mysql = "docker start mysql_latest"
     postgres = "docker start postgres_latest"
     mssql = "docker start mssql_latest"
+    mongo = "docker start mongo_latest"
     # https://apple.stackexchange.com/questions/373888/how-do-i-start-the-docker-daemon-on-macos
     docker = "colima start"
 
@@ -84,9 +87,9 @@ def start(db: Engine):
 @cli.command()
 def status(db: Engine):
     if db == Engine.docker:
-        run_shell('colima status')
+        run_shell("colima status")
     else:
-        run_shell(f'docker ps |grep {db}')
+        run_shell(f"docker ps |grep {db}")
 
 
 def main():
