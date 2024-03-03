@@ -22,8 +22,8 @@ Or:
     $ sudo python pip_conf.py --etc  # Set conf to /etc/pip.[conf|ini]
 """
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2024.02.04"
-__version__ = "0.3.2"
+__updated_at__ = "2024.03.03"
+__version__ = "0.3.3"
 import os
 import platform
 import pprint
@@ -122,6 +122,26 @@ def run_and_echo(cmd):
     print("--> " + cmd)
     sys.stdout.flush()
     return os.system(cmd)
+
+
+def patch_it(filename, tip="poetry i"):
+    # type: (str, str) -> Optional[int]
+    with open(filename) as f:
+        text = f.read()
+    if "install" not in text:
+        expand = (
+            "    if sys.argv[1:] and sys.argv[1] == 'i':\n"
+            "        sys.argv[1] = 'install'"
+        )
+        ss = text.strip().splitlines()
+        new_text = "\n".join(ss[:-1] + [expand] + ss[-1:])
+        try:
+            with open(filename, "w") as f:
+                f.write(new_text)
+        except IOError:
+            print("Failed to write lines to {}:\n{}".format(filename, expand))
+            return 1
+        print("i command was configured!\n\nUsage::\n\n    {}\n".format(tip))
 
 
 def config_by_cmd(url, is_windows=False):
@@ -375,6 +395,9 @@ class PoetryMirror:
                 os.mkdir(parent)
             os.mkdir(dirpath)
         do_write(config_toml_path, text)
+        poetry_file = capture_output("which poetry")
+        if poetry_file and os.path.exists(poetry_file):
+            patch_it(poetry_file)
 
 
 def init_pip_conf(

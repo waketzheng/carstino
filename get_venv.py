@@ -10,6 +10,7 @@ import platform
 
 
 def run_cmd(command):
+    # type: (str) -> str
     with os.popen(command) as fp:
         if not hasattr(fp, "_stream"):  # For python2
             return fp.read().strip()
@@ -21,6 +22,7 @@ def run_cmd(command):
 
 
 def read_content(filename):
+    # type: (str) -> bytes
     if not os.path.exists(filename):
         return b""
     with open(filename, "rb") as f:
@@ -28,6 +30,7 @@ def read_content(filename):
 
 
 def get_venv():
+    # type: () -> str
     is_windows = platform.platform().lower().startswith("windows")
     filename = "pyproject.toml"
     common_venv_names = ["venv"]
@@ -59,6 +62,7 @@ def get_venv():
 
 
 def main():
+    # type: () -> None
     shell_command_to_activate_virtual_env = get_venv()
     print(shell_command_to_activate_virtual_env)
 

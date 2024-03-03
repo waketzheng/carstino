@@ -2,7 +2,7 @@
 name = "carstino"
 version = "0.2.3"
 description = ""
-authors = ["waketzheng@gmail.com"]
+authors = ["Waket Zheng <waketzheng@gmail.com>"]
 
 # Use `poetry-plugin-pypi-mirror` instead (python pip_conf.py --poetry)
 #[[tool.poetry.source]]
@@ -15,7 +15,7 @@ python = ">=3.11,<3.13"
 
 [tool.poetry.group.dev.dependencies]
 fast-tort-cli = {extras = ["all"], version = "*"}
-asyncur = "^0.3.0"
+asyncur = "^0.3.1"
 
 [tool.isort]
 profile = "black"
