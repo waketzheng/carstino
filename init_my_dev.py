@@ -19,7 +19,7 @@ FILES = ALIAS_FILE, *_ = [
     ".lint.sh",
 ]
 
-PACKAGES = "ipython 'fast-tort-cli[all]'"
+PACKAGES = "ipython 'fast-dev-cli[all]'"
 IS_WINDOWS = platform().lower().startswith("win")
 
 

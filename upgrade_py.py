@@ -13,6 +13,7 @@ This script do the following steps:
 """
 import argparse
 import os
+import pprint
 import re
 import socket
 import sys
@@ -24,7 +25,7 @@ try:
 except NameError:
     pass
 
-VERSION = "3.11.6"
+VERSION = "3.11.8"
 # Mirror of> https://www.python.org/ftp/python/
 HOST = "https://mirrors.huaweicloud.com/python/"
 DOWNLOAD_PATH = "{0}/Python-{0}.tar.xz"
@@ -183,6 +184,9 @@ def parse_args():
         "--dry", action="store_true", help="Only print command without run it"
     )
     parser.add_argument(
+        "--list", action="store_true", help="List available python version shortcuts"
+    )
+    parser.add_argument(
         "-f",
         "--force",
         action="store_true",
@@ -213,6 +217,8 @@ def validated_args(ret_pre=False):
     if sys.argv[1:] and sys.argv[1].startswith("3"):
         sys.argv.insert(1, "-v")
     args = parse_args()
+    if args.list:
+        return args, False
     if args.version.count(".") > 1:
         assert args.version >= "3", "Only support Python3 install"
     elif args.version not in SHORTCUTS:
@@ -301,8 +307,10 @@ def detect_command(name):
 
 
 def gen_cmds(ret_dry=False):
-    # type: (bool) -> tuple[list[str], bool]
+    # type: (bool) -> tuple[list[str], bool, bool]
     args, prefer_to_prepare = validated_args(True)
+    if args.list:
+        return [], False, True
     version = args.version
     is_mac = sys.platform == "darwin"
     if is_mac:
@@ -340,14 +348,17 @@ def gen_cmds(ret_dry=False):
     if tool and should_prepare:
         cmds.append("sudo {} install -y ".format(tool) + APPENDS[tool])
     if ret_dry:
-        return cmds, args.dry
-    return cmds, False
+        return cmds, args.dry, False
+    return cmds, False, False
 
 
 def main():
     # type: () -> None
     update_versions_by_http()
-    cmds, dry = gen_cmds(True)
+    cmds, dry, only_list = gen_cmds(True)
+    if only_list:
+        pprint.pprint(SHORTCUTS)
+        return
     is_root_user = home() == "/root"
     if is_root_user:
         cmds = [i.replace("sudo ", "").replace(ENABLE_OPTIMIZE, "") for i in cmds]
