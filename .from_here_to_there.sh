@@ -1,6 +1,6 @@
 #!/bin/bash
 # Usage::
-# DEST=$IP_OR_DOMAIN ~/archives/carstino/.from_here_to_there.sh $1 $2
+# DEST=$IP_OR_DOMAIN sh ~/archives/carstino/.from_here_to_there.sh $1 $2
 
 if [ "$SSH_USER" ]; then
   HOST=$SSH_USER@$DEST
@@ -68,7 +68,7 @@ if [ "$SSH_PASS" ]; then
       EXP_FILE=""
     fi
     if [ "$EXP_FILE" ]; then
-      cmd="$EXP_FILE '$cmd' $SSH_PASS"
+      cmd="expect $EXP_FILE '$cmd' $SSH_PASS"
     else
       echo "--> $cmd"
       echo "$SSH_PASS"
