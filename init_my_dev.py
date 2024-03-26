@@ -166,12 +166,21 @@ def upgrade_pip_and_install_pipx(home: Path) -> str:
 
 
 def main() -> None:
+    command = sys.argv[1:] and sys.argv[1]
+    if command == "dog":
+        set_alias_for_git(Path.home())
+        return
     home = Path.home()
     aliases_path = home / ALIAS_FILE
     if aliases_path.exists():
         a = input(f"`{aliases_path}` exists. Continue and replace it?[y/(n)] ")
         if not no_input() and not a.lower().strip().startswith("y"):
             return
+    if command == "alias":
+        run_cmd("[[ -f ~/.bash_aliases ]] || cp .bash_aliases ~/")
+        run_cmd("[[ -f ~/.vimrc ]] || cp .vimrc ~/")
+        run_cmd("echo '[[ -f ~/.bash_aliases ]] && . ~/.bash_aliases' >>  ~/.zshrc")
+        return
     run_init(home, aliases_path)
 
 
@@ -219,7 +228,4 @@ def run_init(home: Path, aliases_path: Path) -> None:
 
 
 if __name__ == "__main__":
-    if sys.argv[1:] and sys.argv[1] == "dog":
-        set_alias_for_git(Path.home())
-    else:
-        main()
+    main()
