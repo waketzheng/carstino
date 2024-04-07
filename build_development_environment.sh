@@ -1,3 +1,4 @@
+#!/bin/bash
 SUDO="sudo"
 if [ "$USER" = "root" ]; then
   SUDO=""

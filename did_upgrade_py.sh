@@ -6,15 +6,17 @@
 # 2. When the py script not exist, wget it from HTTP.
 # ----------------------------------------
 
-GITHUB_RAW="https://raw.githubusercontent.com/waketzheng/carstino/master"
-if [ $RAW_URL ]; then
-  if [ $RAW_URL == "gitee" ]; then
+GITHUB_RAW="https://raw.githubusercontent.com/waketzheng/carstino/main"
+if [[ $RAW_URL ]]; then
+  if [[ $RAW_URL == "gitee" ]]; then
     RAW_URL="https://gitee.com/waketzheng/carstino/raw/master"
-  elif [ $RAW_URL == "github" ]; then
+  elif [[ $RAW_URL == "github" ]]; then
     RAW_URL=$GITHUB_RAW
   fi
   starttime=`date +'%Y-%m-%d %H:%M:%S'`
   echo Current time is $starttime
+elif [[ $RAW_HOST ]]; then
+  RAW_URL="$RAW_HOST/waketzheng/carstino/main"
 else
   RAW_URL=$GITHUB_RAW
 fi

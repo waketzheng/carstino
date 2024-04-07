@@ -1,3 +1,5 @@
+#!/bin/bash
+"""Use this script to install zsh and change default shell to it, then install ohmyzsh"""
 if [ "$USER" = "root" ]; then
   SUDO=""
 else

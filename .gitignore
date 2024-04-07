@@ -126,3 +126,6 @@ dev_requirements.txt
 
 # Backup files
 *.bak
+
+# Media
+new*.jpg

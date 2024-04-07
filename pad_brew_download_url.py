@@ -10,7 +10,7 @@ import subprocess
 
 HOST = "https://g.waketzheng.top/"
 PAD = """
-      elsif url.start_with?("https://cdn.")
+      elsif (url.start_with?("https://cdn.") || url.start_with?("https://desktop.docker.com"))
         puts "Leave #{url} to be itself."
       elsif !url.start_with?("https://mirrors.")
         url = "%s" + url

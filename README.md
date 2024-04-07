@@ -16,12 +16,12 @@ This is a repo about init my dev environment
 Usage:
 ```bash
 # Change source of pip to mirrors.cloud.tencent.com, worked at both Linux and Windows(Run with Git Bash).
-curl https://raw.githubusercontent.com/waketzheng/carstino/master/pip_conf.py|python
+curl https://raw.githubusercontent.com/waketzheng/carstino/main/pip_conf.py|python
 ```
 
 ```bash
 # Change apt source of ubuntu16/18/19/20 to tencent cloud.
-curl https://raw.githubusercontent.com/waketzheng/carstino/master/change_ubuntu_mirror_sources.py|python
+curl https://raw.githubusercontent.com/waketzheng/carstino/main/change_ubuntu_mirror_sources.py|python
 ```
 
 - init_my_dev.py: setting for vim, git store, pipenv aliases.
