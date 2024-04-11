@@ -71,7 +71,7 @@ def main():
             patch_it(poetry_file, "poetry i")
         return run_and_echo("pip install")
     if args:
-        cmd = "pip i " + " ".join(args)
+        cmd = "pip i " + " ".join([repr(i) for i in args])
         run_and_echo(cmd)
         print("Next time you can use this instead:\n\n  pip i {}\n".format(packages))
         if "pip" in args:
