@@ -5,6 +5,7 @@
 2. elif it's a poetry project: print `poetry shell`
 3. elif .venv/*/activate exists: print `source .venv/*/activate`
 """
+
 import os
 import platform
 

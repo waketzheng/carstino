@@ -2,6 +2,7 @@
 """
 For MacOS to manage databases/docker service
 """
+
 import os
 import subprocess
 import sys

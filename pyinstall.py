@@ -12,6 +12,7 @@ Usage::
 Or just::
     python pyinstall.py 3.11.5
 """
+
 import functools
 import os
 import re

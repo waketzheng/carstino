@@ -8,6 +8,7 @@ Usage:
     $ ./createdatabase.py -m  # Run `./manage.py migrate` after create
     $ ./createdatabase.py -dm  # drop, create, migrate
 """
+
 import os
 import sys
 from pathlib import Path

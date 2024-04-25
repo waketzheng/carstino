@@ -4,6 +4,7 @@ Configure python development environment.
 Only work for linux that use bash!
 And python3.6+ is required.
 """
+
 import re
 import subprocess
 import sys
@@ -16,7 +17,6 @@ FILES = ALIAS_FILE, *_ = [
     ".bash_aliases",
     ".vimrc",
     ".mg.py",
-    ".lint.sh",
 ]
 
 PACKAGES = "ipython 'fast-dev-cli[all]'"

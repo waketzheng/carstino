@@ -11,6 +11,7 @@ This script do the following steps:
         ./configure --enable-optimizations --enable-loadable-sqlite-extensions\
                 && make && sudo make altinstall
 """
+
 import argparse
 import os
 import pprint

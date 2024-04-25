@@ -5,6 +5,7 @@ This script is used to improve download speed for `brew install`
 Usage::
     $ python pad_brew_download_url.py
 """
+
 import os
 import subprocess
 

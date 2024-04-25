@@ -17,6 +17,7 @@ Usage::
     $ rstrip a.py b.txt  # rstrip the two files
 
 """
+
 import argparse
 import os
 import re

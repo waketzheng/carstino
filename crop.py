@@ -5,6 +5,7 @@
 Usage::
     $ python crop.py /path/to/image
 """
+
 import operator
 import re
 import sys
@@ -15,7 +16,6 @@ from typing import Tuple, Union
 # pip install pillow humanize
 from humanize.filesize import naturalsize
 from PIL import Image
-
 
 RE_FLOAT = re.compile(r"\d*\.?\d+")
 RE_EXPRESS = re.compile(r"(\d*\.?\d+)([-+*/])(\d*\.?\d+)")

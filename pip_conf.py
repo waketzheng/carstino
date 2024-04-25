@@ -21,9 +21,10 @@ Or:
 
     $ sudo python pip_conf.py --etc  # Set conf to /etc/pip.[conf|ini]
 """
+
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2024.03.03"
-__version__ = "0.3.3"
+__updated_at__ = "2024.04.25"
+__version__ = "0.3.5"
 import os
 import platform
 import pprint
@@ -393,7 +394,9 @@ class PoetryMirror:
             parent = os.path.dirname(dirpath)
             if not os.path.exists(parent):
                 os.mkdir(parent)
-            os.mkdir(dirpath)
+                os.mkdir(dirpath)
+            elif not os.path.exists(dirpath):
+                os.mkdir(dirpath)
         do_write(config_toml_path, text)
         poetry_file = capture_output("which poetry")
         if poetry_file and os.path.exists(poetry_file):
@@ -496,7 +499,7 @@ def main():
 if __name__ == "__main__":
     if "--url" not in sys.argv:
         try:
-            from kitty import timeit
+            from asyncur import timeit
         except (ImportError, SyntaxError, AttributeError):
             pass
         else:
