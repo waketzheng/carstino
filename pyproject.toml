@@ -3,6 +3,7 @@ name = "carstino"
 version = "0.2.5"
 description = ""
 authors = ["Waket Zheng <waketzheng@gmail.com>"]
+package-mode = false
 
 # Use `poetry-plugin-pypi-mirror` instead (python pip_conf.py --poetry)
 #[[tool.poetry.source]]
@@ -14,8 +15,8 @@ authors = ["Waket Zheng <waketzheng@gmail.com>"]
 python = "^3.11"
 
 [tool.poetry.group.dev.dependencies]
-fast-dev-cli = {extras = ["all"], version = "*"}
-asyncur = "^0.5.0"
+fast-dev-cli = {extras = ["all"], version = "^0.7.1"}
+asyncur = "^0.5.2"
 
 [tool.ruff]
 line-length = 88
