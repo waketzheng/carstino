@@ -24,6 +24,16 @@ PointType = Tuple[AxisValue, AxisValue]
 
 
 def slim_number(f: float, ndigits=3) -> AxisValue:
+    """Use builtin function `round` to limit the digits length of float
+
+    Uasge::
+        >>> slim_number(3.0)
+        3
+        >>> slim_number(3.1234)
+        3.123
+        >>> slim_number(0.1234, 2)
+        0.12
+    """
     fi = int(f)
     if f == fi:
         return fi
