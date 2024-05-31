@@ -17,8 +17,16 @@ Usage::
 """
 
 TEXT = """
-    if sys.argv[1:] and sys.argv[1] == 'i':
-        sys.argv[1] = 'install'
+    if sys.argv[1:]:
+        is_installing = sys.argv[1] == 'install'
+        if not is_installing and sys.argv[1] == 'i':
+            sys.argv[1] = 'install'
+            is_installing = True
+        if is_installing and sys.argv[2:]:
+            a2 = sys.argv[2]
+            s = 'git+https://'
+            if a2.startswith(s):
+                sys.argv[2] = a2.replace(s, 'git+ssh://git@')
 """
 
 

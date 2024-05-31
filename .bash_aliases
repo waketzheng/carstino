@@ -8,6 +8,9 @@ alias mgmigrate="mg migrate"
 alias mgcreatesuperuser="mg createsuperuser"
 alias mgcollectstatic='mg collectstatic'
 
+# Tool directory path
+export CARST_PATH='~/archives/carstino'
+
 # python poetry
 alias peotry="poetry"
 alias poerty="poetry"
@@ -18,8 +21,8 @@ alias prun='poetry run'
 alias poetrysync='poetry export --with=dev --without-hashes -o dev_requirements.txt && pip install -r dev_requirements.txt'
 alias psync='poetrysync'
 getVenv() {
-  if [ -f ~/archives/carstino/get_venv.py ]; then
-    python ~/archives/carstino/get_venv.py
+  if [ -f $CARST_PATH/get_venv.py ]; then
+    python $CARST_PATH/get_venv.py
   else
     echo 'poetry shell'
   fi
@@ -28,7 +31,7 @@ alias ve='echo "--> $(getVenv)" && $(getVenv)'
 alias vv='echo "--> source venv/*/activate" && source venv/*/activate'
 
 # trim the space at the right side of every line
-alias rstrip="python ~/archives/carstino/rstrip.py"
+alias rstrip="python $CARST_PATH/rstrip.py"
 
 # some useful aliases
 alias cd..="cd .."
@@ -65,16 +68,18 @@ alias rw="tmux rename-window"
 alias rs="tmux rename-session"
 
 # For httpie
-alias httpa="~/archives/carstino/httpa.sh"
+alias httpa="sh $CARST_PATH/httpa.sh"
 
 # reformat py file
-alias lint="~/.lint.sh"
+alias lint="sh ~/.lint.sh"
 
 # For windows to open directory
 if [ -f /usr/bin/open ]; then
   alias explorer="open"
   alias py="python3"
+  alias pipi="python $CARST_PATH/.pipi.py"
 else
+  alias pipi="python -m pip install"
   alias open="explorer"
 fi
 
@@ -89,10 +94,5 @@ fi
 
 # For MacOS to manage databases
 if [ -f $HOME/.systemctl.py ]; then
-  alias systemctl="$HOME/.systemctl.py"
-fi
-
-# Shortcut for pip install
-if [ -f $HOME/.pipi.py ]; then
-  alias pipi="python $HOME/.pipi.py"
+  alias systemctl="python $HOME/.systemctl.py"
 fi
