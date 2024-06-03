@@ -23,8 +23,8 @@ Or:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2024.04.25"
-__version__ = "0.3.5"
+__updated_at__ = "2024.06.04"
+__version__ = "0.3.6"
 import os
 import platform
 import pprint
@@ -43,8 +43,6 @@ A sample of the pip.conf/pip.ini:
 ```
 [global]
 index-url = https://mirrors.cloud.tencent.com/pypi/simple/
-
-[install]
 trusted-host = mirrors.cloud.tencent.com
 ```
 """
@@ -52,7 +50,6 @@ trusted-host = mirrors.cloud.tencent.com
 TEMPLATE = """
 [global]
 index-url = {}
-[install]
 trusted-host = {}
 """.lstrip()
 DEFAULT = "tx"
@@ -166,7 +163,7 @@ def _config_by_cmd(url, sudo=False):
             extra_index_url = INDEX_URL.replace("https", "http").format(extra_index)
             cmd += " && pip config set global.extra-index-url " + extra_index_url
             host = '"{host} {extra_host}"'.format(host=host, extra_host=extra_host)
-        cmd += " && pip config set install.trusted-host " + host
+        cmd += " && pip config set global.trusted-host " + host
     if sudo:
         cmd = " && ".join("sudo " + i.strip() for i in cmd.split("&&"))
     return run_and_echo(cmd)
