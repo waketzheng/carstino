@@ -73,6 +73,9 @@ if [ "$SSH_PASS" ]; then
       echo "--> $cmd"
       echo "$SSH_PASS"
     fi
+  else
+    echo 'WARNING: /usr/bin/expect not exist. Run `which expect` to check it.'
+    echo $SSH_PASS
   fi
 else
   echo "--> $cmd"
