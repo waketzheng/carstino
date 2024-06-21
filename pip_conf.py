@@ -23,8 +23,8 @@ Or:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2024.06.04"
-__version__ = "0.3.6"
+__updated_at__ = "2024.06.21"
+__version__ = "0.3.7"
 import os
 import platform
 import pprint
@@ -159,10 +159,15 @@ def _config_by_cmd(url, sudo=False):
         host = parse_host(url)
         if host in SOURCES["hw_inner"]:
             extra_host = host.replace("mirrors", "socapi").replace("tools", "cloudbu")
-            extra_index = SOURCES["hw_inner"].replace(host, extra_host)
-            extra_index_url = INDEX_URL.replace("https", "http").format(extra_index)
-            cmd += " && pip config set global.extra-index-url " + extra_index_url
-            host = '"{host} {extra_host}"'.format(host=host, extra_host=extra_host)
+            try:
+                socket.gethostbyname(extra_host.split("://")[-1].split("/")[0])
+            except socket.gaierror:
+                print(f"Ingore {extra_host} as it's not pingable")
+            else:
+                extra_index = SOURCES["hw_inner"].replace(host, extra_host)
+                extra_index_url = INDEX_URL.replace("https", "http").format(extra_index)
+                cmd += " && pip config set global.extra-index-url " + extra_index_url
+                host = '"{host} {extra_host}"'.format(host=host, extra_host=extra_host)
         cmd += " && pip config set global.trusted-host " + host
     if sudo:
         cmd = " && ".join("sudo " + i.strip() for i in cmd.split("&&"))
