@@ -15,8 +15,8 @@ package-mode = false
 python = "^3.11"
 
 [tool.poetry.group.dev.dependencies]
-fast-dev-cli = {extras = ["all"], version = "^0.7.1"}
-asyncur = "^0.5.2"
+fast-dev-cli = "^0.8.3"
+asyncur = "^0.5.4"
 
 [tool.ruff]
 line-length = 88

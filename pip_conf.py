@@ -23,8 +23,8 @@ Or:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2024.06.21"
-__version__ = "0.3.7"
+__updated_at__ = "2024.06.24"
+__version__ = "0.3.8"
 import os
 import platform
 import pprint
@@ -162,7 +162,7 @@ def _config_by_cmd(url, sudo=False):
             try:
                 socket.gethostbyname(extra_host.split("://")[-1].split("/")[0])
             except socket.gaierror:
-                print(f"Ingore {extra_host} as it's not pingable")
+                print("Ingore {} as it's not pingable".format(extra_host))
             else:
                 extra_index = SOURCES["hw_inner"].replace(host, extra_host)
                 extra_index_url = INDEX_URL.replace("https", "http").format(extra_index)
@@ -462,6 +462,7 @@ def main():
     parser = ArgumentParser()
     source_help = "the source of pip, ali/douban/huawei/qinghua or tx(default)"
     parser.add_argument("name", nargs="?", default="", help=source_help)
+    parser.add_argument("files", nargs="*", default="", help="Add for pre-commit")
     # Be compatible with old version
     parser.add_argument("-s", "--source", default=DEFAULT, help=source_help)
     parser.add_argument(

@@ -1,0 +1,26 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: git@github.com:pre-commit/pre-commit-hooks
+    # https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0  # Use the ref you want to point at
+    hooks:
+      - id: check-added-large-files
+      - id: check-toml
+      - id: check-yaml
+        args: [ --unsafe ]
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  - repo: local
+    hooks:
+      - id: lint
+        name: ruff/mypy
+        entry: poetry run fast lint
+        language: system
+        types: [python]
+      - id: compare
+        name: check py2 compare for pip_conf
+        entry: python2 pip_conf.py -l
+        language: system
+        types: [python]
