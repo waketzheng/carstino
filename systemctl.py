@@ -86,6 +86,11 @@ def start(db: Engine):
 
 
 @cli.command()
+def stop(db: Engine):
+    run_shell(Start[db].replace(" start", " stop"))
+
+
+@cli.command()
 def status(db: Engine):
     if db == Engine.docker:
         run_shell("colima status")

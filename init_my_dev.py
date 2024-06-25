@@ -13,11 +13,7 @@ from pathlib import Path
 from platform import platform
 from typing import Optional
 
-FILES = ALIAS_FILE, *_ = [
-    ".bash_aliases",
-    ".vimrc",
-    ".mg.py",
-]
+FILES = ALIAS_FILE, *_ = [".bash_aliases", ".vimrc", ".mg.py"]
 
 PACKAGES = "ipython fast-dev-cli"
 IS_WINDOWS = platform().lower().startswith("win")

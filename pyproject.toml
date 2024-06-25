@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "carstino"
-version = "0.2.5"
+version = "0.2.6"
 description = ""
 authors = ["Waket Zheng <waketzheng@gmail.com>"]
 package-mode = false
@@ -20,30 +20,7 @@ asyncur = "^0.5.4"
 
 [tool.ruff]
 line-length = 88
-exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
-    ".git",
-    ".hg",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
-    ".venv",
-    "__pypackages__",
-    "__pycache__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "node_modules",
-    "venv",
-    "*.bak",
-]
-
+exclude = ["node_modules", "*.bak"]
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["E402"]
 
