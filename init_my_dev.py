@@ -19,7 +19,7 @@ FILES = ALIAS_FILE, *_ = [
     ".mg.py",
 ]
 
-PACKAGES = "ipython 'fast-dev-cli[all]'"
+PACKAGES = "ipython fast-dev-cli"
 IS_WINDOWS = platform().lower().startswith("win")
 
 

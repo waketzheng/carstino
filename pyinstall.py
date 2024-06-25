@@ -73,16 +73,17 @@ def pyinstall(version: str) -> None:
     subprocess.run(cmd, shell=True)
 
 
-def main():
+def main() -> int:
     version = sys.argv[1:] and sys.argv[1]
     if version:
         if version.count(".") > 1:
-            pyinstall(version)
+            return pyinstall(version).returncode
         else:
-            os.system("pyenv install " + version)
+            cmd = "pyenv install " + version
     else:
-        os.system("pyenv --help")
+        cmd = "pyenv --help"
+    return os.system(cmd)
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
