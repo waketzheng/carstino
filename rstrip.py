@@ -113,7 +113,10 @@ def only_files(paths):
 
 
 def get_filepaths(args):
-    from pathlib import Path
+    try:
+        from pathlib import Path
+    except ImportError:
+        from pathlib2 import Path
 
     fpaths = []
     if args.dir:

@@ -15,7 +15,7 @@ from typing import Optional
 
 FILES = ALIAS_FILE, *_ = [".bash_aliases", ".vimrc", ".mg.py"]
 
-PACKAGES = "ipython fast-dev-cli"
+PACKAGES = "ipython fastdevcli-slim"
 IS_WINDOWS = platform().lower().startswith("win")
 
 
