@@ -26,7 +26,7 @@ try:
 except NameError:
     pass
 
-VERSION = "3.11.8"
+VERSION = "3.11.9"
 # Mirror of> https://www.python.org/ftp/python/
 HOST = "https://mirrors.huaweicloud.com/python/"
 DOWNLOAD_PATH = "{0}/Python-{0}.tar.xz"
@@ -68,12 +68,12 @@ APPENDS = {
 # To install python2, just run `sudo apt install python2`
 SHORTCUTS = {
     "3": VERSION,
-    "312": "3.12.1",
+    "312": "3.12.4",
     "311": VERSION,
-    "310": "3.10.9",
-    "39": "3.9.16",
-    "38": "3.8.16",
-    "37": "3.7.16",
+    "310": "3.10.14",
+    "39": "3.9.19",
+    "38": "3.8.19",
+    "37": "3.7.17",
     "36": "3.6.15",
 }
 SHORTCUTS.update({k[0] + "." + k[1:]: v for k, v in SHORTCUTS.items() if len(k) > 1})

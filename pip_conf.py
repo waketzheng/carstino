@@ -23,8 +23,8 @@ Or:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2024.06.24"
-__version__ = "0.3.8"
+__updated_at__ = "2024.07.16"
+__version__ = "0.3.9"
 import os
 import platform
 import pprint
@@ -355,6 +355,7 @@ class PoetryMirror:
             if run_and_echo(install_plugin + mirror_plugin) != 0:
                 print("Failed to install plugin: {}".format(repr(mirror_plugin)))
                 return None
+            run_and_echo(install_plugin + "poetry-dotenv-plugin")
         return self._get_dirpath(is_windows)
 
     def _get_dirpath(self, is_windows):
@@ -507,7 +508,7 @@ def main():
 if __name__ == "__main__":
     if "--url" not in sys.argv:
         try:
-            from asyncur import timeit
+            from asynctor import timeit
         except (ImportError, SyntaxError, AttributeError):
             pass
         else:
