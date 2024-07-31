@@ -9,7 +9,7 @@ alias mgcreatesuperuser="mg createsuperuser"
 alias mgcollectstatic='mg collectstatic'
 
 # Tool directory path
-export CARST_PATH='~/archives/carstino'
+export CARST_PATH="$HOME/archives/carstino"
 
 # python poetry
 alias peotry="poetry"
