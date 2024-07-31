@@ -56,8 +56,8 @@ PREDEPENDS = {
             " libffi-devel"
             " zlib*"
         ),
-        "export CFLAGS=$(pkg-config --cflags openssl11)",
-        "export LDFLAGS=$(pkg-config --libs openssl11)",
+        'export CFLAGS="$(pkg-config --cflags openssl11)"',
+        'export LDFLAGS="$(pkg-config --libs openssl11)"',
     ],
 }
 APPENDS = {
@@ -341,6 +341,12 @@ def gen_cmds(ret_dry=False):
             cmds.extend(deps)
     url = (HOST + DOWNLOAD_PATH).format(version)
     conf = ""
+    if "--no-ops" not in sys.argv:
+        centos_info = "/etc/centos-release"
+        if os.path.exists(centos_info):
+            with open(centos_info) as f:
+                text = f.read()
+            args.no_ops = "release 7.9" in text
     if not args.no_ops:
         conf += ENABLE_OPTIMIZE + " "
     if not args.no_sqlite:
