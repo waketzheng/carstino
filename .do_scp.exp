@@ -1,4 +1,4 @@
-#!/usr/bin/expect -f
+#!/usr/bin/env expect -f
 set cmd  [ lindex $argv 0  ]
 set passwd  [ lindex $argv 1  ]
 set timeout -1
