@@ -20,6 +20,7 @@ import socket
 import sys
 import time
 from datetime import date
+from enum import Enum
 
 try:
     input = raw_input  # type:ignore
@@ -164,52 +165,69 @@ def run_and_echo(cmd):
     return os.system(cmd)
 
 
+class Options(Enum):
+    dir = "--dir"
+    version = "--version"
+    dep = "--dep"
+    dry = "--dry"
+    list = "--list"
+    force = "--force"
+    no_sqlite = "--no-sqlite"
+    no_ops = "--no-ops"
+    no_input = "--no-input"
+    alt = "--alt"
+
+
 def parse_args():
     # type: () -> argparse.Namespace
     """parse custom arguments and set default value"""
     parser = argparse.ArgumentParser(description="Install python by source")
     parser.add_argument(
-        "-d", "--dir", nargs="?", default=DEFAULT_DIR, help="Where to install"
+        "-d", Options.dir.value, nargs="?", default=DEFAULT_DIR, help="Where to install"
     )
     parser.add_argument(
         "-v",
-        "--version",
+        Options.version.value,
         nargs="?",
         default=VERSION,
         help="Python version to be installed",
     )
     parser.add_argument(
-        "--dep", action="store_true", help="Install some ubuntu/centos packages"
+        Options.dep.value,
+        action="store_true",
+        help="Install some ubuntu/centos packages",
     )
     parser.add_argument(
-        "--dry", action="store_true", help="Only print command without run it"
+        Options.dry.value, action="store_true", help="Only print command without run it"
     )
     parser.add_argument(
-        "--list", action="store_true", help="List available python version shortcuts"
+        Options.list.value,
+        action="store_true",
+        help="List available python version shortcuts",
     )
     parser.add_argument(
         "-f",
-        "--force",
+        Options.force.value,
         action="store_true",
         help="Force update (example:3.8.1 -> 3.8.6)",
     )
     parser.add_argument(
-        "--no-sqlite",
+        Options.no_sqlite.value,
         action="store_true",
         help="Do not enable sqlite option",
     )
     parser.add_argument(
-        "--no-ops",
+        Options.no_ops.value,
         action="store_true",
         help="Do not enable optimizations",
     )
     parser.add_argument(
         "-n",
-        "--no-input",
+        Options.no_input.value,
         action="store_true",
         help="Do not ask me anything",
     )
-    parser.add_argument("--alt", action="store_true", help="Want altinstall?")
+    parser.add_argument(Options.alt.value, action="store_true", help="Want altinstall?")
     return parser.parse_args()
 
 
@@ -341,7 +359,7 @@ def gen_cmds(ret_dry=False):
             cmds.extend(deps)
     url = (HOST + DOWNLOAD_PATH).format(version)
     conf = ""
-    if "--no-ops" not in sys.argv:
+    if Options.no_ops.value not in sys.argv:
         centos_info = "/etc/centos-release"
         if os.path.exists(centos_info):
             with open(centos_info) as f:
@@ -349,6 +367,10 @@ def gen_cmds(ret_dry=False):
             args.no_ops = "release 7.9" in text
     if not args.no_ops:
         conf += ENABLE_OPTIMIZE + " "
+    if Options.no_sqlite.value not in sys.argv:
+        openssl_version = silently_run("openssl version")
+        if openssl_version and openssl_version.lower() < "openssl 3":
+            args.no_sqlite = True
     if not args.no_sqlite:
         conf += ENABLE_SQLITE + " "
     cmds.extend(install_py(args.dir, url, args.alt, conf))
