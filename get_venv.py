@@ -2,8 +2,9 @@
 """Generate virtual environment activate shell command.
 
 1. If venv/*/activate exists: print `source venv/*/activate`
-2. elif it's a poetry project: print `poetry shell`
+2. elif it's a poetry project and not controlled by ssh: print `poetry shell`
 3. elif .venv/*/activate exists: print `source .venv/*/activate`
+4. else run `poetry env info --path` to get environment path then activated by `source ...`
 """
 
 import os
@@ -30,6 +31,11 @@ def read_content(filename):
         return f.read()
 
 
+def is_controlled_by_ssh():
+    # type: () -> bool
+    return any(os.getenv(i) for i in "SSH_CLIENT SSH_TTY SSH_CONNECTION".split())
+
+
 def get_venv():
     # type: () -> str
     is_windows = platform.platform().lower().startswith("windows")
@@ -43,9 +49,12 @@ def get_venv():
             venv_dir = dirname
             break
     else:
-        if is_windows:
-            # If use Git Base at Windows, which does not show venv prefix
-            # after running `poetry shell`, should use `source ../activate` instead
+        if is_windows or is_controlled_by_ssh():
+            # If use Git Bash at Windows, which does not show venv prefix after
+            # running `poetry shell`, should use `source ../activate` instead;
+            # When controlling by ssh in cloud server, `poetry shell` something
+            # cost 100% of CPU, sb got the similar issue in aws, and the `python-poetry`
+            # suggest to run `poetry run` or `source ../activate` to avoid it.
             cache_dir = run_cmd("poetry env info --path")
             if cache_dir:
                 try:
