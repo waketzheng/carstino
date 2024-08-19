@@ -46,22 +46,22 @@ mkdir archives
 cd archives
 git clone https://github.com/waketzheng/carstino.git
 cd carstino
-cp to_my_server.sh ${ANY_PATH}/any_name.sh
-vi ${ANY_PATH}/any_name.sh  # change the var of `IP_OR_DOMAIN`
+cp to_my_server_43.139.125.122.sh ${ANY_PATH}/any_prefix_<target_ip_or_domain>.sh
+# Remember to change `target_ip_or_domain` to your server ip or domain
 ```
 - Usage
 1. ssh to your server
 ```bash
-sh ${ANY_PATH}/any_name.sh
+sh ${ANY_PATH}/any_prefix_<target_ip_or_domain>.sh
 ```
 2. scp file or directory to your server
 ```bash
 # scp -r local_file user@host:~/
-sh ${ANY_PATH}/any_name.sh /path/to/local/file_or_directory
+sh ${ANY_PATH}/any_prefix_<target_ip_or_domain>.sh /path/to/local/file_or_directory
 # scp -r local_file user@host:~/subpath
-SCP_DIR="subpath" sh ${ANY_PATH}/any_name.sh /path/to/local/file_or_directory
+SCP_DIR="subpath" sh ${ANY_PATH}/any_prefix_<target_ip_or_domain>.sh /path/to/local/file_or_directory
 ```
 3. scp file or directory from server to local
 ```bash
-sh ${ANY_PATH}/any_name.sh /path/in/server/file_or_directory /local/path/
+sh ${ANY_PATH}/any_prefix_<target_ip_or_domain>.sh /path/in/server/file_or_directory /local/path/
 ```
