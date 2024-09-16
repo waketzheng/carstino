@@ -20,11 +20,14 @@ Or:
     $ python pip_conf.py --pdm  # set pypi.url for pdm
 
     $ sudo python pip_conf.py --etc  # Set conf to /etc/pip.[conf|ini]
+
+If there is any bug or feature request, report it to:
+    https://github.com/waketzheng/carstino/issues
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2024.07.16"
-__version__ = "0.3.9"
+__updated_at__ = "2024.09.16"
+__version__ = "0.4.0"
 import os
 import platform
 import pprint
@@ -32,11 +35,10 @@ import re
 import socket
 import subprocess
 import sys
+import typing
 
-try:
+if typing.TYPE_CHECKING:
     from typing import Optional  # NOQA:F401
-except ImportError:
-    pass
 
 """
 A sample of the pip.conf/pip.ini:
@@ -84,7 +86,7 @@ def is_pingable(domain):
         socket.gethostbyname(domain)
     except Exception:
         return False
-    return True
+    return os.system("ping -c 1 {}".format(domain)) == 0
 
 
 def load_bool(name):
@@ -174,34 +176,42 @@ def _config_by_cmd(url, sudo=False):
     return run_and_echo(cmd)
 
 
-def detect_inner_net(source):
-    # type: (str) -> str
+def detect_inner_net(source, verbose=False):
+    # type: (str, bool) -> str
     args = sys.argv[1:]
-    if not args or not [i for i in args if not i.startswith("-")]:
+    inner = False
+    if not args or all(i.startswith("-") for i in args):
         if is_hw_inner():
             source = "hw_inner"
+            inner = True
         elif is_tx_cloud_server():
             source = "tx_ecs"
+            inner = True
         elif is_ali_cloud_server():
             source = "ali_ecs"
+            inner = True
     elif source in ("huawei", "hw"):
         if is_hw_inner():
             source = "hw_inner"
+            inner = True
     elif "ali" in source:
         if is_ali_cloud_server():
             source = "ali_ecs"
+            inner = True
     elif "tx" in source or "ten" in source:
-        if is_tx_cloud_server():
-            source = "tx_ecs"
+        inner = is_tx_cloud_server()
+        source = "tx_ecs" if inner else "tx"
+    if verbose and inner:
+        print("Use {} as it's pingable".format(source))
     return source
 
 
-def build_index_url(source, force):
-    # type: (str, bool) -> str
+def build_index_url(source, force, verbose=False):
+    # type: (str, bool, bool) -> str
     if source.startswith("http"):
         return source
     if not force:
-        source = detect_inner_net(source)
+        source = detect_inner_net(source, verbose)
     host = SOURCES.get(source, SOURCES[DEFAULT])
     url = INDEX_URL.format(host)
     if source in ("hw_inner", "hw_ecs", "tx_ecs", "ali_ecs"):
@@ -418,10 +428,16 @@ def init_pip_conf(
     write=False,
     poetry=False,
     pdm=False,
+    verbose=False,
 ):
-    # type: (str, bool, bool, bool, bool, bool) -> Optional[int]
+    # type: (str, bool, bool, bool, bool, bool, bool) -> Optional[int]
     is_windows = platform.system() == "Windows"
     if poetry or load_bool("SET_POETRY"):
+        if verbose and not poetry:
+            env_name = "SET_POETRY"
+            v = os.getenv(env_name)
+            tip = "Going to configure poetry mirror source as {} was set to {}"
+            print(tip.format(repr(env_name), repr(v)))
         return PoetryMirror(url, is_windows, replace).set()
     if pdm:
         return PdmMirror.set(url)
@@ -481,6 +497,7 @@ def main():
     parser.add_argument("--poetry", action="store_true", help="Set mirrors for poetry")
     parser.add_argument("--pdm", action="store_true", help="Set pypi.url for pdm")
     parser.add_argument("--url", action="store_true", help="Show mirrors url")
+    parser.add_argument("--verbose", action="store_true", help="Print more info")
     parser.add_argument(
         "--fix", action="store_true", help="Fix poetry pypi mirror plugin error"
     )
@@ -497,11 +514,13 @@ def main():
         PoetryMirror.fix_v1_6_error()
     else:
         source = args.name or args.source
-        url = build_index_url(source, args.f)
+        url = build_index_url(source, args.f, args.verbose)
         if args.url:
             print(url)
             return None
-        if init_pip_conf(url, args.y, args.etc, args.write, args.poetry, args.pdm):
+        if init_pip_conf(
+            url, args.y, args.etc, args.write, args.poetry, args.pdm, args.verbose
+        ):
             return 1
 
 

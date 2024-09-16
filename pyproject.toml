@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "carstino"
-version = "0.2.6"
+version = "0.3.0"
 description = ""
 authors = ["Waket Zheng <waketzheng@gmail.com>"]
 package-mode = false
@@ -15,7 +15,7 @@ package-mode = false
 python = "^3.11"
 
 [tool.poetry.group.dev.dependencies]
-fast-dev-cli = "^0.9.5"
+fast-dev-cli = "^0.9.8"
 asynctor = "^0.6.5"
 
 [tool.ruff]

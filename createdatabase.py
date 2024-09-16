@@ -9,6 +9,7 @@ Usage:
     $ ./createdatabase.py -dm  # drop, create, migrate
 """
 
+import contextlib
 import os
 import sys
 from pathlib import Path
@@ -18,10 +19,8 @@ SQL = "create database {} CHARACTER SET {}"
 
 
 def secho(*args, **kw):
-    try:
+    with contextlib.suppress(ImportError):
         from click import secho as print
-    except ImportError:
-        pass
 
     print(" ".join(str(i) for i in args), **kw)
 
@@ -50,7 +49,7 @@ def get_db(alias="default", all_=False):
     try:
         return dbs[alias]
     except KeyError:
-        raise Exception(f"database NAME ``{alias}`` not found at settings.")
+        raise Exception(f"database NAME ``{alias}`` not found at settings.") from None
 
 
 def getconf(dbconf):

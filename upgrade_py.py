@@ -22,10 +22,8 @@ import time
 from datetime import date
 from enum import Enum
 
-try:
-    input = raw_input  # type:ignore
-except NameError:
-    pass
+if sys.version_info < (3,):
+    input = raw_input  # NOQA:F821 type:ignore
 
 VERSION = "3.11.9"
 # Mirror of> https://www.python.org/ftp/python/
@@ -130,9 +128,8 @@ def update_versions_by_http():
         if patches:
             latest = "3.{}.{}".format(i, patches[-1])
             SHORTCUTS["3{}".format(i)] = latest
-            if latest.split(".")[:2] == VERSION.split(".")[:2]:
-                if latest != VERSION:
-                    SHORTCUTS["3"] = VERSION = latest
+            if latest != VERSION and latest.split(".")[:2] == VERSION.split(".")[:2]:
+                SHORTCUTS["3"] = VERSION = latest
 
 
 def python_version(py="python"):
@@ -251,10 +248,9 @@ def validated_args(ret_pre=False):
     if not args.force:
         pyx = "python" + target_version
         can_upgrade = current_version < version
-        if not has_same_version:
-            if silently_run("which {}".format(pyx)).strip():
-                has_same_version = True
-                can_upgrade = python_version(pyx) < version
+        if not has_same_version and silently_run("which {}".format(pyx)).strip():
+            has_same_version = True
+            can_upgrade = python_version(pyx) < version
         if has_same_version and not args.dry:
             tip = "\n{} already installed. ".format(pyx.title())
             if args.no_input:

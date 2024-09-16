@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
+import contextlib
 import shlex
 import subprocess
 import sys
 from pathlib import Path
 
-try:
+with contextlib.suppress(ImportError):
     from rich import print
-except ImportError:
-    ...
 
 NAME = ".bash_aliases"
 SH = "[[ -f ~/{0} ]] && . ~/{0}".format(NAME)

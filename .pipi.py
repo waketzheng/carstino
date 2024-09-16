@@ -2,11 +2,10 @@
 import os
 import subprocess
 import sys
+import typing
 
-try:
+if typing.TYPE_CHECKING:
     from typing import Optional  # NOQA:F401
-except ImportError:
-    pass
 
 """
 Custom install shortcut as i for pip

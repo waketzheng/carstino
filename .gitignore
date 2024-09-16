@@ -129,3 +129,4 @@ dev_requirements.txt
 
 # Media
 new*.jpg
+.dmypy.json

@@ -27,10 +27,8 @@ DEFAULT = SOURCES[_default]
 SOURCE_FILE = "/etc/apt/sources.list"
 RE_SOURCE = re.compile(r"https*://[^/]+/")
 
-try:
-    input = raw_input  # type:ignore
-except NameError:
-    pass
+if sys.version_info < (3,):
+    input = raw_input  # NOQA:F821 type:ignore
 
 
 def parse_argv(args):

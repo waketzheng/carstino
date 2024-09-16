@@ -155,9 +155,8 @@ def upgrade_pip_and_install_pipx(home: Path) -> str:
             r = run_cmd("python3 -m pip install --upgrade --user pipx")
             if r == 0 and pipx_file.exists():
                 pipx = pipx_file.as_posix()
-    if run_cmd("which poetry") != 0:
-        if run_cmd(f"{pipx} install poetry") == 0:
-            run_cmd("python pip_conf.py --poetry")
+    if run_cmd("which poetry") != 0 and run_cmd(f"{pipx} install poetry") == 0:
+        run_cmd("python pip_conf.py --poetry")
     return pipx
 
 
