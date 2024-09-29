@@ -26,8 +26,8 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2024.09.16"
-__version__ = "0.4.0"
+__updated_at__ = "2024.09.29"
+__version__ = "0.4.1"
 import os
 import platform
 import pprint
@@ -365,7 +365,8 @@ class PoetryMirror:
             if run_and_echo(install_plugin + mirror_plugin) != 0:
                 print("Failed to install plugin: {}".format(repr(mirror_plugin)))
                 return None
-            run_and_echo(install_plugin + "poetry-dotenv-plugin")
+            if os.getenv("PIP_CONF_NO_EXTRA_POETRY_PLUGINS") != "1":
+                run_and_echo(install_plugin + "poetry-dotenv-plugin poetry-plugin-i")
         return self._get_dirpath(is_windows)
 
     def _get_dirpath(self, is_windows):

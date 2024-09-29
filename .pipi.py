@@ -15,6 +15,7 @@ Usage::
 
 """
 
+IS_WINDOWS = sys.platform == "win32"
 TEXT = """
     if sys.argv[1:]:
         is_installing = sys.argv[1] == 'install'
@@ -49,6 +50,9 @@ def capture_output(cmd):
 
 def patch_it(filename, tip="pip i package-name"):
     # type: (str, str) -> Optional[int]
+    if IS_WINDOWS:
+        # TODO: change pip main
+        return 0
     with open(filename) as f:
         text = f.read()
     if "install" not in text:
@@ -73,9 +77,12 @@ def main():
     if patch_it(pip_file):
         return 1
     elif not args:
-        poetry_file = capture_output("which poetry")
-        if poetry_file and os.path.exists(poetry_file):
-            patch_it(poetry_file, "poetry i")
+        if IS_WINDOWS:
+            run_and_echo("pipx inject poetry poetry-plugin-i")
+        else:
+            poetry_file = capture_output("which poetry")
+            if poetry_file and os.path.exists(poetry_file):
+                patch_it(poetry_file, "poetry i")
         return run_and_echo("pip install")
     if args:
         cmd = "pip i " + " ".join([repr(i) for i in args])

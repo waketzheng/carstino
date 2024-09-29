@@ -64,7 +64,7 @@ def get_venv():
 
                     sys.exit(os.system("python3 " + sys.argv[0]))
 
-                venv_dir = Path(cache_dir).as_posix()
+                venv_dir = Path(cache_dir.splitlines()[-1]).as_posix()
     if venv_dir:
         bin_dir = "*" if is_windows else "bin"
         return "source {}/{}/activate".format(venv_dir, bin_dir)
