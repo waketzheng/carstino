@@ -64,3 +64,12 @@ elif [[ $REMOTE == ssh* ]]; then
   [ -d ohmyzsh ] || git clone $REMOTE
   REMOTE=$REMOTE ./ohmyzsh/tools/install.sh
 fi
+
+# Uncomment the following lines to add custom plugin
+#export PLUGIN="zsh-autosuggestions"
+#([[ -f $PLUGIN.tar.xz ]] && tar xf $PLUGIN.tar.xz) || ([[ -f $PLUGIN-master.zip ]] && unzip $PLUGIN-master.zip && mv $PLUGIN-master $PLUGIN)
+#[[ -d $PLUGIN ]] || git clone ${PLUGIN_REPO:-git@github.com:zsh-users/zsh-autosuggestions.git}
+#[[ -d ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/ ]] || mkdir -p ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/
+#mv $PLUGIN ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/
+#python -c "import os,sys;p=os.path.expanduser('~/.zshrc');f=open(p);s=f.read();f.close();v='zsh-autosuggestions';c='You can run the following command to activate plugin:\n\n    source '+p+'\n';v in s and sys.exit(c);ss=s.splitlines();a='plugins=(';t=[i for i in ss if i.startswith(a)];assert t, 'Failed to auto change, you can manually edit {}'.format(p);line=t[0].replace(a,a+v+' ');new=s.replace(t[0],line);f=open(p,'w');f.write(new);f.close();print(c)"
+#source ~/.zshrc
