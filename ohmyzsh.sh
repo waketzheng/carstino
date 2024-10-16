@@ -60,6 +60,7 @@ fi
 if [[ $REMOTE == http* ]]; then
   REMOTE=$REMOTE sh -c "$(curl -fsSL $OMZ_REPO/raw/master/tools/install.sh)" --keep-zshrc
 elif [[ $REMOTE == ssh* ]]; then
+  cd /tmp
   [ -d ohmyzsh ] || git clone $REMOTE
   REMOTE=$REMOTE ./ohmyzsh/tools/install.sh
 fi
