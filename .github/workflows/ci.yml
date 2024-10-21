@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -60,14 +60,12 @@ jobs:
       - name: Check code style and Type Hint
         run: poetry run fast check
 
-  coveralls:
-    name: Indicate completion to coveralls.io
-    needs: test
+  py27:
+    name: Config pip mirrors by python2.7
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: [2.7]
     steps:
     - name: Pip conf
-      run: |
-        python pip_conf.py
+      run: python pip_conf.py
