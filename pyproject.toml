@@ -16,7 +16,7 @@ python = "^3.11"
 
 [tool.poetry.group.dev.dependencies]
 fast-dev-cli = "^0.9.10"
-asynctor = "^0.6.5"
+asynctor = "^0.6.6"
 
 [tool.ruff]
 line-length = 88

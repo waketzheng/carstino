@@ -26,8 +26,8 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2024.09.29"
-__version__ = "0.4.1"
+__updated_at__ = "2024.10.21"
+__version__ = "0.4.2"
 import os
 import platform
 import pprint
@@ -35,10 +35,14 @@ import re
 import socket
 import subprocess
 import sys
-import typing
 
-if typing.TYPE_CHECKING:
-    from typing import Optional  # NOQA:F401
+try:
+    import typing
+except ImportError:
+    pass
+else:
+    if typing.TYPE_CHECKING:
+        from typing import Optional  # NOQA:F401
 
 """
 A sample of the pip.conf/pip.ini:
