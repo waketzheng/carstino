@@ -63,10 +63,10 @@ jobs:
         run: ./pip_conf.py
 
   ConfPip:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [2.7, 3.6, 3.7, 3.8, 3.9, 3.10, 3.11, 3.12, 3.13]
+        python-version: [3.6, 3.7, 3.8, 3.9, '3.10', 3.11, 3.12, 3.13]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -75,3 +75,13 @@ jobs:
           allow-prereleases: true
       - name: Verify pip conf script
         run: python pip_conf.py
+
+  conf_pip_py27:
+    runs-on: ubuntu-latest
+    container: python:2.7
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify pip conf script
+        run: |
+          python pip_conf.py
+          python -V
