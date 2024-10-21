@@ -59,13 +59,25 @@ jobs:
         run: poetry install --no-interaction
       - name: Check code style and Type Hint
         run: poetry run fast check
+      - name: Verify pip conf script
+        run: |
+          poetry run python pip_conf.py
+          ./pip_conf.py
 
   py27:
-    name: Config pip mirrors by python2.7
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: [2.7]
     steps:
-    - name: Pip conf
-      run: python pip_conf.py
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        id: setup-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
+      - name: Check pip config script with python2.7
+        run: |
+          python pip_conf.py
+          ./pip_conf.py
