@@ -26,39 +26,24 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
-      - name: Load cached Poetry installation
-        id: cached-poetry
-        uses: actions/cache@v4
-        with:
-          path: ~/.local  # the path depends on the OS
-          key: poetry-0  # increment to reset cache
-      - name: Install Poetry
-        if: steps.cached-poetry.outputs.cache-hit != 'true'
-        uses: snok/install-poetry@v1
-      - name: Configure poetry
-        if: steps.cached-poetry.outputs.cache-hit == 'true'
-        run: poetry config virtualenvs.in-project true
       - name: Load cached venv
-        id: cached-poetry-dependencies
+        id: cached-dependencies
         uses: actions/cache@v4
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/uv.lock') }}
       #----------------------------------------------
       # install dependencies if cache does not exist
       #----------------------------------------------
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
       - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root
+        if: steps.cached-dependencies.outputs.cache-hit != 'true'
+        run: uv sync --all-extras --dev
         env:
           PYO3_USE_ABI3_FORWARD_COMPATIBILITY: 1
-      #----------------------------------------------
-      # install your root project, if package-mode is true
-      #----------------------------------------------
-      - name: Install library
-        run: poetry install --no-interaction
       - name: Check code style and Type Hint
-        run: poetry run fast check
+        run: uv run fast check
       - name: Verify pip conf script
         run: ./pip_conf.py
 
