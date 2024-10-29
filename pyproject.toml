@@ -1,22 +1,11 @@
-[tool.poetry]
+[project]
 name = "carstino"
 version = "0.3.0"
-description = ""
-authors = ["Waket Zheng <waketzheng@gmail.com>"]
-package-mode = false
-
-# Use `poetry-plugin-pypi-mirror` instead (python pip_conf.py --poetry)
-#[[tool.poetry.source]]
-#name = "tx"
-#url = "https://mirrors.cloud.tencent.com/pypi/simple/"
-#default = true
-
-[tool.poetry.dependencies]
-python = "^3.11"
-
-[tool.poetry.group.dev.dependencies]
-fast-dev-cli = "^0.9.10"
-asynctor = "^0.6.6"
+description = "Personal dev tools"
+readme = "README.md"
+authors = [{name="Waket Zheng", email="waketzheng@gmail.com>"}]
+requires-python = ">=3.11"
+dependencies = []
 
 [tool.ruff]
 line-length = 88
@@ -37,6 +26,8 @@ exclude = [
 module = "*.migrations.*"
 ignore_errors = true
 
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+[tool.uv]
+dev-dependencies = [
+    "asynctor>=0.6.6",
+    "fast-dev-cli>=0.9.10",
+]
