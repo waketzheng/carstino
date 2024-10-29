@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding:utf-8 -*-
 """
 This script is for pip source config.
 Worked both Windows and Linux/Mac, support python2.7 and python3.5+
@@ -26,8 +27,8 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2024.10.21"
-__version__ = "0.4.2"
+__updated_at__ = "2024.10.29"
+__version__ = "0.5.0"
 import os
 import platform
 import pprint
@@ -126,26 +127,6 @@ def run_and_echo(cmd):
     print("--> " + cmd)
     sys.stdout.flush()
     return os.system(cmd)
-
-
-def patch_it(filename, tip="poetry i"):
-    # type: (str, str) -> Optional[int]
-    with open(filename) as f:
-        text = f.read()
-    if "install" not in text:
-        expand = (
-            "    if sys.argv[1:] and sys.argv[1] == 'i':\n"
-            "        sys.argv[1] = 'install'"
-        )
-        ss = text.strip().splitlines()
-        new_text = "\n".join(ss[:-1] + [expand] + ss[-1:])
-        try:
-            with open(filename, "w") as f:
-                f.write(new_text)
-        except IOError:
-            print("Failed to write lines to {}:\n{}".format(filename, expand))
-            return 1
-        print("i command was configured!\n\nUsage::\n\n    {}\n".format(tip))
 
 
 def config_by_cmd(url, is_windows=False):
@@ -261,15 +242,107 @@ class PdmMirror:
         return run_and_echo(cmd)
 
 
-class PoetryMirror:
-    plugin_name = "poetry-plugin-pypi-mirror"
-
+class Mirror:
     def __init__(self, url, is_windows, replace):
         # type: (str, bool, bool) -> None
         self.url = url
         self.is_windows = is_windows
         self.replace = replace
         self._version = ""
+
+    @property
+    def tool(self):
+        # type: () -> str
+        return self.__class__.__name__.replace("Mirror", "").lower()
+
+    def prompt_y(self, filename, content):
+        print("The {}'s {} content:".format(self.tool, filename))
+        print(content)
+        print('If you want to replace it, rerun with "-y" in args.')
+        print("Exit!")
+
+    def check_installed(self):
+        # type: () -> Optional[bool]
+        if run_and_echo(self.tool + " --version") != 0:
+            msg = (
+                "{0} not found!\n"
+                "You can install it by:\n"
+                "    pip install --user --upgrade pipx\n"
+                "    pipx install {0}\n"
+            )
+            print(msg.format(self.tool))
+            return True
+
+
+class UvMirror(Mirror):
+    def build_content(self, url=None):
+        # type: (Optional[str]) -> str
+        if url is None:
+            url = self.url
+        text = 'index-url="{}"'.format(url)
+        if not url.startswith("https"):
+            domain = parse_host(url)
+            text += os.linesep + 'allow-insecure-host=["{}"]'.format(domain)
+        return text
+
+    def set(self):
+        # type: () -> Optional[int]
+        filename = "uv.toml"
+        dirpath = self.get_dirpath(self.is_windows, self.url, filename)
+        if not dirpath:
+            return 1
+        config_toml_path = os.path.join(dirpath, filename)
+        text = self.build_content()
+        if os.path.exists(config_toml_path):
+            with open(config_toml_path) as f:
+                content = f.read().strip()
+            if text in content:
+                print("uv mirror set as expected. Skip!")
+                return None
+            if "index-url" in content:
+                pattern = r'index-url\s*=\s*"([^"]*)"'
+                m = re.search(pattern, content, re.S)
+                if m:
+                    already = m.group(1)
+                    if not self.replace:
+                        self.prompt_y(filename, m.group())
+                        return None
+                    if self.url.startswith("https"):
+                        text = content.replace(already, self.url)
+        elif not os.path.exists(dirpath):
+            parent = os.path.dirname(dirpath)
+            if not os.path.exists(parent):
+                os.mkdir(parent)
+            os.mkdir(dirpath)
+        do_write(config_toml_path, text)
+
+    def _get_dirpath(self, is_windows, filename):
+        # type: (bool, str) -> str
+        if is_windows:
+            parent = os.getenv("APPDATA", "~")
+        else:
+            parent = os.getenv("XDG_CONFIG_HOME", "")
+            if not parent:
+                parent = "~"
+            else:
+                parent = os.path.expanduser(parent)
+                uv_dir = os.path.join(parent, "uv")
+                if os.path.exists(os.path.join(uv_dir, filename)):
+                    return uv_dir
+                uv_dir = os.path.join(os.path.expanduser("~"), "uv")
+                if os.path.exists(os.path.join(uv_dir, filename)):
+                    return uv_dir
+        return os.path.join(os.path.expanduser(parent), "uv")
+
+    def get_dirpath(self, is_windows, url, filename):
+        # type: (bool, str, str) -> Optional[str]
+        if self.check_installed():
+            return None
+        return self._get_dirpath(is_windows, filename)
+
+
+class PoetryMirror(Mirror):
+    plugin_name = "poetry-plugin-pypi-mirror"
 
     def fix_poetry_v1_6_error(self, version):
         # type: (str) -> None
@@ -329,14 +402,6 @@ class PoetryMirror:
         # type: () -> None
         print("By pipx:\n", "pipx runpip poetry uninstall <plugin-name>")
         print("By poetry self:\n", "poetry self remove <plugin-name>")
-
-    def check_installed(self):
-        # type: () -> Optional[bool]
-        if run_and_echo("poetry --version") != 0:
-            print("poetry not found!\nYou can install it by:")
-            print("    pip install --user pipx")
-            print("    pipx install poetry\n")
-            return True
 
     def set_self_pypi_mirror(self, is_windows, url):
         # type: (bool, str) -> None
@@ -405,10 +470,7 @@ class PoetryMirror:
                 if m:
                     already = m.group(1)
                     if not self.replace:
-                        print("The poetry's config.toml content:")
-                        print(m.group())
-                        print('If you want to replace it, rerun with "-y" in args.')
-                        print("Exit!")
+                        self.prompt_y(filename, m.group())
                         return None
                     text = content.replace(already, self.url)
             else:
@@ -417,13 +479,8 @@ class PoetryMirror:
             parent = os.path.dirname(dirpath)
             if not os.path.exists(parent):
                 os.mkdir(parent)
-                os.mkdir(dirpath)
-            elif not os.path.exists(dirpath):
-                os.mkdir(dirpath)
+            os.mkdir(dirpath)
         do_write(config_toml_path, text)
-        poetry_file = capture_output("which poetry")
-        if poetry_file and os.path.exists(poetry_file):
-            patch_it(poetry_file)
 
 
 def init_pip_conf(
@@ -434,8 +491,9 @@ def init_pip_conf(
     poetry=False,
     pdm=False,
     verbose=False,
+    uv=False,
 ):
-    # type: (str, bool, bool, bool, bool, bool, bool) -> Optional[int]
+    # type: (str, bool, bool, bool, bool, bool, bool, bool) -> Optional[int]
     is_windows = platform.system() == "Windows"
     if poetry or load_bool("SET_POETRY"):
         if verbose and not poetry:
@@ -444,8 +502,10 @@ def init_pip_conf(
             tip = "Going to configure poetry mirror source as {} was set to {}"
             print(tip.format(repr(env_name), repr(v)))
         return PoetryMirror(url, is_windows, replace).set()
-    if pdm:
+    if pdm or load_bool("PIP_CONF_SET_PDM"):
         return PdmMirror.set(url)
+    if uv or load_bool("PIP_CONF_SET_UV"):
+        return UvMirror(url, is_windows, replace).set()
     if not write and (not at_etc or is_windows) and can_set_global():
         config_by_cmd(url, is_windows)
         return None
@@ -501,6 +561,7 @@ def main():
     parser.add_argument("--write", action="store_true", help="Conf by write file")
     parser.add_argument("--poetry", action="store_true", help="Set mirrors for poetry")
     parser.add_argument("--pdm", action="store_true", help="Set pypi.url for pdm")
+    parser.add_argument("--uv", action="store_true", help="Set index url for uv")
     parser.add_argument("--url", action="store_true", help="Show mirrors url")
     parser.add_argument("--verbose", action="store_true", help="Print more info")
     parser.add_argument(
@@ -524,7 +585,14 @@ def main():
             print(url)
             return None
         if init_pip_conf(
-            url, args.y, args.etc, args.write, args.poetry, args.pdm, args.verbose
+            url,
+            args.y,
+            args.etc,
+            args.write,
+            args.poetry,
+            args.pdm,
+            args.verbose,
+            args.uv,
         ):
             return 1
 
