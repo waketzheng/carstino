@@ -27,8 +27,8 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2024.10.29"
-__version__ = "0.5.0"
+__updated_at__ = "2024.11.08"
+__version__ = "0.5.1"
 import os
 import platform
 import pprint
@@ -81,6 +81,10 @@ SOURCES["hw_inner"] = SOURCES["hw_ecs"] = (
 )
 CONF_PIP = "pip config set global.index-url "
 INDEX_URL = "https://{}/simple/"
+
+
+class ParamError(Exception):
+    """Invalid parameters"""
 
 
 def is_pingable(domain):
@@ -191,13 +195,21 @@ def detect_inner_net(source, verbose=False):
     return source
 
 
-def build_index_url(source, force, verbose=False):
-    # type: (str, bool, bool) -> str
+def build_index_url(source, force, verbose=False, strict=False):
+    # type: (str, bool, bool, bool) -> str
     if source.startswith("http"):
         return source
     if not force:
         source = detect_inner_net(source, verbose)
-    host = SOURCES.get(source, SOURCES[DEFAULT])
+    if strict:
+        try:
+            host = SOURCES[source]
+        except KeyError:
+            raise ParamError(  # noqa: B904
+                "Unknown source: {}\nAvailables: {}".format(repr(source), list(SOURCES))
+            )
+    else:
+        host = SOURCES.get(source, SOURCES[DEFAULT])
     url = INDEX_URL.format(host)
     if source in ("hw_inner", "hw_ecs", "tx_ecs", "ali_ecs"):
         url = url.replace("https", "http")
@@ -263,7 +275,11 @@ class Mirror:
 
     def check_installed(self):
         # type: () -> Optional[bool]
-        if run_and_echo(self.tool + " --version") != 0:
+        if self.tool == "poetry":
+            not_install = run_and_echo(self.tool + " check --quiet") > 256
+        else:
+            not_install = run_and_echo(self.tool + " --version") != 0
+        if not_install:
             msg = (
                 "{0} not found!\n"
                 "You can install it by:\n"
@@ -434,7 +450,7 @@ class PoetryMirror(Mirror):
             if run_and_echo(install_plugin + mirror_plugin) != 0:
                 print("Failed to install plugin: {}".format(repr(mirror_plugin)))
                 return None
-            if os.getenv("PIP_CONF_NO_EXTRA_POETRY_PLUGINS") != "1":
+            if not load_bool("PIP_CONF_NO_EXTRA_POETRY_PLUGINS"):
                 run_and_echo(install_plugin + "poetry-dotenv-plugin poetry-plugin-i")
         return self._get_dirpath(is_windows)
 
@@ -495,12 +511,20 @@ def init_pip_conf(
 ):
     # type: (str, bool, bool, bool, bool, bool, bool, bool) -> Optional[int]
     is_windows = platform.system() == "Windows"
-    if poetry or load_bool("SET_POETRY"):
-        if verbose and not poetry:
-            env_name = "SET_POETRY"
-            v = os.getenv(env_name)
-            tip = "Going to configure poetry mirror source as {} was set to {}"
-            print(tip.format(repr(env_name), repr(v)))
+    if poetry:
+        return PoetryMirror(url, is_windows, replace).set()
+    poetry_set_env = "SET_POETRY"
+    if load_bool(poetry_set_env):
+        env_name = "PIP_CONF_POETRY_MIRROR"
+        v = os.getenv(env_name)
+        if v:
+            tip = "Poetry mirror source will be set to {}"
+            print(tip.format(repr(v)))
+            url = build_index_url(v, force=True, verbose=True, strict=True)
+            replace = True
+        elif verbose:
+            tip = "Going to configure poetry mirror source, because {} was set to {}"
+            print(tip.format(repr(poetry_set_env), os.getenv(poetry_set_env)))
         return PoetryMirror(url, is_windows, replace).set()
     if pdm or load_bool("PIP_CONF_SET_PDM"):
         return PdmMirror.set(url)
@@ -586,13 +610,13 @@ def main():
             return None
         if init_pip_conf(
             url,
-            args.y,
-            args.etc,
-            args.write,
-            args.poetry,
-            args.pdm,
-            args.verbose,
-            args.uv,
+            replace=args.y,
+            at_etc=args.etc,
+            write=args.write,
+            poetry=args.poetry,
+            pdm=args.pdm,
+            verbose=args.verbose,
+            uv=args.uv,
         ):
             return 1
 

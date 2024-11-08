@@ -16,7 +16,7 @@ repos:
     hooks:
       - id: lint
         name: ruff/mypy
-        entry: poetry run fast lint
+        entry: uv run fast lint
         language: system
         types: [python]
       - id: compare
