@@ -451,7 +451,10 @@ class PoetryMirror(Mirror):
                 print("Failed to install plugin: {}".format(repr(mirror_plugin)))
                 return None
             if not load_bool("PIP_CONF_NO_EXTRA_POETRY_PLUGINS"):
-                run_and_echo(install_plugin + "poetry-dotenv-plugin poetry-plugin-i")
+                run_and_echo(
+                    install_plugin
+                    + "poetry-dotenv-plugin poetry-plugin-i poetry-plugin-version"
+                )
         return self._get_dirpath(is_windows)
 
     def _get_dirpath(self, is_windows):
