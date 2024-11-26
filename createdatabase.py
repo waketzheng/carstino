@@ -11,6 +11,7 @@ Usage:
 
 import contextlib
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -23,6 +24,17 @@ def secho(*args, **kw):
         from click import secho as print
 
     print(" ".join(str(i) for i in args), **kw)
+
+
+def capture_output(cmd):
+    # type: (str) -> str
+    try:
+        r = subprocess.run(cmd, shell=True, capture_output=True)
+    except (TypeError, AttributeError):  # For python<=3.6
+        with os.popen(cmd) as p:
+            return p.read().strip()
+    else:
+        return r.stdout.decode().strip()
 
 
 def configure_settings():
@@ -108,8 +120,15 @@ def prompt_mysql_create_db(name, user: str):
     os.system(connect_db)
 
 
+def using_docker(engine="postgres"):
+    # type: (str) -> bool
+    containers = capture_output("docker ps")
+    return bool(containers) and engine in containers
+
+
 def postgres(config, db_name, drop=False):
-    who = "sudo -u postgres psql -U postgres -d postgres -c "
+    man = "docker exec postgres_latest " if using_docker() else "sudo -u postgres "
+    who = man + "psql -U postgres -d postgres -c "
     option = "encoding='utf-8'"
     if drop:
         cmd = f'{who}"drop database {db_name};"'
