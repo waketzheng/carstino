@@ -9,7 +9,6 @@ Usage:
     $ ./createdatabase.py -dm  # drop, create, migrate
 """
 
-import contextlib
 import os
 import subprocess
 import sys
@@ -20,10 +19,12 @@ SQL = "create database {} CHARACTER SET {}"
 
 
 def secho(*args, **kw):
-    with contextlib.suppress(ImportError):
-        from click import secho as print
-
-    print(" ".join(str(i) for i in args), **kw)
+    try:
+        from click import secho
+    except ImportError:
+        print(*args, **kw)
+    else:
+        secho(" ".join(map(str, args)), **kw)
 
 
 def capture_output(cmd):
@@ -108,22 +109,27 @@ def mysql(config, db_name, drop=False):
         secho(f"SQL Error: {e}")
 
 
-def prompt_mysql_create_db(name, user: str):
-    sql = (
-        f"CREATE DATABASE IF NOT EXISTS {name}"
-        " DEFAULT CHARACTER SET utf8"
-        " DEFAULT COLLATE utf8_chinese_ci;"
-    )
-    secho(f"Run the following line inside mysql client:\n\n{sql}")
-    connect_db = f"mysql -u{user} -p"
-    secho("\n-->", connect_db)
-    os.system(connect_db)
-
-
 def using_docker(engine="postgres"):
     # type: (str) -> bool
     containers = capture_output("docker ps")
     return bool(containers) and engine in containers
+
+
+def prompt_mysql_create_db(name, user, drop_db=False):
+    # type: (str, str, bool) -> None
+    sql = (
+        f"CREATE DATABASE IF NOT EXISTS {name}"
+        " DEFAULT CHARACTER SET utf8"
+        " DEFAULT COLLATE utf8_general_ci;"
+    )
+    if drop_db:
+        sql = f"DROP DATABASE {name};\n" + sql
+    secho(f"Run the following line inside mysql client:\n\n{sql}")
+    connect_db = f"mysql -u{user} -p"
+    if using_docker("mysql"):
+        connect_db = "docker exec -it mysql_latest " + connect_db
+    secho("\n-->", connect_db)
+    os.system(connect_db)
 
 
 def postgres(config, db_name, drop=False):
@@ -197,7 +203,7 @@ def main():
     args, unknown = parser.parse_known_args()
     if args.name != "auto":
         if args.engine == "mysql":
-            return prompt_mysql_create_db(args.name, args.user)
+            return prompt_mysql_create_db(args.name, args.user, args.delete)
         aliases = ["default"]
         dbs = [{"NAME": args.name, "ENGINE": args.engine}]
     else:
