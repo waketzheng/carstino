@@ -97,8 +97,9 @@ def mysql(config, db_name, drop=False):
         conn = MySQLdb.connect(**config)
         cur = conn.cursor()
         if drop:
-            cur.execute(f"drop database {db_name}")
-            secho(f"success to execute `drop database {db_name};`")
+            sql = f"DROP DATABASE IF EXISTS {db_name}"
+            cur.execute(sql)
+            secho(f"success to execute `{sql};`")
         command = SQL.format(db_name, config["charset"])
         cur.execute(command)
         secho(f"success to execute `{command};`")
@@ -123,7 +124,7 @@ def prompt_mysql_create_db(name, user, drop_db=False):
         " DEFAULT COLLATE utf8_general_ci;"
     )
     if drop_db:
-        sql = f"DROP DATABASE {name};\n" + sql
+        sql = f"DROP DATABASE IF EXISTS {name};\n" + sql
     secho(f"Run the following line inside mysql client:\n\n{sql}")
     connect_db = f"mysql -u{user} -p"
     if using_docker("mysql"):
@@ -137,7 +138,7 @@ def postgres(config, db_name, drop=False):
     who = man + "psql -U postgres -d postgres -c "
     option = "encoding='utf-8'"
     if drop:
-        cmd = f'{who}"drop database {db_name};"'
+        cmd = f'{who}"drop database if exists {db_name};"'
         secho("\n-->", cmd, "...")
         os.system(f"cd /tmp && {cmd}")
     cmd = f'{who}"create database {db_name} {option};"'

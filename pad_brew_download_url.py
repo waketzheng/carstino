@@ -89,8 +89,15 @@ def main():
         with open(bak_file, "w") as fp:
             fp.write(text)
         print("Create backup file at: {}".format(bak_file))
+    else:
+        print("Going to pad {}".format(file))
     s = '      end\n\n      ohai "Downloading #{url}"'
-    text = remove_old_pad(text, s)
+    try:
+        text = remove_old_pad(text, s)
+    except ValueError:
+        w = "ohai"
+        s = s.replace(w, " " * 2 + w)
+        text = remove_old_pad(text, s)
     new_text = text.replace(s, pad + s)
     with open(file, "w") as f:
         f.write(new_text)
