@@ -7,6 +7,7 @@
 4. else run `poetry env info --path` to get environment path then activated by `source ...`
 """
 
+import functools
 import os
 import platform
 
@@ -36,12 +37,18 @@ def is_controlled_by_ssh():
     return any(os.getenv(i) for i in "SSH_CLIENT SSH_TTY SSH_CONNECTION".split())
 
 
+@functools.lru_cache
+def is_poetry_project(filename):
+    # type: (str) -> bool
+    return b"[tool.poetry]" in read_content(filename)
+
+
 def get_venv():
     # type: () -> str
     is_windows = platform.platform().lower().startswith("windows")
     filename = "pyproject.toml"
     common_venv_names = ["venv"]
-    if is_windows or b"[tool.poetry]" not in read_content(filename):
+    if is_windows or not is_poetry_project(filename):
         common_venv_names += [".venv"]
     venv_dir = ""
     for dirname in common_venv_names:
@@ -49,7 +56,7 @@ def get_venv():
             venv_dir = dirname
             break
     else:
-        if is_windows or is_controlled_by_ssh():
+        if (is_windows or is_controlled_by_ssh()) and is_poetry_project(filename):
             # If use Git Bash at Windows, which does not show venv prefix after
             # running `poetry shell`, should use `source ../activate` instead;
             # When controlling by ssh in cloud server, `poetry shell` something
@@ -68,7 +75,11 @@ def get_venv():
     if venv_dir:
         bin_dir = "*" if is_windows else "bin"
         return "source {}/{}/activate".format(venv_dir, bin_dir)
-    return "poetry shell"
+    elif is_poetry_project(filename):
+        return "poetry shell"
+    else:
+        # TODO: auto fix pdm
+        return "uv venv"
 
 
 def main():

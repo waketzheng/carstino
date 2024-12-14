@@ -67,6 +67,7 @@ APPENDS = {
 # To install python2, just run `sudo apt install python2`
 SHORTCUTS = {
     "3": VERSION,
+    "313": "3.13.1",
     "312": "3.12.4",
     "311": VERSION,
     "310": "3.10.14",
