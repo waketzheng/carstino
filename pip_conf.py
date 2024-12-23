@@ -102,6 +102,10 @@ def is_pingable(domain, is_windows=False):
         if "/" not in domain:
             domain = "http://{0}/pypi/simple/ --trusted-host {0}".format(domain)
         elif "https:" not in domain:
+            if not domain.startswith("http"):
+                domain = "http://" + domain
+            if domain.endswith("pypi"):
+                domain += "/simple/"
             domain += " --trusted-host " + parse_host(domain)
         cmd = "python -m pip download -i {} --isolated pip".format(domain)
     else:
@@ -141,7 +145,7 @@ def is_hw_inner(is_windows=False):
 
 def parse_host(url):
     # type: (str) -> str
-    return url.split("://", 1)[1].split("/", 1)[0]
+    return url.split("://", 1)[-1].split("/", 1)[0]
 
 
 def run_and_echo(cmd, dry=False):
@@ -229,7 +233,7 @@ def detect_inner_net(source, verbose=False, is_windows=False):
     args = sys.argv[1:]
     inner = False
     if not args or all(i.startswith("-") for i in args):
-        source, inner = smart_detect(source, inner)
+        source, inner = smart_detect(source, is_windows=is_windows)
     elif source in ("huawei", "hw"):
         if is_hw_inner(is_windows):
             source = "hw_inner"
