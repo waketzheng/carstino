@@ -61,18 +61,20 @@ trusted-host = {}
 """.lstrip()
 DEFAULT = "tx"
 SOURCES = {
-    "aliyun": "mirrors.aliyun.com/pypi",
-    "douban": "pypi.douban.com",
-    "qinghua": "pypi.tuna.tsinghua.edu.cn",
+    "ali": "mirrors.aliyun.com/pypi",
+    "db": "pypi.douban.com",
+    "qh": "pypi.tuna.tsinghua.edu.cn",
     "tx": "mirrors.cloud.tencent.com/pypi",
     "tx_ecs": "mirrors.tencentyun.com/pypi",
-    "huawei": "repo.huaweicloud.com/repository/pypi",
+    "hw": "repo.huaweicloud.com/repository/pypi",
     "ali_ecs": "mirrors.cloud.aliyuncs.com/pypi",
     "pypi": "pypi.org",
 }
 SOURCES["tencent"] = SOURCES["tengxun"] = SOURCES["tx"]
-SOURCES["ali"] = SOURCES["aliyun"]
-SOURCES["hw"] = SOURCES["huawei"]
+SOURCES["aliyun"] = SOURCES["ali"]
+SOURCES["douban"] = SOURCES["db"]
+SOURCES["qinghua"] = SOURCES["qh"]
+SOURCES["huawei"] = SOURCES["hw"]
 SOURCES["hw_inner"] = SOURCES["hw_ecs"] = (
     SOURCES["hw"]
     .replace("cloud", "")
@@ -87,15 +89,31 @@ class ParamError(Exception):
     """Invalid parameters"""
 
 
-def is_pingable(domain):
-    # type: (str) -> bool
-    if "/" in domain:
-        domain = domain.split("/")[0]
-    try:
-        socket.gethostbyname(domain)
-    except Exception:
-        return False
-    return os.system("ping -c 1 {}".format(domain)) == 0
+def is_mac():
+    # type: () -> bool
+    return platform.system() != "Darwin"
+
+
+def is_pingable(domain, is_windows=False):
+    # type: (str, bool) -> bool
+    if is_windows:
+        # 2024.12.23 Windows may need administrator to run `ping -c 1 xxx`
+        # So use `pip download ...` instead.
+        if "/" not in domain:
+            domain = "http://{0}/pypi/simple/ --trusted-host {0}".format(domain)
+        elif "https:" not in domain:
+            domain += " --trusted-host " + parse_host(domain)
+        cmd = "python -m pip download -i {} --isolated pip".format(domain)
+    else:
+        if "/" in domain:
+            domain = domain.split("/")[0]
+        try:
+            socket.gethostbyname(domain)
+        except Exception:
+            return False
+        else:
+            cmd = "ping -c 1 {}".format(domain)
+    return os.system(cmd) == 0
 
 
 def load_bool(name):
@@ -106,19 +124,19 @@ def load_bool(name):
     return v.lower() in ("1", "yes", "on", "true", "y")
 
 
-def is_tx_cloud_server():
-    # type: () -> bool
-    return is_pingable(SOURCES["tx_ecs"])
+def is_tx_cloud_server(is_windows=False):
+    # type: (bool) -> bool
+    return is_pingable(SOURCES["tx_ecs"], is_windows=is_windows)
 
 
-def is_ali_cloud_server():
-    # type: () -> bool
-    return is_pingable(SOURCES["ali_ecs"])
+def is_ali_cloud_server(is_windows=False):
+    # type: (bool) -> bool
+    return is_pingable(SOURCES["ali_ecs"], is_windows=is_windows)
 
 
-def is_hw_inner():
-    # type: () -> bool
-    return is_pingable(SOURCES["hw_inner"])
+def is_hw_inner(is_windows=False):
+    # type: (bool) -> bool
+    return is_pingable(SOURCES["hw_inner"], is_windows=is_windows)
 
 
 def parse_host(url):
@@ -135,9 +153,20 @@ def run_and_echo(cmd, dry=False):
     return os.system(cmd)
 
 
+def capture_output(cmd):
+    # type: (str) -> str
+    try:
+        r = subprocess.run(cmd, shell=True, capture_output=True)
+    except (TypeError, AttributeError):  # For python<=3.6
+        with os.popen(cmd) as p:
+            return p.read().strip()
+    else:
+        return r.stdout.decode().strip()
+
+
 def config_by_cmd(url, is_windows=False):
     # type: (str, bool) -> None
-    if not is_windows and platform.system() == "Darwin":
+    if not is_windows and is_mac():
         # MacOS need sudo to avoid PermissionError
         _config_by_cmd(url, sudo=True)
     else:
@@ -167,42 +196,62 @@ def _config_by_cmd(url, sudo=False, is_windows=False):
     return run_and_echo(cmd, dry="--dry" in sys.argv)
 
 
-def detect_inner_net(source, verbose=False):
-    # type: (str, bool) -> str
+def smart_detect(source, is_windows):
+    # type: (str, bool) -> tuple[str, bool]
+    if is_windows:
+        if is_hw_inner(True):
+            return "hw_inner", True
+    elif not is_mac():
+        mirror_map = {
+            "huawei": (is_hw_inner, "hw_inner"),
+            "tencent": (is_tx_cloud_server, "tx_ecs"),
+            "aliyun": (is_ali_cloud_server, "ali_ecs"),
+        }
+        mirrors = []
+        welcome_file = "/etc/motd"
+        if os.path.exists(welcome_file):
+            with open(welcome_file) as f:
+                msg = f.read().strip()
+        else:
+            msg = capture_output("python -m pip config list")
+        if msg:
+            mirrors = [v for k, v in mirror_map.items() if k in msg.lower()]
+        if not mirrors:
+            mirrors = list(mirror_map.values())
+        for detect_func, source_name in mirrors:
+            if detect_func(False):
+                return source_name, True
+    return source, False
+
+
+def detect_inner_net(source, verbose=False, is_windows=False):
+    # type: (str, bool, bool) -> str
     args = sys.argv[1:]
     inner = False
     if not args or all(i.startswith("-") for i in args):
-        if is_hw_inner():
-            source = "hw_inner"
-            inner = True
-        elif is_tx_cloud_server():
-            source = "tx_ecs"
-            inner = True
-        elif is_ali_cloud_server():
-            source = "ali_ecs"
-            inner = True
+        source, inner = smart_detect(source, inner)
     elif source in ("huawei", "hw"):
-        if is_hw_inner():
+        if is_hw_inner(is_windows):
             source = "hw_inner"
             inner = True
     elif "ali" in source:
-        if is_ali_cloud_server():
+        if is_ali_cloud_server(is_windows):
             source = "ali_ecs"
             inner = True
     elif "tx" in source or "ten" in source:
-        inner = is_tx_cloud_server()
+        inner = is_tx_cloud_server(is_windows)
         source = "tx_ecs" if inner else "tx"
     if verbose and inner:
         print("Use {} as it's pingable".format(source))
     return source
 
 
-def build_index_url(source, force, verbose=False, strict=False):
-    # type: (str, bool, bool, bool) -> str
+def build_index_url(source, force, verbose=False, strict=False, is_windows=False):
+    # type: (str, bool, bool, bool, bool) -> str
     if source.startswith("http"):
         return source
     if not force:
-        source = detect_inner_net(source, verbose)
+        source = detect_inner_net(source, verbose, is_windows=is_windows)
     if strict:
         try:
             host = SOURCES[source]
@@ -233,17 +282,6 @@ def get_conf_path(is_windows, at_etc):
     if not os.path.exists(parent):
         os.mkdir(parent)
     return conf_file
-
-
-def capture_output(cmd):
-    # type: (str) -> str
-    try:
-        r = subprocess.run(cmd, shell=True, capture_output=True)
-    except (TypeError, AttributeError):  # For python<=3.6
-        with os.popen(cmd) as p:
-            return p.read().strip()
-    else:
-        return r.stdout.decode().strip()
 
 
 class PdmMirror:
@@ -466,7 +504,7 @@ class PoetryMirror(Mirror):
         dirpath = "~/Library/Preferences/pypoetry/"
         if is_windows:
             dirpath = os.getenv("APPDATA", "") + "/pypoetry/"
-        elif platform.system() != "Darwin":
+        elif is_mac():
             dirpath = "~/.config/pypoetry/"
         elif self.poetry_version >= "1.5":
             dirpath = "~/Library/Application Support/pypoetry/"
@@ -515,9 +553,9 @@ def init_pip_conf(
     pdm=False,
     verbose=False,
     uv=False,
+    is_windows=False,
 ):
-    # type: (str, bool, bool, bool, bool, bool, bool, bool) -> Optional[int]
-    is_windows = platform.system() == "Windows"
+    # type: (str, bool, bool, bool, bool, bool, bool, bool, bool) -> Optional[int]
     if poetry:
         return PoetryMirror(url, is_windows, replace).set()
     poetry_set_env = "SET_POETRY"
@@ -527,7 +565,9 @@ def init_pip_conf(
         if v:
             tip = "Poetry mirror source will be set to {}"
             print(tip.format(repr(v)))
-            url = build_index_url(v, force=True, verbose=True, strict=True)
+            url = build_index_url(
+                v, force=True, verbose=True, strict=True, is_windows=is_windows
+            )
             replace = True
         elif verbose:
             tip = "Going to configure poetry mirror source, because {} was set to {}"
@@ -578,7 +618,7 @@ def main():
     from argparse import ArgumentParser
 
     parser = ArgumentParser()
-    source_help = "the source of pip, ali/douban/huawei/qinghua or tx(default)"
+    source_help = "the source of pip, ali/douban/hw/qinghua or tx(default)"
     parser.add_argument("name", nargs="?", default="", help=source_help)
     parser.add_argument("files", nargs="*", default="", help="Add for pre-commit")
     # Be compatible with old version
@@ -616,8 +656,9 @@ def main():
         PoetryMirror.fix_v1_6_error()
     else:
         source = args.name or args.source
-        url = build_index_url(source, args.f, args.verbose)
-        if args.url:
+        is_windows = platform.system() == "Windows"
+        url = build_index_url(source, args.f, args.verbose, is_windows=is_windows)
+        if args.url:  # Only display prefer source url, but not config
             print(url)
             return None
         if init_pip_conf(
@@ -629,6 +670,7 @@ def main():
             pdm=args.pdm,
             verbose=args.verbose,
             uv=args.uv,
+            is_windows=is_windows,
         ):
             return 1
 
