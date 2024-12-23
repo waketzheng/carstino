@@ -1,0 +1,18 @@
+#!/usr/bin/env expect -f
+set cmd  [ lindex $argv 0  ]
+set passwd  [ lindex $argv 1  ]
+set SQL_1  [ lindex $argv 2  ]
+set SQL_2  [ lindex $argv 3  ]
+spawn sh -c "$cmd"
+expect {
+    "yes/no" { send "yes\r"; exp_continue}
+    "password:" { send "$passwd\r" }
+}
+
+expect "> "
+send "$SQL_1 \r"
+expect "> "
+send "$SQL_2 \r"
+expect "> "
+send "exit \r"
+expect {"Bye" { exit 0 }}   # If 100%, exit

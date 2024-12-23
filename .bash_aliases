@@ -29,6 +29,7 @@ getVenv() {
 }
 alias ve='echo "--> $(getVenv)" && $(getVenv)'
 alias vv='echo "--> source venv/*/activate" && source venv/*/activate'
+alias venv="$CARST_PATH/new_venv.py"
 
 # trim the space at the right side of every line
 alias rstrip="python $CARST_PATH/rstrip.py"
@@ -96,3 +97,6 @@ fi
 if [ -f $HOME/.systemctl.py ]; then
   alias systemctl="python $HOME/.systemctl.py"
 fi
+
+# For Python
+alias new="python $CARST_PATH/get_venv.py"

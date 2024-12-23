@@ -27,8 +27,8 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2024.11.08"
-__version__ = "0.5.1"
+__updated_at__ = "2024.12.23"
+__version__ = "0.6.0"
 import os
 import platform
 import pprint
@@ -126,10 +126,12 @@ def parse_host(url):
     return url.split("://", 1)[1].split("/", 1)[0]
 
 
-def run_and_echo(cmd):
-    # type: (str) -> int
+def run_and_echo(cmd, dry=False):
+    # type: (str, bool) -> int
     print("--> " + cmd)
     sys.stdout.flush()
+    if dry:
+        return 1
     return os.system(cmd)
 
 
@@ -139,11 +141,11 @@ def config_by_cmd(url, is_windows=False):
         # MacOS need sudo to avoid PermissionError
         _config_by_cmd(url, sudo=True)
     else:
-        _config_by_cmd(url)
+        _config_by_cmd(url, is_windows=is_windows)
 
 
-def _config_by_cmd(url, sudo=False):
-    # type: (str, bool) -> int
+def _config_by_cmd(url, sudo=False, is_windows=False):
+    # type: (str, bool, bool) -> int
     cmd = CONF_PIP + url
     if not url.startswith("https"):
         print("cmd = {}".format(repr(cmd)))
@@ -153,7 +155,7 @@ def _config_by_cmd(url, sudo=False):
             try:
                 socket.gethostbyname(extra_host.split("://")[-1].split("/")[0])
             except socket.gaierror:
-                print("Ingore {} as it's not pingable".format(extra_host))
+                print("Ignore {} as it's not pingable".format(extra_host))
             else:
                 extra_index = SOURCES["hw_inner"].replace(host, extra_host)
                 extra_index_url = INDEX_URL.replace("https", "http").format(extra_index)
@@ -162,7 +164,7 @@ def _config_by_cmd(url, sudo=False):
         cmd += " && pip config set global.trusted-host " + host
     if sudo:
         cmd = " && ".join("sudo " + i.strip() for i in cmd.split("&&"))
-    return run_and_echo(cmd)
+    return run_and_echo(cmd, dry="--dry" in sys.argv)
 
 
 def detect_inner_net(source, verbose=False):
@@ -251,7 +253,7 @@ class PdmMirror:
         cmd = "pdm config pypi.url " + url
         if url.startswith("http:"):
             cmd += " && pdm config pypi.verify_ssl false"
-        return run_and_echo(cmd)
+        return run_and_echo(cmd, dry="--dry" in sys.argv)
 
 
 class Mirror:
@@ -433,7 +435,7 @@ class PoetryMirror(Mirror):
             "cd {}".format(config_path),
             "poetry source add -v --priority=default pypi_mirror {}".format(url),
         ]
-        run_and_echo(" && ".join(cmds))
+        run_and_echo(" && ".join(cmds), dry="--dry" in sys.argv)
 
     def get_dirpath(self, is_windows, url):
         # type: (bool, str) -> Optional[str]
@@ -447,14 +449,16 @@ class PoetryMirror(Mirror):
             else:
                 self.set_self_pypi_mirror(is_windows, url)
                 install_plugin = "poetry self add "
-            if run_and_echo(install_plugin + mirror_plugin) != 0:
+            dry = "--dry" in sys.argv
+            if run_and_echo(install_plugin + mirror_plugin, dry=dry) != 0:
                 print("Failed to install plugin: {}".format(repr(mirror_plugin)))
                 return None
             if not load_bool("PIP_CONF_NO_EXTRA_POETRY_PLUGINS"):
-                run_and_echo(
+                cmd = (
                     install_plugin
                     + "poetry-dotenv-plugin poetry-plugin-i poetry-plugin-version"
                 )
+                run_and_echo(cmd, dry=dry)
         return self._get_dirpath(is_windows)
 
     def _get_dirpath(self, is_windows):
@@ -590,6 +594,11 @@ def main():
     parser.add_argument("--pdm", action="store_true", help="Set pypi.url for pdm")
     parser.add_argument("--uv", action="store_true", help="Set index url for uv")
     parser.add_argument("--url", action="store_true", help="Show mirrors url")
+    parser.add_argument(
+        "--dry",
+        action="store_true",
+        help="Display cmd command without actually executing",
+    )
     parser.add_argument("--verbose", action="store_true", help="Print more info")
     parser.add_argument(
         "--fix", action="store_true", help="Fix poetry pypi mirror plugin error"

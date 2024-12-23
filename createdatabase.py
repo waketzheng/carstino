@@ -130,7 +130,20 @@ def prompt_mysql_create_db(name, user, drop_db=False):
     if using_docker("mysql"):
         connect_db = "docker exec -it mysql_latest " + connect_db
     secho("\n-->", connect_db)
-    os.system(connect_db)
+    if os.system("which expect") != 0:
+        os.system(connect_db)
+    else:
+        p = Path(__file__).parent / ".create_db_in_docker_mysql.exp"
+        if p.exists():
+            password = os.getenv("MYSQL_PASS", "123456")
+            sqls = sql.split("\n")
+            if len(sqls) == 1:
+                sql_1, sql_2 = sqls[0], "show databases"
+            else:
+                sql_1, sql_2 = sqls
+            cmd = f'{p} "{connect_db}" "{password}" "{sql_1}" "{sql_2}"'
+            if os.system(cmd) == 0:
+                print("\nDone.")
 
 
 def postgres(config, db_name, drop=False):
