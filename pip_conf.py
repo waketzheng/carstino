@@ -107,7 +107,7 @@ def is_pingable(domain, is_windows=False):
             if domain.endswith("pypi"):
                 domain += "/simple/"
             domain += " --trusted-host " + parse_host(domain)
-        cmd = "python -m pip download -i {} --isolated pip".format(domain)
+        cmd = "python -m pip download -i {} --isolated six".format(domain)
     else:
         if "/" in domain:
             domain = domain.split("/")[0]
