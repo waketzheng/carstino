@@ -27,8 +27,8 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2024.12.23"
-__version__ = "0.6.0"
+__updated_at__ = "2024.12.26"
+__version__ = "0.6.1"
 import os
 import platform
 import pprint
@@ -108,15 +108,20 @@ def is_pingable(domain, is_windows=False):
                 domain += "/simple/"
             domain += " --trusted-host " + parse_host(domain)
         cmd = "python -m pip download -i {} --isolated six".format(domain)
+        if os.system(cmd) == 0:
+            for name in os.listdir("."):
+                if name.startswith("six-") and name.endswith(".whl"):
+                    os.remove(name)
+            return True
+        return False
+    if "/" in domain:
+        domain = domain.split("://", 1)[-1].split("/", 1)[0]
+    try:
+        socket.gethostbyname(domain)
+    except Exception:
+        return False
     else:
-        if "/" in domain:
-            domain = domain.split("/")[0]
-        try:
-            socket.gethostbyname(domain)
-        except Exception:
-            return False
-        else:
-            cmd = "ping -c 1 {}".format(domain)
+        cmd = "ping -c 1 {}".format(domain)
     return os.system(cmd) == 0
 
 
