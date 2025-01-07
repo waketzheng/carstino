@@ -54,6 +54,8 @@ source = { virtual = "." }
 dev = [
     { name = "asynctor" },
     { name = "fast-dev-cli" },
+    { name = "pymysql" },
+    { name = "types-pymysql" },
 ]
 
 [package.metadata]
@@ -62,6 +64,8 @@ dev = [
 dev = [
     { name = "asynctor", specifier = ">=0.6.6" },
     { name = "fast-dev-cli", specifier = ">=0.9.10" },
+    { name = "pymysql", specifier = ">=1.1.1" },
+    { name = "types-pymysql", specifier = ">=1.1.0.20241103" },
 ]
 
 [[package]]
@@ -264,6 +268,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pymysql"
+version = "1.1.1"
+source = { registry = "https://mirrors.cloud.tencent.com/pypi/simple/" }
+sdist = { url = "https://mirrors.cloud.tencent.com/pypi/packages/b3/8f/ce59b5e5ed4ce8512f879ff1fa5ab699d211ae2495f1adaa5fbba2a1eada/pymysql-1.1.1.tar.gz", hash = "sha256:e127611aaf2b417403c60bf4dc570124aeb4a57f5f37b8e95ae399a42f904cd0" }
+wheels = [
+    { url = "https://mirrors.cloud.tencent.com/pypi/packages/0c/94/e4181a1f6286f545507528c78016e00065ea913276888db2262507693ce5/PyMySQL-1.1.1-py3-none-any.whl", hash = "sha256:4de15da4c61dc132f4fb9ab763063e693d521a80fd0e87943b9a453dd4c19d6c" },
+]
+
+[[package]]
 name = "pytest"
 version = "8.3.3"
 source = { registry = "https://mirrors.cloud.tencent.com/pypi/simple/" }
@@ -359,6 +372,15 @@ dependencies = [
 sdist = { url = "https://mirrors.cloud.tencent.com/pypi/packages/c5/58/a79003b91ac2c6890fc5d90145c662fd5771c6f11447f116b63300436bc9/typer-0.12.5.tar.gz", hash = "sha256:f592f089bedcc8ec1b974125d64851029c3b1af145f04aca64d69410f0c9b722" }
 wheels = [
     { url = "https://mirrors.cloud.tencent.com/pypi/packages/a8/2b/886d13e742e514f704c33c4caa7df0f3b89e5a25ef8db02aa9ca3d9535d5/typer-0.12.5-py3-none-any.whl", hash = "sha256:62fe4e471711b147e3365034133904df3e235698399bc4de2b36c8579298d52b" },
+]
+
+[[package]]
+name = "types-pymysql"
+version = "1.1.0.20241103"
+source = { registry = "https://mirrors.cloud.tencent.com/pypi/simple/" }
+sdist = { url = "https://mirrors.cloud.tencent.com/pypi/packages/b3/ac/5a23decbcf53893df11636b7d61cc000a97b0ed45e09cee94d6c75f159ec/types-PyMySQL-1.1.0.20241103.tar.gz", hash = "sha256:a7628542919a0ba87625fb79eefb2a2de45fb4ad32afe6e561e8f2f27fb58b8c" }
+wheels = [
+    { url = "https://mirrors.cloud.tencent.com/pypi/packages/3e/04/d02323dd4dfd6e0af4ecbb88a00215c37aa79894a2d158390700c84c8597/types_PyMySQL-1.1.0.20241103-py3-none-any.whl", hash = "sha256:1a32efd8a74b5bf74c4de92a86c1cc6edaf3802dcfd5546635ab501eb5e3c096" },
 ]
 
 [[package]]
