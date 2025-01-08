@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import sys
+
 import pymysql
 
 pymysql.install_as_MySQLdb()
@@ -16,10 +18,11 @@ def run(cur, conn):
     dbs = show_databases(cur, conn)
     print(f"{len(dbs) = }")
     todo = [i for i in dbs if i.startswith("test_") if len(i) > 10]
-    for i in todo:
-        command = f"DROP DATABASE {i};"
-        cur.execute(command)
-    conn.commit()
+    if "--show" not in sys.argv:
+        for i in todo:
+            command = f"DROP DATABASE {i};"
+            cur.execute(command)
+        conn.commit()
     print(f"{show_databases(cur, conn) = }")
 
 
