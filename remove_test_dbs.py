@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+"""
+Remove MySQL databases whose name is more than 10 characters and startswith 'test_'
+"""
+
 import sys
 
 import pymysql
