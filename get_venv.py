@@ -32,6 +32,12 @@ def read_content(filename):
         return f.read()
 
 
+def is_poetry_v2():
+    # type: () -> bool
+    version = run_cmd("poetry --version")
+    return "version 2" in version
+
+
 def is_controlled_by_ssh():
     # type: () -> bool
     return any(os.getenv(i) for i in "SSH_CLIENT SSH_TTY SSH_CONNECTION".split())
@@ -56,7 +62,11 @@ def get_venv():
             venv_dir = dirname
             break
     else:
-        if (is_windows or is_controlled_by_ssh()) and is_poetry_project(filename):
+        if (
+            (is_windows or is_controlled_by_ssh())
+            and is_poetry_project(filename)
+            and not is_poetry_v2()
+        ):
             # If use Git Bash at Windows, which does not show venv prefix after
             # running `poetry shell`, should use `source ../activate` instead;
             # When controlling by ssh in cloud server, `poetry shell` something

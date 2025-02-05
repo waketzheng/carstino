@@ -50,6 +50,8 @@ alias gitdiff='git diff ":!*.lock"'
 alias gitadd="git add"
 alias gitcheckout="git checkout"
 alias gitcommit="git commit"
+alias gitmerge="git merge"
+alias gitprune="git prune --verbose && git fetch --prune"
 
 # fabric
 alias fabpull='fab pull'
