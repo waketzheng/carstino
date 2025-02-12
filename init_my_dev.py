@@ -188,10 +188,10 @@ def run_init(home: Path, aliases_path: Path) -> None:
     if not IS_WINDOWS:
         general_files.append(".pipi.py")
     for fp in user_special_files:
-        run_cmd(f"cp {repo/fp} {home}")
+        run_cmd(f"cp {repo / fp} {home}")
     for fn in general_files:
-        if run_cmd(f"ln -s {repo/fn} {home/fn}") == 0:
-            run_cmd(f"chmod +x {home/fn}")
+        if run_cmd(f"ln -s {repo / fn} {home / fn}") == 0:
+            run_cmd(f"chmod +x {home / fn}")
     update_aliases(repo, aliases_path, home)
     if "macos" in platform().lower():
         ctl_name = "systemctl.py"

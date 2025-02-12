@@ -150,9 +150,9 @@ def get_filepaths(args):
                         fpaths += list(Path(i).rglob("*"))
                     else:
                         ps = i.split("/**/")
-                        assert (
-                            len(ps) == 2
-                        ), "Invalid pattern! Must sure only one double `*`."
+                        assert len(ps) == 2, (
+                            "Invalid pattern! Must sure only one double `*`."
+                        )
                         fpaths += list(Path(ps[0]).rglob(ps[1]))
             else:
                 if i == "*" or i.startswith("*."):
