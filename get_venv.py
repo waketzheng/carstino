@@ -11,6 +11,22 @@ import functools
 import os
 import platform
 
+try:
+    from functools import cache
+except ImportError:
+    caching = {}  # type: dict
+
+    def cache(func):  # type:ignore
+        @functools.wraps(func)
+        def runner(*args, **kw):
+            key = func.__name__ + "(*{}, **{})".format(args, kw)
+            if key in caching:
+                return caching[key]
+            res = caching[key] = func(*args, **kw)
+            return res
+
+        return runner
+
 
 def run_cmd(command):
     # type: (str) -> str
@@ -34,7 +50,7 @@ def read_content(filename):
 
 def is_poetry_v2():
     # type: () -> bool
-    version = run_cmd("poetry --version")
+    version = run_cmd("poetry --version --no-ansi")
     return "version 2" in version
 
 
@@ -43,7 +59,7 @@ def is_controlled_by_ssh():
     return any(os.getenv(i) for i in "SSH_CLIENT SSH_TTY SSH_CONNECTION".split())
 
 
-@functools.lru_cache
+@cache
 def is_poetry_project(filename):
     # type: (str) -> bool
     return b"[tool.poetry]" in read_content(filename)
@@ -62,7 +78,15 @@ def get_venv():
             venv_dir = dirname
             break
     else:
-        if (
+        if (is_windows and os.path.exists("Scripts/activate.exe")) or (
+            not is_windows and os.path.exists("bin/activate")
+        ):
+            venv_dir = "."
+        elif (is_windows and os.path.exists("activate.exe")) or (
+            not is_windows and os.path.exists("activate")
+        ):
+            venv_dir = ".."
+        elif (
             (is_windows or is_controlled_by_ssh())
             and is_poetry_project(filename)
             and not is_poetry_v2()

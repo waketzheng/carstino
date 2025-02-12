@@ -15,11 +15,30 @@ import os
 import sys
 
 
+def parse_dry():
+    # type: () -> tuple[bool, list[str]]
+    args = sys.argv[1:]
+    dry_flag = "--dry"
+    dry = dry_flag in args
+    if dry:
+        args = [i for i in args if i != dry_flag]
+    return dry, args
+
+
 def main():
-    # type: () -> None
-    fmt = "python{0} -m venv venv --prompt venv{0}"
-    if sys.argv[1:]:
-        v = sys.argv[1]
+    # type: () -> int | None
+    fmt = "python{0} -m venv {1} --prompt venv{0}"
+    path = "venv"
+    dry, args = parse_dry()
+    if args:
+        for a2 in args[1:]:
+            if a2.startswith("-"):
+                a2 = a2.split("=")[-1].strip()
+                if not a2:
+                    continue
+            path = a2
+            break
+        v = args[0]
         if v in ("2", "3"):
             cmd = "python{} {}".format(v, __file__)
         else:
@@ -30,14 +49,20 @@ def main():
                 version = ".".join(vs)
             else:
                 version = v
-            cmd = fmt.format(version)
+            if not all(i.isdigit() for i in version.split(".")):
+                raise ValueError("Invalid version value: {v!r}".format(v=v))
+            cmd = fmt.format(version, path)
             print(cmd)
     else:
         version = "{0}.{1}".format(*sys.version_info)
-        cmd = fmt.format(version)
-    rc = os.system(cmd)
-    sys.exit(1 if rc else None)
+        cmd = fmt.format(version, path)
+    if dry:
+        print("--> " + cmd)
+        rc = 0
+    else:
+        rc = os.system(cmd)
+    return 1 if rc else None
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
