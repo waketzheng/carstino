@@ -62,7 +62,10 @@ def is_controlled_by_ssh():
 @cache
 def is_poetry_project(filename):
     # type: (str) -> bool
-    return b"[tool.poetry]" in read_content(filename)
+    text = read_content(filename)
+    return b"[tool.poetry]" in text or (
+        is_poetry_v2() and b'build-backend = "poetry' in text
+    )
 
 
 def get_venv():
