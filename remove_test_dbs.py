@@ -6,6 +6,7 @@ Remove MySQL databases whose name is more than 10 characters and startswith 'tes
 import sys
 
 import pymysql
+from tqdm import tqdm
 
 pymysql.install_as_MySQLdb()
 
@@ -23,7 +24,7 @@ def run(cur, conn):
     print(f"{len(dbs) = }")
     todo = [i for i in dbs if i.startswith("test_") if len(i) > 10]
     if "--show" not in sys.argv:
-        for i in todo:
+        for i in tqdm(todo):
             command = f"DROP DATABASE {i};"
             cur.execute(command)
         conn.commit()

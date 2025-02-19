@@ -56,7 +56,9 @@ dev = [
     { name = "asynctor" },
     { name = "fast-dev-cli" },
     { name = "pymysql" },
+    { name = "tqdm" },
     { name = "types-pymysql" },
+    { name = "types-tqdm" },
 ]
 
 [package.metadata]
@@ -66,7 +68,9 @@ dev = [
     { name = "asynctor", specifier = ">=0.6.6" },
     { name = "fast-dev-cli", specifier = ">=0.9.10" },
     { name = "pymysql", specifier = ">=1.1.1" },
+    { name = "tqdm", specifier = ">=4.67.1" },
     { name = "types-pymysql", specifier = ">=1.1.0.20241103" },
+    { name = "types-tqdm", specifier = ">=4.67.0.20241221" },
 ]
 
 [[package]]
@@ -366,6 +370,18 @@ wheels = [
 ]
 
 [[package]]
+name = "tqdm"
+version = "4.67.1"
+source = { registry = "https://mirrors.cloud.tencent.com/pypi/simple/" }
+dependencies = [
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+]
+sdist = { url = "https://mirrors.cloud.tencent.com/pypi/packages/a8/4b/29b4ef32e036bb34e4ab51796dd745cdba7ed47ad142a9f4a1eb8e0c744d/tqdm-4.67.1.tar.gz", hash = "sha256:f8aef9c52c08c13a65f30ea34f4e5aac3fd1a34959879d7e59e63027286627f2" }
+wheels = [
+    { url = "https://mirrors.cloud.tencent.com/pypi/packages/d0/30/dc54f88dd4a2b5dc8a0279bdd7270e735851848b762aeb1c1184ed1f6b14/tqdm-4.67.1-py3-none-any.whl", hash = "sha256:26445eca388f82e72884e0d580d5464cd801a3ea01e63e5601bdff9ba6a48de2" },
+]
+
+[[package]]
 name = "typer"
 version = "0.15.1"
 source = { registry = "https://mirrors.cloud.tencent.com/pypi/simple/" }
@@ -390,10 +406,43 @@ wheels = [
 ]
 
 [[package]]
+name = "types-requests"
+version = "2.32.0.20241016"
+source = { registry = "https://mirrors.cloud.tencent.com/pypi/simple/" }
+dependencies = [
+    { name = "urllib3" },
+]
+sdist = { url = "https://mirrors.cloud.tencent.com/pypi/packages/fa/3c/4f2a430c01a22abd49a583b6b944173e39e7d01b688190a5618bd59a2e22/types-requests-2.32.0.20241016.tar.gz", hash = "sha256:0d9cad2f27515d0e3e3da7134a1b6f28fb97129d86b867f24d9c726452634d95" }
+wheels = [
+    { url = "https://mirrors.cloud.tencent.com/pypi/packages/d7/01/485b3026ff90e5190b5e24f1711522e06c79f4a56c8f4b95848ac072e20f/types_requests-2.32.0.20241016-py3-none-any.whl", hash = "sha256:4195d62d6d3e043a4eaaf08ff8a62184584d2e8684e9d2aa178c7915a7da3747" },
+]
+
+[[package]]
+name = "types-tqdm"
+version = "4.67.0.20241221"
+source = { registry = "https://mirrors.cloud.tencent.com/pypi/simple/" }
+dependencies = [
+    { name = "types-requests" },
+]
+sdist = { url = "https://mirrors.cloud.tencent.com/pypi/packages/0d/4f/70760ecc463f3383826666837f28d6e328ff28749fea7fd250f04c861708/types_tqdm-4.67.0.20241221.tar.gz", hash = "sha256:e56046631056922385abe89aeb18af5611f471eadd7918a0ad7f34d84cd4c8cc" }
+wheels = [
+    { url = "https://mirrors.cloud.tencent.com/pypi/packages/e5/e9/9832ef6d017d12b6b4740d7c4dd4eab31867c92ab2c95331d5cb4632fb22/types_tqdm-4.67.0.20241221-py3-none-any.whl", hash = "sha256:a1f1c9cda5c2d8482d2c73957a5398bfdedda10f6bc7b3b4e812d5c910486d29" },
+]
+
+[[package]]
 name = "typing-extensions"
 version = "4.12.2"
 source = { registry = "https://mirrors.cloud.tencent.com/pypi/simple/" }
 sdist = { url = "https://mirrors.cloud.tencent.com/pypi/packages/df/db/f35a00659bc03fec321ba8bce9420de607a1d37f8342eee1863174c69557/typing_extensions-4.12.2.tar.gz", hash = "sha256:1a7ead55c7e559dd4dee8856e3a88b41225abfe1ce8df57b7c13915fe121ffb8" }
 wheels = [
     { url = "https://mirrors.cloud.tencent.com/pypi/packages/26/9f/ad63fc0248c5379346306f8668cda6e2e2e9c95e01216d2b8ffd9ff037d0/typing_extensions-4.12.2-py3-none-any.whl", hash = "sha256:04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d" },
+]
+
+[[package]]
+name = "urllib3"
+version = "2.3.0"
+source = { registry = "https://mirrors.cloud.tencent.com/pypi/simple/" }
+sdist = { url = "https://mirrors.cloud.tencent.com/pypi/packages/aa/63/e53da845320b757bf29ef6a9062f5c669fe997973f966045cb019c3f4b66/urllib3-2.3.0.tar.gz", hash = "sha256:f8c5449b3cf0861679ce7e0503c7b44b5ec981bec0d1d3795a07f1ba96f0204d" }
+wheels = [
+    { url = "https://mirrors.cloud.tencent.com/pypi/packages/c8/19/4ec628951a74043532ca2cf5d97b7b14863931476d117c471e8e2b1eb39f/urllib3-2.3.0-py3-none-any.whl", hash = "sha256:1cee9ad369867bfdbbb48b7dd50374c0967a0bb7710050facf0dd6911440e3df" },
 ]

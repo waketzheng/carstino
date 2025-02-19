@@ -19,6 +19,7 @@ Or:
     $ python pip_conf.py --list  # show choices
     $ python pip_conf.py --poetry  # set mirrors in poetry's config.toml
     $ python pip_conf.py --pdm  # set pypi.url for pdm
+    $ python pip_conf.py --uv  # set mirror for uv
 
     $ sudo python pip_conf.py --etc  # Set conf to /etc/pip.[conf|ini]
 
@@ -27,8 +28,8 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2024.12.26"
-__version__ = "0.6.1"
+__updated_at__ = "2025.02.19"
+__version__ = "0.6.2"
 import os
 import platform
 import pprint
@@ -89,9 +90,31 @@ class ParamError(Exception):
     """Invalid parameters"""
 
 
+class System:
+    _system = None  # type: Optional[str]
+
+    @classmethod
+    def get_system(cls):
+        # type: () -> str
+        system = cls._system
+        if system is None:
+            system = cls._system = platform.system()
+        return system
+
+    @classmethod
+    def is_win(cls):
+        # type: () -> bool
+        return cls.get_system() == "Windows"
+
+    @classmethod
+    def is_mac(cls):
+        # type: () -> bool
+        return cls.get_system() == "Darwin"
+
+
 def is_mac():
     # type: () -> bool
-    return platform.system() != "Darwin"
+    return System.is_mac()
 
 
 def is_pingable(domain, is_windows=False):
@@ -665,7 +688,7 @@ def main():
         PoetryMirror.fix_v1_6_error()
     else:
         source = args.name or args.source
-        is_windows = platform.system() == "Windows"
+        is_windows = System.is_win()
         url = build_index_url(source, args.f, args.verbose, is_windows=is_windows)
         if args.url:  # Only display prefer source url, but not config
             print(url)
