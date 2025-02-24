@@ -28,8 +28,8 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2025.02.19"
-__version__ = "0.6.2"
+__updated_at__ = "2025.02.24"
+__version__ = "0.6.3"
 import os
 import platform
 import pprint
@@ -299,6 +299,11 @@ def build_index_url(source, force, verbose=False, strict=False, is_windows=False
     return url
 
 
+def get_parent_path(path):
+    # type: (str) -> str
+    return os.path.dirname(path.rstrip("/").rstrip("\\"))
+
+
 def get_conf_path(is_windows, at_etc):
     # type: (bool, bool) -> str
     if is_windows:
@@ -310,7 +315,7 @@ def get_conf_path(is_windows, at_etc):
         else:
             _pip_conf = (".pip", "pip.conf")
             conf_file = os.path.join(os.path.expanduser("~"), *_pip_conf)
-    parent = os.path.dirname(conf_file)
+    parent = get_parent_path(conf_file)
     if not os.path.exists(parent):
         os.mkdir(parent)
     return conf_file
@@ -398,7 +403,7 @@ class UvMirror(Mirror):
                     if self.url.startswith("https"):
                         text = content.replace(already, self.url)
         elif not os.path.exists(dirpath):
-            parent = os.path.dirname(dirpath)
+            parent = get_parent_path(dirpath)
             if not os.path.exists(parent):
                 os.mkdir(parent)
             os.mkdir(dirpath)
@@ -431,6 +436,11 @@ class UvMirror(Mirror):
 
 class PoetryMirror(Mirror):
     plugin_name = "poetry-plugin-pypi-mirror"
+    extra_plugins = [  # You can set PIP_CONF_NO_EXTRA_POETRY_PLUGINS=1 to skip install extra plugins
+        "poetry-dotenv-plugin",
+        "poetry-plugin-i",
+        "poetry-plugin-version",
+    ]
 
     def fix_poetry_v1_6_error(self, version):
         # type: (str) -> None
@@ -458,7 +468,7 @@ class PoetryMirror(Mirror):
         else:
             code = "import {} as m;print(m.__file__)".format(module)
             path = capture_output("python -c {}".format(repr(code)))
-            file = os.path.join(os.path.dirname(path), filename)
+            file = os.path.join(get_parent_path(path), filename)
         if not os.path.exists(file):
             print("WARNING: plugin file not found {}".format(file))
             return
@@ -524,10 +534,7 @@ class PoetryMirror(Mirror):
                 print("Failed to install plugin: {}".format(repr(mirror_plugin)))
                 return None
             if not load_bool("PIP_CONF_NO_EXTRA_POETRY_PLUGINS"):
-                cmd = (
-                    install_plugin
-                    + "poetry-dotenv-plugin poetry-plugin-i poetry-plugin-version"
-                )
+                cmd = install_plugin + " ".join(self.extra_plugins)
                 run_and_echo(cmd, dry=dry)
         return self._get_dirpath(is_windows)
 
@@ -569,7 +576,7 @@ class PoetryMirror(Mirror):
             else:
                 text = content + os.linesep + text
         elif not os.path.exists(dirpath):
-            parent = os.path.dirname(dirpath)
+            parent = get_parent_path(dirpath)
             if not os.path.exists(parent):
                 os.mkdir(parent)
             os.mkdir(dirpath)
