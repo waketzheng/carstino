@@ -81,14 +81,12 @@ def get_venv():
             venv_dir = dirname
             break
     else:
-        if (is_windows and os.path.exists("Scripts/activate.exe")) or (
-            not is_windows and os.path.exists("bin/activate")
+        if os.path.exists("activate"):
+            venv_dir = ".."
+        elif (is_windows and os.path.exists("Scripts/activate")) or os.path.exists(
+            "bin/activate"  # Cygwin in Windows system also use this
         ):
             venv_dir = "."
-        elif (is_windows and os.path.exists("activate.exe")) or (
-            not is_windows and os.path.exists("activate")
-        ):
-            venv_dir = ".."
         elif (
             (is_windows or is_controlled_by_ssh())
             and is_poetry_project(filename)
