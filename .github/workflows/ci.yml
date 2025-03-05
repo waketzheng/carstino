@@ -73,6 +73,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify pip conf script
         run: |
-          python pip_conf.py
-          python upgrade_py.py --dry --no-input
-          python -V
+          python2.7 pip_conf.py
+          python2.7 upgrade_py.py --dry --no-input
+          python2.7 -V
