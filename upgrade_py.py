@@ -20,7 +20,34 @@ import socket
 import sys
 import time
 from datetime import date
-from enum import Enum
+
+try:
+    from enum import Enum
+except ImportError:  # For Python2
+
+    class Value(object):
+        def __init__(self, value):
+            self.value = value
+
+        def __str__(self):
+            return str(self.value)
+
+        def __repr__(self):
+            return "Value({})".format(repr(self.value))
+
+    class ValueMeta(type):
+        def __new__(cls, name, bases, dct):
+            valued_dct = {
+                k: Value(v)
+                if not k.startswith("_") and isinstance(v, (str, int, bool))
+                else v
+                for k, v in dct.items()
+            }
+            return super(ValueMeta, cls).__new__(cls, name, bases, valued_dct)
+
+    class Enum(object):  # type:ignore
+        __metaclass__ = ValueMeta
+
 
 if sys.version_info < (3,):
     input = raw_input  # NOQA:F821 type:ignore
