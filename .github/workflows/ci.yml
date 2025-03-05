@@ -40,6 +40,15 @@ jobs:
         run: uv run fast check
       - name: Verify pip conf script
         run: ./pip_conf.py
+      - name: Verify python upgrade script
+        run: |
+          ./upgrade_py.py --list
+          ./upgrade_py.py --dry --no-input
+          ./upgrade_py.py 3 --dry --no-input
+          ./upgrade_py.py 313 --dry --no-input
+          ./upgrade_py.py 3.13 --dry --no-input
+          ./upgrade_py.py 3.13.2 --dry --no-input
+          ./upgrade_py.py --version=313 --dry --no-input
 
   ConfPip:
     runs-on: ubuntu-20.04
@@ -54,6 +63,8 @@ jobs:
           allow-prereleases: true
       - name: Verify pip conf script
         run: python pip_conf.py
+      - name: Verify python upgrade script
+        run: python upgrade_py.py --dry --no-input
 
   conf_pip_py27:
     runs-on: ubuntu-latest
@@ -63,4 +74,5 @@ jobs:
       - name: Verify pip conf script
         run: |
           python pip_conf.py
+          python upgrade_py.py --dry --no-input
           python -V

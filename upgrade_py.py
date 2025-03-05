@@ -35,11 +35,22 @@ ENABLE_SQLITE = "--enable-loadable-sqlite-extensions"
 INSTALL = "./configure {} && make && sudo make {}install"
 DEFAULT_DIR = "~/softwares"
 
+_apt_extra_deps = """
+libssl-dev
+bzip2
+libbz2-dev
+libxml2-dev
+libxslt1-dev
+zlib1g-dev
+libffi-dev
+libsqlite3-dev
+"""
 PREDEPENDS = {
     "apt": [
-        (
-            "sudo apt install -y wget build-essential libssl-dev bzip2 libbz2-dev"
-            " libxml2-dev libxslt1-dev zlib1g-dev libffi-dev"
+        "sudo apt install -y wget build-essential"
+        + "".join(
+            " {}".format(i.split("#")[0].strip())
+            for i in _apt_extra_deps.strip().splitlines()
         )
     ],
     "yum": [
@@ -76,7 +87,13 @@ SHORTCUTS = {
     "37": "3.7.17",
     "36": "3.6.15",
 }
-SHORTCUTS.update({k[0] + "." + k[1:]: v for k, v in SHORTCUTS.items() if len(k) > 1})
+
+
+def get_full_version(shortcut):
+    # type: (str) -> str
+    if "." in shortcut:
+        return SHORTCUTS[shortcut.replace(".", "")]
+    return SHORTCUTS[shortcut]
 
 
 def is_pingable(domain):
@@ -238,10 +255,12 @@ def validated_args(ret_pre=False):
         return args, False
     if args.version.count(".") > 1:
         assert args.version >= "3", "Only support Python3 install"
-    elif args.version not in SHORTCUTS:
-        raise AssertionError("Version should be in " + repr(list(SHORTCUTS.keys())))
     else:
-        args.version = SHORTCUTS[args.version]
+        try:
+            args.version = get_full_version(args.version)
+        except KeyError:
+            msg = "Version should be in " + repr(list(SHORTCUTS.keys()))
+            raise AssertionError(msg)  # NOQA:B904
     version = args.version
     target_version = version.rsplit(".", 1)[0]
     current_version = default_python_version()
