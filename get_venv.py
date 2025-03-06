@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 """Generate virtual environment activate shell command.
 
+Support Python2.7 and 3.6+
+
 1. If venv/*/activate exists: print `source venv/*/activate`
 2. elif it's a poetry project and not controlled by ssh: print `poetry shell`
 3. elif .venv/*/activate exists: print `source .venv/*/activate`
@@ -82,28 +84,25 @@ def get_venv():
             break
     else:
         if os.path.exists("activate"):
-            venv_dir = ".."
+            return "source activate"
         elif (is_windows and os.path.exists("Scripts/activate")) or os.path.exists(
             "bin/activate"  # Cygwin in Windows system also use this
         ):
             venv_dir = "."
-        elif (
-            (is_windows or is_controlled_by_ssh())
-            and is_poetry_project(filename)
-            and not is_poetry_v2()
-        ):
+        elif (is_windows or is_controlled_by_ssh()) and is_poetry_project(filename):
             # If use Git Bash at Windows, which does not show venv prefix after
             # running `poetry shell`, should use `source ../activate` instead;
             # When controlling by ssh in cloud server, `poetry shell` something
             # cost 100% of CPU, sb got the similar issue in aws, and the `python-poetry`
             # suggest to run `poetry run` or `source ../activate` to avoid it.
-            cache_dir = run_cmd("poetry env info --path")
+            cache_dir = run_cmd("poetry run poetry env info --path")
             if cache_dir:
                 try:
                     from pathlib import Path
                 except ImportError:
                     import sys
 
+                    # If sys.executable is Python2, use python3 to run this script
                     sys.exit(os.system("python3 " + sys.argv[0]))
 
                 venv_dir = Path(cache_dir.splitlines()[-1]).as_posix()
