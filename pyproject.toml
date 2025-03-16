@@ -10,8 +10,21 @@ dependencies = []
 [tool.ruff]
 line-length = 88
 exclude = ["node_modules", "*.bak"]
+[tool.ruff.lint]
+extend-select = ["I", "B", "UP", "SIM"]
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["E402"]
+# Files that support both python2 and python3
+"upgrade_py.py" = ["UP"]
+"rstrip.py" = ["UP"]
+"pyinstall.py" = ["UP"]
+"pip_conf.py" = ["UP"]
+"pad_brew_download_url.py" = ["UP"]
+"new_venv.py" = ["UP"]
+"get_venv.py" = ["UP"]
+"change_ubuntu_mirror_sources.py" = ["UP"]
+"active_aliases_in_zsh.py" = ["UP"]
+".pipi.py" = ["UP"]
 
 [tool.mypy]
 ignore_missing_imports = true

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """
 This script is used to improve download speed for `brew install`
+Requires Python2.7+
 
 Usage::
     $ python pad_brew_download_url.py

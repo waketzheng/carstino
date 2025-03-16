@@ -2,6 +2,7 @@
 # -*- coding:utf-8 -*-
 """
 创建提示符带版本号的虚拟环境
+支持Python2和Python3
 
 Usage::
     $ alias new="python ~/archives/carstino/new_venv.py"

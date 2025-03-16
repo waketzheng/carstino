@@ -4,12 +4,18 @@ import sys
 
 
 def run_shell(cmd, verbose=True):
+    # type: (str, bool) -> int
     if verbose:
-        print("--> {}".format(cmd))
-    return os.system(cmd)
+        print("--> " + str(cmd))
+    rc = os.system(cmd)
+    if rc != 0:
+        # rc如果大于255，sys.exit会报错
+        return 1
+    return 0
 
 
 def main():
+    # type: () -> int
     fn = "manage.py"
     for _ in range(5):
         if os.path.exists(fn):

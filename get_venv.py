@@ -58,7 +58,7 @@ def is_poetry_v2():
 
 def is_controlled_by_ssh():
     # type: () -> bool
-    return any(os.getenv(i) for i in "SSH_CLIENT SSH_TTY SSH_CONNECTION".split())
+    return any(os.getenv(i) for i in ["SSH_CLIENT", "SSH_TTY", "SSH_CONNECTION"])
 
 
 @cache

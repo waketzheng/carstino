@@ -6,12 +6,13 @@ Usage::
     $ python crop.py /path/to/image
 """
 
+from __future__ import annotations
+
 import operator
 import re
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Tuple, Union
 
 # pip install pillow humanize
 from humanize.filesize import naturalsize
@@ -19,11 +20,9 @@ from PIL import Image
 
 RE_FLOAT = re.compile(r"\d*\.?\d+")
 RE_EXPRESS = re.compile(r"(\d*\.?\d+)([-+*/])(\d*\.?\d+)")
-AxisValue = Union[int, float]
-PointType = Tuple[AxisValue, AxisValue]
 
 
-def slim_number(f: float, ndigits=3) -> AxisValue:
+def slim_number(f: float, ndigits=3) -> int | float:
     """Use builtin function `round` to limit the digits length of float
 
     Uasge::
@@ -40,7 +39,7 @@ def slim_number(f: float, ndigits=3) -> AxisValue:
     return round(f, ndigits)
 
 
-def to_value(s: str) -> AxisValue:
+def to_value(s: str) -> int | float:
     if "." in s:
         return slim_number(float(s), 10)
     return int(s)
@@ -76,7 +75,7 @@ def auto_calc(s: str) -> str:
     return s
 
 
-def ask_point(name: str, default: PointType) -> PointType:
+def ask_point(name: str, default: tuple[float, float]) -> tuple[float, float]:
     tip = "Please enter {} point [Leave empty to use {}]: "
     enter = input(tip.format(name, default)).strip().strip("()")
     if not enter:

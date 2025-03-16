@@ -5,17 +5,18 @@ Only work for linux that use bash!
 And python3.6+ is required.
 """
 
+from __future__ import annotations
+
 import re
 import subprocess
 import sys
 from functools import lru_cache
 from pathlib import Path
 from platform import platform
-from typing import Optional
 
 FILES = ALIAS_FILE, *_ = [".bash_aliases", ".vimrc", ".mg.py"]
 
-PACKAGES = "ipython fastdevcli-slim"
+PACKAGES = "fastdevcli-slim ruff poetry"
 IS_WINDOWS = platform().lower().startswith("win")
 
 
@@ -63,15 +64,15 @@ def _git_dog():
         "%an%C(reset)%C(bold yellow)%d%C(reset)"
     )
     dog = f"log --graph --abbrev-commit --decorate --format=format:{fmt!r} --all"
-    run_cmd("git config --global alias.dog {}".format(repr(dog)))
+    run_cmd(f"git config --global alias.dog {repr(dog)}")
 
 
-def configure_aliases(rc: Path, txt: Optional[str] = None) -> None:
+def configure_aliases(rc: Path, txt: str | None = None) -> None:
     if txt is None:
         txt = rc.read_text("utf8")
     if ALIAS_FILE not in txt:
         with rc.open("a") as fp:
-            fp.write("\n[[ -f ~/{0} ]] && . ~/{0}".format(ALIAS_FILE))
+            fp.write(f"\n[[ -f ~/{ALIAS_FILE} ]] && . ~/{ALIAS_FILE}")
     # change nvm node mirrors
     if "--nvm" in sys.argv:
         nvm = "export NVM_NODEJS_ORG_MIRROR=https://repo.huaweicloud.com/nodejs/"
@@ -80,7 +81,7 @@ def configure_aliases(rc: Path, txt: Optional[str] = None) -> None:
                 fp.write(f"\n# For nvm\n{nvm}\n")
 
 
-def configure_path(rc: Path, txt: Optional[str] = None) -> None:
+def configure_path(rc: Path, txt: str | None = None) -> None:
     if txt is None:
         txt = rc.read_text("utf8")
     if "/.local" not in txt:
