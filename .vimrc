@@ -1,11 +1,11 @@
 " 开启文件类型检查，并且载入与该类型对应的缩进规则。比如，如果编辑的是.py文件，Vim 就是会找 Python 的缩进规则~/.vim/indent/python.vim
 filetype plugin indent on
 
-" c语言，C++，Python用4格缩进，其他用两格
-"set tabstop=2 softtabstop=2 shiftwidth=2
-"autocmd FileType c,cpp,py set shiftwidth=4 tabstop=4 softtabstop=4
+" c语言，C++，Python,JavaScript用4格缩进，其他用两格
+"autocmd FileType c,cpp,py,javascript set shiftwidth=4 tabstop=4 softtabstop=4
+
 set tabstop=4 softtabstop=4 shiftwidth=4
-autocmd FileType HTML,javascript set shiftwidth=2 tabstop=2 softtabstop=2
+autocmd FileType HTML,markdown set shiftwidth=2 tabstop=2 softtabstop=2
 
 
 " 由于 Tab 键在不同的编辑器缩进不一致，该设置自动将 Tab 转为空格。
@@ -82,8 +82,8 @@ set smartcase
 " Uncomment the following to have Vim jump to the last position when
 " reopening a file
 if has("autocmd")
-au BufReadPost * if line("`\"") > 1 && line("`\"") <= line("$") | exe "normal! g`\"" | endif
-" for simplicity, "  au BufReadPost * exe "normal! g`\"", is Okay.
+    au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+    " for simplicity, "  au BufReadPost * exe "normal! g`\"", is Okay.
 endif
 
 
