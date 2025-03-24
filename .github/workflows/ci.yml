@@ -77,7 +77,7 @@ jobs:
           python2.7 upgrade_py.py --dry --no-input
           python2.7 -V
       - uses: actions/setup-python@v5
-      - uses: actions/setup-pdm@v3
+      - uses: pdm-project/setup-pdm@v4
       - uses: astral-sh/setup-uv@v5
       - uses: abatilo/actions-poetry@v3
       - name: Check mirror setting for uv/pdm/poetry
@@ -103,7 +103,7 @@ jobs:
         run: |
           python pip_conf.py
           pip install --user --upgrade pip
-      - uses: actions/setup-pdm@v3
+      - uses: pdm-project/setup-pdm@v4
       - uses: astral-sh/setup-uv@v5
       - uses: abatilo/actions-poetry@v3
       - name: Check mirror setting for uv/pdm/poetry
