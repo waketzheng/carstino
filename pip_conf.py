@@ -28,8 +28,8 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2025.02.24"
-__version__ = "0.6.3"
+__updated_at__ = "2025.03.24"
+__version__ = "0.6.4"
 import os
 import platform
 import pprint
@@ -540,13 +540,13 @@ class PoetryMirror(Mirror):
 
     def _get_dirpath(self, is_windows):
         # type: (bool) -> str
-        dirpath = "~/Library/Preferences/pypoetry/"
+        dirpath = "~/Library/Application Support/pypoetry/"
         if is_windows:
             dirpath = os.getenv("APPDATA", "") + "/pypoetry/"
-        elif is_mac():
+        elif not is_mac():
             dirpath = "~/.config/pypoetry/"
-        elif self.poetry_version >= "1.5":
-            dirpath = "~/Library/Application Support/pypoetry/"
+        elif self.poetry_version < "1.5":
+            dirpath = "~/Library/Preferences/pypoetry/"
         return os.path.expanduser(dirpath)
 
     def set(self):
