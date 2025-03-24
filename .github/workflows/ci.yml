@@ -78,7 +78,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - name: setup pdm
         run: |
-          uv python install 3.12 --default --reinstall
+          uv python install 3.12 --default --reinstall --preview
           python3.12 -m ensurepip
           python3 -m ensurepip
           python3.12 -m pip install pip --upgrade
