@@ -71,6 +71,9 @@ jobs:
 
   conf_pip_py27:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.11]
     container: python:2.7
     steps:
       - uses: actions/checkout@v4
@@ -81,10 +84,10 @@ jobs:
           python2.7 -V
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.12
+          python-version: 3.11
       - name: setup pdm
         run: |
-          python3.12 -m pip install --upgrade pip pipx
+          python3.11 -m pip install --upgrade pip pipx
           pipx install pdm
           pipx ensurepath
       - uses: astral-sh/setup-uv@v5
