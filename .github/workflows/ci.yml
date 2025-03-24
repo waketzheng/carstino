@@ -81,9 +81,8 @@ jobs:
           python2.7 -V
       - uses: actions/setup-python@v5
       - name: setup pdm
-        uses: threeal/pipx-install-action@v2.0.0
-        with:
-          packages: pdm
+        uses: CfirTsabari/actions-pipx@v1
+        run: pipx install pdm
       - uses: astral-sh/setup-uv@v5
       - uses: abatilo/actions-poetry@v3
       - name: Check mirror setting for uv/pdm/poetry
