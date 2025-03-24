@@ -79,10 +79,9 @@ jobs:
       - name: setup pdm
         run: |
           uv python install 3.12 --default --reinstall --preview
-          python3.12 -m ensurepip
           python3 -m ensurepip
-          python3.12 -m pip install pip --upgrade
-          python3.12 -m pip install pdm --user
+          python3 -m pip install pip --upgrade
+          python3 -m pip install pdm --user
       - uses: abatilo/actions-poetry@v3
       - name: Verify pip conf script
         run: |
