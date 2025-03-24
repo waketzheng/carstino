@@ -87,6 +87,7 @@ jobs:
           python-version: 3.11
       - name: setup pdm
         run: |
+          apt install libc6
           python3.11 -m pip install --upgrade pip pipx
           pipx install pdm
           pipx ensurepath
