@@ -83,14 +83,8 @@ jobs:
           python2.7 upgrade_py.py --dry --no-input
           python2.7 -V
       - uses: actions/setup-python@v5
-        with:
-          python-version: 3.11
       - name: setup pdm
-        run: |
-          apt install libc6
-          python3.11 -m pip install --upgrade pip pipx
-          pipx install pdm
-          pipx ensurepath
+        run: pip install pdm
       - uses: astral-sh/setup-uv@v5
       - uses: abatilo/actions-poetry@v3
       - name: Check mirror setting for uv/pdm/poetry
