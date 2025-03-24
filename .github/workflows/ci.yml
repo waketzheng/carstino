@@ -70,23 +70,18 @@ jobs:
         run: python upgrade_py.py --dry --no-input
 
   conf_pip_py27:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.11]
-    container: python:2.7
+    runs-on: macOS-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v5
+      - uses: pdm-project/setup-pdm@v4
+      - uses: abatilo/actions-poetry@v3
       - name: Verify pip conf script
         run: |
           python2.7 pip_conf.py
           python2.7 upgrade_py.py --dry --no-input
           python2.7 -V
-      - uses: actions/setup-python@v5
-      - name: setup pdm
-        run: pip install pdm
-      - uses: astral-sh/setup-uv@v5
-      - uses: abatilo/actions-poetry@v3
       - name: Check mirror setting for uv/pdm/poetry
         run: |
           python2.7 pip_conf.py --pdm
