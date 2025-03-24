@@ -70,13 +70,18 @@ jobs:
         run: python upgrade_py.py --dry --no-input
 
   conf_pip_py27:
-    runs-on: macOS-latest
+    runs-on: ubuntu-latest
+    container: python:2.7
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
       - uses: astral-sh/setup-uv@v5
-      - uses: pdm-project/setup-pdm@v4
       - uses: abatilo/actions-poetry@v3
+      - name: setup pdm
+        run: |
+          uv python install 3.12 --default --reinstall
+          python3.12 -m ensurepip
+          python3.12 -m pip install pdm --user
       - name: Verify pip conf script
         run: |
           python2.7 pip_conf.py
