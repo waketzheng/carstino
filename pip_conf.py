@@ -408,23 +408,19 @@ class UvMirror(Mirror):
             os.mkdir(dirpath)
         do_write(config_toml_path, text)
 
-    def _get_dirpath(self, is_windows, filename):
-        # type: (bool, str) -> str
-        if is_windows:
-            parent = os.getenv("APPDATA", "~")
+    def _get_dirpath(self, is_windows, filename, is_etc=False):
+        # type: (bool, str, bool) -> str
+        if is_etc:
+            parent = (
+                os.path.join(os.environ["SYSTEMDRIVE"], "ProgramData")
+                if is_windows
+                else os.getenv("XDG_CONFIG_DIRS", "/etc")
+            )
         else:
-            parent = os.getenv("XDG_CONFIG_HOME", "")
-            if not parent:
-                parent = "~"
-            else:
-                parent = os.path.expanduser(parent)
-                uv_dir = os.path.join(parent, "uv")
-                if os.path.exists(os.path.join(uv_dir, filename)):
-                    return uv_dir
-                uv_dir = os.path.join(os.path.expanduser("~"), "uv")
-                if os.path.exists(os.path.join(uv_dir, filename)):
-                    return uv_dir
-        return os.path.join(os.path.expanduser(parent), "uv")
+            default = "~/.config"
+            env_key = "APPDATA" if is_windows else "XDG_CONFIG_HOME"
+            parent = os.path.expanduser(os.getenv(env_key, default))
+        return os.path.join(parent, "uv")
 
     def get_dirpath(self, is_windows, url, filename):
         # type: (bool, str, str) -> Optional[str]

@@ -3,7 +3,7 @@ name = "carstino"
 version = "0.3.0"
 description = "Personal dev tools"
 readme = "README.md"
-authors = [{name="Waket Zheng", email="waketzheng@gmail.com>"}]
+authors = [{name="Waket Zheng", email="waketzheng@gmail.com"}]
 requires-python = ">=3.11"
 dependencies = []
 
@@ -48,3 +48,6 @@ dev-dependencies = [
     "types-pymysql>=1.1.0.20241103",
     "types-tqdm>=4.67.0.20241221",
 ]
+
+[tool.pdm]
+distribution = false
