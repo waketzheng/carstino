@@ -77,14 +77,14 @@ jobs:
           python2.7 upgrade_py.py --dry --no-input
           python2.7 -V
       - uses: actions/setup-python@v5
-      - uses: actions/setup-pdm@v4
+      - uses: actions/setup-pdm@v3
       - uses: astral-sh/setup-uv@v5
       - uses: abatilo/actions-poetry@v3
       - name: Check mirror setting for uv/pdm/poetry
         run: |
-          ./pip_conf.py --pdm
-          ./pip_conf.py --poetry
-          ./pip_conf.py --uv
+          python2.7 pip_conf.py --pdm
+          python2.7 pip_conf.py --poetry
+          python2.7 pip_conf.py --uv
       - name: Verify mirror work
         run: |
           pdm add pytz
@@ -103,7 +103,7 @@ jobs:
         run: |
           python pip_conf.py
           pip install --user --upgrade pip
-      - uses: actions/setup-pdm@v4
+      - uses: actions/setup-pdm@v3
       - uses: astral-sh/setup-uv@v5
       - uses: abatilo/actions-poetry@v3
       - name: Check mirror setting for uv/pdm/poetry
