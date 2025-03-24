@@ -29,7 +29,7 @@ If there is any bug or feature request, report it to:
 
 __author__ = "waketzheng@gmail.com"
 __updated_at__ = "2025.03.24"
-__version__ = "0.6.4"
+__version__ = "0.6.5"
 import os
 import platform
 import pprint
@@ -374,8 +374,7 @@ class UvMirror(Mirror):
             url = self.url
         text = 'index-url="{}"'.format(url)
         if not url.startswith("https"):
-            domain = parse_host(url)
-            text += os.linesep + 'allow-insecure-host=["{}"]'.format(domain)
+            text += '\nallow-insecure-host=["{}"]'.format(parse_host(url))
         return text
 
     def set(self):
