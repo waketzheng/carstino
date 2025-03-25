@@ -78,7 +78,8 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - name: setup pdm
         run: |
-          apt install -y python3-venv
+          python3 -V
+          apt install -y python3.12-venv
           python3 -m ensurepip
           python3 -m pip install pip --upgrade
           python3 -m pip install pdm --user
