@@ -84,12 +84,12 @@ jobs:
           curl https://bootstrap.pypa.io/pip/3.7/get-pip.py -o get-pip.py
           python3 get-pip.py
           python3 -m pip install pip --upgrade
-          python3 -m pip install pdm --user
+          python3 -m pip install pdm
       - name: setup poetry
         run: |
           curl https://bootstrap.pypa.io/get-pip.py -o get_pip.py
           python3.13 get_pip.py
-          python3.13 -m pip install poetry --user
+          python3.13 -m pip install poetry
       - name: Verify pip conf script
         run: |
           python2.7 pip_conf.py
