@@ -83,7 +83,8 @@ jobs:
           python3 get-pip.py
           python3 -m pip install pip --upgrade
           python3 -m pip install pdm --user
-      - uses: abatilo/actions-poetry@v3
+      - name: setup poetry
+        run: python3 -m pip install poetry --user
       - name: Verify pip conf script
         run: |
           python2.7 pip_conf.py
