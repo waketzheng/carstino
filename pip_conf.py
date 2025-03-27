@@ -28,8 +28,10 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2025.03.24"
-__version__ = "0.6.5"
+__updated_at__ = "2025.03.27"
+__version__ = "0.6.6"
+import contextlib
+import functools
 import os
 import platform
 import pprint
@@ -84,6 +86,7 @@ SOURCES["hw_inner"] = SOURCES["hw_ecs"] = (
 )
 CONF_PIP = "pip config set global.index-url "
 INDEX_URL = "https://{}/simple/"
+socket.setdefaulttimeout(5)
 
 
 class ParamError(Exception):
@@ -117,34 +120,116 @@ def is_mac():
     return System.is_mac()
 
 
-def is_pingable(domain, is_windows=False):
+def check_mirror_by_pip_download(domain, tmp=False):
     # type: (str, bool) -> bool
+    if "/" not in domain:
+        domain = "http://{0}/pypi/simple/ --trusted-host {0}".format(domain)
+    elif "https:" not in domain:
+        if not domain.startswith("http"):
+            domain = "http://" + domain
+        if domain.endswith("pypi"):
+            domain += "/simple/"
+        domain += " --trusted-host " + parse_host(domain)
+    elif not domain.startswith("http"):
+        domain = (
+            "http://"
+            + domain.lstrip("/")
+            + " --trusted-host "
+            + ensure_domain_name(domain)
+        )
+    cmd = "python -m pip download -i {} --isolated six".format(domain)
+    if tmp:
+        cmd += " -d /tmp"
+    if os.system(cmd) == 0:
+        dirname = "/tmp" if tmp else "."
+        for name in os.listdir(dirname):
+            if name.startswith("six-") and name.endswith(".whl"):
+                os.remove(name)
+        return True
+    return False
+
+
+def ensure_domain_name(host):
+    # type: (str) -> str
+    if "/" not in host:
+        return host
+    domain = host.split("://", 1)[-1].split("/", 1)[0]
+    return domain
+
+
+def is_pip_ready():
+    # type: () -> bool
+    return os.system("python -m pip --version") == 0
+
+
+def check_url_reachable(url):
+    # type: (str) -> bool
+    try:
+        from urllib.request import urlopen as _urlopen
+
+        urlopen = functools.partial(_urlopen, timeout=5)
+    except ImportError:
+        from urllib import urlopen as _urlopen  # type:ignore
+
+        class Response(object):
+            def __init__(self, status):
+                self.status = status
+
+        @contextlib.contextmanager
+        def urlopen(url):  # type:ignore
+            f = _urlopen(url)
+            r = f.read()
+            status = 200 if r else 400
+            yield Response(status)
+
+    try:
+        with urlopen(url) as response:
+            if response.status == 200:
+                return True
+    except Exception as e:
+        print(e)
+        pass
+    return False
+
+
+def build_mirror_url(host):
+    # type: (str) -> str
+    if host.startswith("http"):
+        url = host
+    elif "/" not in host:
+        url = "http://" + host
+        if "pypi" not in host:
+            url += "/pypi"
+        url += "/simple/"
+    else:
+        url = "http://" + host
+        if "simple" not in host:
+            url += url.rstrip("/") + "/simple/"
+    return url
+
+
+def is_pingable(host="", is_windows=False, domain=""):
+    # type: (str, bool,str) -> bool
+    host = host or domain
     if is_windows:
         # 2024.12.23 Windows may need administrator to run `ping -c 1 xxx`
         # So use `pip download ...` instead.
-        if "/" not in domain:
-            domain = "http://{0}/pypi/simple/ --trusted-host {0}".format(domain)
-        elif "https:" not in domain:
-            if not domain.startswith("http"):
-                domain = "http://" + domain
-            if domain.endswith("pypi"):
-                domain += "/simple/"
-            domain += " --trusted-host " + parse_host(domain)
-        cmd = "python -m pip download -i {} --isolated six".format(domain)
-        if os.system(cmd) == 0:
-            for name in os.listdir("."):
-                if name.startswith("six-") and name.endswith(".whl"):
-                    os.remove(name)
-            return True
-        return False
-    if "/" in domain:
-        domain = domain.split("://", 1)[-1].split("/", 1)[0]
+        if is_pip_ready():
+            return check_mirror_by_pip_download(host)
+        else:
+            url = build_mirror_url(host)
+            return check_url_reachable(url)
+    domain = ensure_domain_name(host)
     try:
         socket.gethostbyname(domain)
     except Exception:
         return False
     else:
-        cmd = "ping -c 1 {}".format(domain)
+        if is_pip_ready():
+            return check_mirror_by_pip_download(host, tmp=True)
+        return check_url_reachable(build_mirror_url(host))
+    # Cost about 11 seconds to ping mirrors.cloud.aliyuncs.com
+    cmd = "ping -c 1 {}".format(domain)
     return os.system(cmd) == 0
 
 
@@ -214,7 +299,7 @@ def _config_by_cmd(url, sudo=False, is_windows=False):
         if host in SOURCES["hw_inner"]:
             extra_host = host.replace("mirrors", "socapi").replace("tools", "cloudbu")
             try:
-                socket.gethostbyname(extra_host.split("://")[-1].split("/")[0])
+                socket.gethostbyname(ensure_domain_name(extra_host))
             except socket.gaierror:
                 print("Ignore {} as it's not pingable".format(extra_host))
             else:
