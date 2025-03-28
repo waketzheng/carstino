@@ -33,7 +33,7 @@ jobs:
           cache-dependency-glob: "uv.lock"
       - name: Install dependencies
         if: steps.cached-dependencies.outputs.cache-hit != 'true'
-        run: uv sync
+        run: uv sync --frozen
         env:
           PYO3_USE_ABI3_FORWARD_COMPATIBILITY: 1
       - uses: astral-sh/ruff-action@v3
@@ -100,11 +100,12 @@ jobs:
           python2.7 pip_conf.py --pdm
           python2.7 pip_conf.py --poetry
           python2.7 pip_conf.py --uv
-      - name: Verify mirror work
-        run: |
-          pdm add pytz
-          poetry add six
-          uv add packaging
+      - name: Verify pdm mirror work
+        run: pdm add pytz --frozen
+      - name: Verify poetry mirror work
+        run: poetry add six
+      - name: Verify uv mirror work
+        run: uv add packaging
 
   set_pip_mirror:
     runs-on: ${{ matrix.os }}
