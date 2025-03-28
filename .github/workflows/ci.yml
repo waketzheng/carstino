@@ -105,7 +105,7 @@ jobs:
       - name: Verify poetry mirror work
         run: poetry add six
       - name: Verify uv mirror work
-        run: uv add packaging
+        run: uv add packaging --frozen
 
   set_pip_mirror:
     runs-on: ${{ matrix.os }}
