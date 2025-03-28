@@ -28,8 +28,8 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2025.03.27"
-__version__ = "0.6.6"
+__updated_at__ = "2025.03.28"
+__version__ = "0.6.7"
 import contextlib
 import functools
 import os
@@ -144,7 +144,7 @@ def check_mirror_by_pip_download(domain, tmp=False):
         dirname = "/tmp" if tmp else "."
         for name in os.listdir(dirname):
             if name.startswith("six-") and name.endswith(".whl"):
-                os.remove(name)
+                os.remove(os.path.join(dirname, name))
         return True
     return False
 
