@@ -20,6 +20,7 @@ Or:
     $ python pip_conf.py --poetry  # set mirrors in poetry's config.toml
     $ python pip_conf.py --pdm  # set pypi.url for pdm
     $ python pip_conf.py --uv  # set mirror for uv
+    $ python pip_conf.py --tool=auto # find out manage tool at current directory and set mirror for it
 
     $ sudo python pip_conf.py --etc  # Set conf to /etc/pip.[conf|ini]
 
@@ -28,8 +29,8 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2025.03.28"
-__version__ = "0.6.7"
+__updated_at__ = "2025.04.01"
+__version__ = "0.7.0"
 import contextlib
 import functools
 import os
@@ -732,6 +733,40 @@ def can_set_global():
     return [int(i) for i in m.groups()] >= [10, 1]
 
 
+def read_lines(filename):
+    # type: (str) -> list[str]
+    with open(filename) as f:
+        s = f.read()
+    return s.splitlines()
+
+
+def auto_detect_tool(args):
+    if args.tool == "pip":
+        return args
+    if args.tool in ("uv", "poetry", "pdm"):
+        setattr(args, args.tool, True)
+    elif args.tool != "auto":
+        raise ValueError("Unknown tool: " + repr(args.tool))
+    else:
+        files = os.listdir(".")
+        pyproject = "pyproject.toml"
+        locks = {"uv.lock", "poetry.lock", "pdm.lock"} - set(files)
+        if len(locks) == 1:
+            tool = list(locks)[0].split(".")[0]
+        elif pyproject not in files:
+            return args  # Same as args.tool == 'pip'
+        else:
+            for line in read_lines(pyproject):
+                if not line:
+                    continue
+                m = re.match(r"\[\[?tool\.(uv|pdm|poetry)[.\]]", line)
+                if m:
+                    tool = m.group(1)
+                    break
+        setattr(args, tool, True)
+    return args
+
+
 def main():
     # type: () -> Optional[int]
     from argparse import ArgumentParser
@@ -752,6 +787,9 @@ def main():
     parser.add_argument("--poetry", action="store_true", help="Set mirrors for poetry")
     parser.add_argument("--pdm", action="store_true", help="Set pypi.url for pdm")
     parser.add_argument("--uv", action="store_true", help="Set index url for uv")
+    parser.add_argument(
+        "-t", "--tool", default="auto", help="Choices: pip/uv/pdm/poetry"
+    )
     parser.add_argument("--url", action="store_true", help="Show mirrors url")
     parser.add_argument(
         "--dry",
@@ -780,6 +818,8 @@ def main():
         if args.url:  # Only display prefer source url, but not config
             print(url)
             return None
+        if not args.poetry and not args.pdm and not args.uv:
+            args = auto_detect_tool(args)
         if init_pip_conf(
             url,
             replace=args.y,

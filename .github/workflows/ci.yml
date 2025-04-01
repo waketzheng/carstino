@@ -42,7 +42,9 @@ jobs:
           uv run fast check --skip-mypy
           uv run mypy .
       - name: Verify pip conf script
-        run: ./pip_conf.py
+        run: |
+          ./pip_conf.py
+          ./pip_conf.py --tool=pip
       - name: Verify python upgrade script
         run: |
           ./upgrade_py.py --list
@@ -65,7 +67,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
       - name: Verify pip conf script
-        run: python pip_conf.py
+        run: python pip_conf.py --tool=pip
       - name: Verify python upgrade script
         run: python upgrade_py.py --dry --no-input
 
@@ -92,7 +94,7 @@ jobs:
           python3.13 -m pip install poetry
       - name: Verify pip conf script
         run: |
-          python2.7 pip_conf.py
+          python2.7 pip_conf.py --tool=pip
           python2.7 upgrade_py.py --dry --no-input
           python2.7 -V
       - name: Check mirror setting for uv/pdm/poetry
@@ -117,7 +119,7 @@ jobs:
       - uses: actions/setup-python@v5
       - name: Verify mirror setting
         run: |
-          python pip_conf.py
+          python pip_conf.py --tool=pip
           pip install --user --upgrade pip
       - uses: pdm-project/setup-pdm@v3
       - uses: astral-sh/setup-uv@v5
@@ -125,8 +127,11 @@ jobs:
       - name: Check mirror setting for uv/pdm/poetry
         run: |
           ./pip_conf.py --pdm
+          ./pip_conf.py --tool=pdm
           ./pip_conf.py --poetry
+          ./pip_conf.py --tool=poetry
           ./pip_conf.py --uv
+          ./pip_conf.py --tool=uv
       - name: Verify mirror work
         run: |
           pdm add pytz
