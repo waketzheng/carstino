@@ -10,6 +10,15 @@ Usage::
     $ ve
     (venv3.10) $ python -V
     Python 3.10.x
+    (venv3.10) $ which python
+    venv/bin/python
+
+    $ new 3.12 .venv
+    $ ve
+    (venv3.12) $ python -V
+    Python 3.12.x
+    (venv3.12) $ which python
+    .venv/bin/python
 """
 
 import os

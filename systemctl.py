@@ -8,11 +8,18 @@ import subprocess
 import sys
 from enum import StrEnum
 
-from ensure_import import EnsureImport as _EI
-
-while _ei := _EI(_no_venv=True):
-    with _ei:
+try:
+    from ensure_import import EnsureImport as _EI
+except ImportError:
+    try:
         import typer
+    except ImportError:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "typer"])
+        import typer
+else:
+    while _ei := _EI(_no_venv=True):
+        with _ei:
+            import typer
 
 cli = typer.Typer()
 
