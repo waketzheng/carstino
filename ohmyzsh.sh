@@ -58,33 +58,34 @@ else
 fi
 
 # TODO: Check oh-my-zsh.zip exists to support offline install
+INSTALL_SCRIPT="./oh-my-zsh/tools/install.sh"
 if [[ $REMOTE == http* ]]; then
-  INSTALL_SCRIPT="install_ohmyzsh.sh"
-  DOWNLOAD_CMD="curl -fsSL $OMZ_REPO/raw/master/tools/install.sh -o $INSTALL_SCRIPT"
-  echo "--> $DOWNLOAD_CMD"
-  $($DOWNLOAD_CMD --connect-timeout "15" max-time "20")
-  if [ -f $INSTALL_SCRIPT ]; then
-      echo "Using $INSTALL_SCRIPT to install"
-  else
-      cd /tmp
-      INSTALL_SCRIPT_2="./oh-my-zsh/tools/install.sh"
-      if [ -d oh-my-zsh ]; then
-        INSTALL_SCRIPT=$INSTALL_SCRIPT_2
+    if [[ $(git config http.sslVerify) == "false" ]]; then
+      if [ -f $INSTALL_SCRIPT ]; then
+          echo "Using $INSTALL_SCRIPT to install"
       else
-          git clone $REMOTE
+          cd /tmp
           if [ -d oh-my-zsh ]; then
-            INSTALL_SCRIPT=$INSTALL_SCRIPT_2
+              echo directory 'oh-my-zsh' exists, skip clone
           else
-            git clone $REMOTE
-            INSTALL_SCRIPT=$INSTALL_SCRIPT_2
+              git clone $REMOTE
+              if [ -d oh-my-zsh ]; then
+                  echo Success to clone oh-my-zsh
+              else
+                git clone $REMOTE
+              fi
           fi
       fi
-  fi
-  REMOTE=$REMOTE sh $INSTALL_SCRIPT --keep-zshrc
+      REMOTE=$REMOTE sh $INSTALL_SCRIPT --keep-zshrc
+    else
+        FETCHING="curl -fsSL $OMZ_REPO/raw/master/tools/install.sh"
+        echo "--> $FETCHING"
+        REMOTE=$REMOTE sh -c "$($FETCHING --connect-timeout "15" max-time "20")" --keep-zshrc
+    fi
 elif [[ $REMOTE == ssh* ]]; then
   cd /tmp
   [ -d oh-my-zsh ] || git clone $REMOTE
-  REMOTE=$REMOTE ./oh-my-zsh/tools/install.sh
+  REMOTE=$REMOTE $($INSTALL_SCRIPT)
 fi
 
 # Uncomment the following lines to add custom plugin
