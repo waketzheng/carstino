@@ -76,7 +76,7 @@ if [[ $REMOTE == http* ]]; then
               fi
           fi
       fi
-      REMOTE=$REMOTE sh $INSTALL_SCRIPT --keep-zshrc
+      REMOTE=$REMOTE sh $INSTALL_SCRIPT
     else
         FETCHING="curl -fsSL $OMZ_REPO/raw/master/tools/install.sh"
         echo "--> $FETCHING"
