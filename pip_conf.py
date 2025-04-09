@@ -8,7 +8,7 @@ Usage:
     $ ./pip_conf.py  # default to tencent source
 
 Or:
-    $ python pip_conf.py tx
+    $ python pip_conf.py tx --tool=pip
     $ python pip_conf.py huawei
     $ python pip_conf.py aliyun
     $ python pip_conf.py douban
@@ -29,8 +29,8 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2025.04.01"
-__version__ = "0.7.0"
+__updated_at__ = "2025.04.10"
+__version__ = "0.7.1"
 import contextlib
 import functools
 import os
@@ -79,7 +79,7 @@ SOURCES["aliyun"] = SOURCES["ali"]
 SOURCES["douban"] = SOURCES["db"]
 SOURCES["qinghua"] = SOURCES["qh"]
 SOURCES["huawei"] = SOURCES["hw"]
-SOURCES["hw_inner"] = SOURCES["hw_ecs"] = (
+_hw_inner_source = (
     SOURCES["hw"]
     .replace("cloud", "")
     .replace("/repository", "")
@@ -254,7 +254,7 @@ def is_ali_cloud_server(is_windows=False):
 
 def is_hw_inner(is_windows=False):
     # type: (bool) -> bool
-    return is_pingable(SOURCES["hw_inner"], is_windows=is_windows)
+    return is_pingable(_hw_inner_source, is_windows=is_windows)
 
 
 def parse_host(url):
@@ -297,14 +297,14 @@ def _config_by_cmd(url, sudo=False, is_windows=False):
     if not url.startswith("https"):
         print("cmd = {}".format(repr(cmd)))
         host = parse_host(url)
-        if host in SOURCES["hw_inner"]:
+        if host in _hw_inner_source:
             extra_host = host.replace("mirrors", "socapi").replace("tools", "cloudbu")
             try:
                 socket.gethostbyname(ensure_domain_name(extra_host))
             except socket.gaierror:
                 print("Ignore {} as it's not pingable".format(extra_host))
             else:
-                extra_index = SOURCES["hw_inner"].replace(host, extra_host)
+                extra_index = _hw_inner_source.replace(host, extra_host)
                 extra_index_url = INDEX_URL.replace("https", "http").format(extra_index)
                 cmd += " && pip config set global.extra-index-url " + extra_index_url
                 host = '"{host} {extra_host}"'.format(host=host, extra_host=extra_host)
@@ -370,7 +370,9 @@ def build_index_url(source, force, verbose=False, strict=False, is_windows=False
         return source
     if not force:
         source = detect_inner_net(source, verbose, is_windows=is_windows)
-    if strict:
+    if source in ("hw_inner", "hw_ecs"):
+        host = _hw_inner_source
+    elif strict:
         try:
             host = SOURCES[source]
         except KeyError:
