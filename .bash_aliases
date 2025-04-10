@@ -101,4 +101,4 @@ if [ -f $HOME/.systemctl.py ]; then
 fi
 
 # For Python
-alias new="python $CARST_PATH/get_venv.py"
+alias new="python $CARST_PATH/new_venv.py"

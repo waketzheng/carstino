@@ -12,6 +12,7 @@ Support Python2.7 and 3.6+
 import functools
 import os
 import platform
+import shutil
 
 try:
     from functools import cache
@@ -89,7 +90,11 @@ def get_venv():
             "bin/activate"  # Cygwin in Windows system also use this
         ):
             venv_dir = "."
-        elif (is_windows or is_controlled_by_ssh()) and is_poetry_project(filename):
+        elif (
+            (is_windows or is_controlled_by_ssh())
+            and is_poetry_project(filename)
+            and shutil.which("poetry")
+        ):
             # If use Git Bash at Windows, which does not show venv prefix after
             # running `poetry shell`, should use `source ../activate` instead;
             # When controlling by ssh in cloud server, `poetry shell` something

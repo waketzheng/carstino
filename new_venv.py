@@ -19,10 +19,20 @@ Usage::
     Python 3.12.x
     (venv3.12) $ which python
     .venv/bin/python
+
+    $ new .venv  # Will use current python (sys.executable)
+    $ ve
+    (venv3.12) $ python -V
+    Python 3.12.x
+    (venv3.12) $ which python
+    .venv/bin/python
 """
 
 import os
+import re
 import sys
+
+VERSION_PATTERN = r"\d+(\.\d+)?"
 
 
 def parse_dry():
@@ -51,16 +61,23 @@ def main():
         v = args[0]
         if v in ("2", "3"):
             cmd = "python{} {}".format(v, __file__)
+        elif v in ("-h", "--help"):
+            print(__doc__)
+            return None
         else:
-            if "." not in v:  # e.g.: 38, 39, 310, 311
-                version = v[0] + "." + v[1:]
-            elif v.count(".") > 1:
-                vs = v.split(".")[:2]
-                version = ".".join(vs)
+            if re.match(VERSION_PATTERN, v):
+                if "." not in v:  # e.g.: 38, 39, 310, 311
+                    version = v[0] + "." + v[1:]
+                elif v.count(".") > 1:
+                    vs = v.split(".")[:2]
+                    version = ".".join(vs)
+                else:
+                    version = v
+                if not all(i.isdigit() for i in version.split(".")):
+                    raise ValueError("Invalid version value: {v!r}".format(v=v))
             else:
-                version = v
-            if not all(i.isdigit() for i in version.split(".")):
-                raise ValueError("Invalid version value: {v!r}".format(v=v))
+                path = v
+                version = "{0}.{1}".format(*sys.version_info)
             cmd = fmt.format(version, path)
             print(cmd)
     else:
