@@ -29,14 +29,15 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2025.04.10"
-__version__ = "0.7.1"
+__updated_at__ = "2025.04.11"
+__version__ = "0.7.2"
 import contextlib
 import functools
 import os
 import platform
 import pprint
 import re
+import shutil
 import socket
 import subprocess
 import sys
@@ -47,7 +48,7 @@ except ImportError:
     pass
 else:
     if typing.TYPE_CHECKING:
-        from typing import Optional  # NOQA:F401
+        from typing import Literal, Optional  # NOQA:F401
 
 """
 A sample of the pip.conf/pip.ini:
@@ -119,6 +120,14 @@ class System:
 def is_mac():
     # type: () -> bool
     return System.is_mac()
+
+
+def is_command_exists(tool):
+    # type: (Literal['uv', 'pdm', 'poetry']) -> bool
+    try:
+        return shutil.which(tool) is not None
+    except AttributeError:  # For Python2
+        return os.system(tool + " --version") == 0
 
 
 def check_mirror_by_pip_download(domain, tmp=False):
@@ -765,7 +774,8 @@ def auto_detect_tool(args):
                 if m:
                     tool = m.group(1)
                     break
-        setattr(args, tool, True)
+        if is_command_exists(tool):
+            setattr(args, tool, True)
     return args
 
 
@@ -822,6 +832,20 @@ def main():
             return None
         if not args.poetry and not args.pdm and not args.uv:
             args = auto_detect_tool(args)
+            if (
+                args.tool == "auto"
+                and any([args.poetry, args.pdm, args.uv])
+                and ("index-url" not in capture_output("pip config list"))
+            ):
+                # Config mirror for pip before configure mirror of manage tool
+                init_pip_conf(
+                    url,
+                    replace=args.y,
+                    at_etc=args.etc,
+                    write=args.write,
+                    verbose=args.verbose,
+                    is_windows=is_windows,
+                )
         if init_pip_conf(
             url,
             replace=args.y,
