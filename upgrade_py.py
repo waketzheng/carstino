@@ -52,7 +52,7 @@ except ImportError:  # For Python2
 if sys.version_info < (3,):
     input = raw_input  # NOQA:F821 type:ignore
 
-VERSION = "3.11.9"
+VERSION = "3.12.10"
 # Mirror of> https://www.python.org/ftp/python/
 HOST = "https://mirrors.huaweicloud.com/python/"
 DOWNLOAD_PATH = "{0}/Python-{0}.tar.xz"
