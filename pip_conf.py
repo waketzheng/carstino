@@ -30,7 +30,7 @@ If there is any bug or feature request, report it to:
 
 __author__ = "waketzheng@gmail.com"
 __updated_at__ = "2025.04.14"
-__version__ = "0.7.3"
+__version__ = "0.7.4"
 import contextlib
 import functools
 import os
@@ -426,7 +426,7 @@ class PdmMirror:
         # type: (str) -> int
         cmd = "pdm config pypi.url " + url
         if url.startswith("http:"):
-            cmd += " && pdm config pypi.verify_ssl false"
+            cmd = "pdm config pypi.verify_ssl false && " + cmd
         return run_and_echo(cmd, dry="--dry" in sys.argv)
 
 
