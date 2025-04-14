@@ -17,15 +17,15 @@ import shutil
 try:
     from functools import cache
 except ImportError:
-    caching = {}  # type: dict
+    _caching = {}  # type: dict
 
     def cache(func):  # type:ignore
         @functools.wraps(func)
         def runner(*args, **kw):
             key = func.__name__ + "(*{}, **{})".format(args, kw)
-            if key in caching:
-                return caching[key]
-            res = caching[key] = func(*args, **kw)
+            if key in _caching:
+                return _caching[key]
+            res = _caching[key] = func(*args, **kw)
             return res
 
         return runner
@@ -43,6 +43,7 @@ def run_cmd(command):
         return bf.decode("gbk")
 
 
+@cache
 def read_content(filename):
     # type: (str) -> bytes
     if not os.path.exists(filename):
@@ -57,6 +58,14 @@ def is_poetry_v2():
     return "version 2" in version
 
 
+def is_poetry_installed():
+    # type: () -> bool
+    try:
+        return shutil.which("poetry") is not None
+    except AttributeError:  # For Python2
+        return os.system("poetry check --quiet") == 0
+
+
 def is_controlled_by_ssh():
     # type: () -> bool
     return any(os.getenv(i) for i in ["SSH_CLIENT", "SSH_TTY", "SSH_CONNECTION"])
@@ -66,9 +75,7 @@ def is_controlled_by_ssh():
 def is_poetry_project(filename):
     # type: (str) -> bool
     text = read_content(filename)
-    return b"[tool.poetry]" in text or (
-        is_poetry_v2() and b'build-backend = "poetry' in text
-    )
+    return b'build-backend = "poetry' in text
 
 
 def get_venv():
@@ -90,11 +97,15 @@ def get_venv():
             "bin/activate"  # Cygwin in Windows system also use this
         ):
             venv_dir = "."
-        elif (
-            (is_windows or is_controlled_by_ssh())
-            and is_poetry_project(filename)
-            and shutil.which("poetry")
-        ):
+        elif (is_windows or is_controlled_by_ssh()) and is_poetry_project(filename):
+            if not is_poetry_installed():
+                msg = (
+                    "{0} not found!\n"
+                    "You can install it by:\n"
+                    "    pip install --user --upgrade pipx\n"
+                    "    pipx install {0}\n"
+                )
+                raise RuntimeError(msg.format("poetry"))
             # If use Git Bash at Windows, which does not show venv prefix after
             # running `poetry shell`, should use `source ../activate` instead;
             # When controlling by ssh in cloud server, `poetry shell` something
@@ -116,9 +127,12 @@ def get_venv():
         return "source {}/{}/activate".format(venv_dir, bin_dir)
     elif is_poetry_project(filename):
         return "poetry shell"
-    else:
-        # TODO: auto fix pdm
+    elif b'build-backend = "pdm' in read_content(filename):
+        return "pdm shell"
+    elif b"[tool.uv]" in read_content(filename):
         return "uv venv"
+    else:
+        return "ERROR: Virtual environment not found! You should create it first."
 
 
 def main():

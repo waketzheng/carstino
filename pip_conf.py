@@ -29,8 +29,8 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2025.04.11"
-__version__ = "0.7.2"
+__updated_at__ = "2025.04.14"
+__version__ = "0.7.3"
 import contextlib
 import functools
 import os
@@ -48,6 +48,7 @@ except ImportError:
     pass
 else:
     if typing.TYPE_CHECKING:
+        from argparse import Namespace  # NOQA:F401
         from typing import Literal, Optional  # NOQA:F401
 
 """
@@ -123,11 +124,12 @@ def is_mac():
 
 
 def is_command_exists(tool):
-    # type: (Literal['uv', 'pdm', 'poetry']) -> bool
+    # type: (str) -> bool
+    # tool: Literal['uv', 'pdm', 'poetry']
     try:
         return shutil.which(tool) is not None
     except AttributeError:  # For Python2
-        return os.system(tool + " --version") == 0
+        return os.system(tool + " --version --no-ansi") == 0
 
 
 def check_mirror_by_pip_download(domain, tmp=False):
@@ -752,6 +754,7 @@ def read_lines(filename):
 
 
 def auto_detect_tool(args):
+    # type: (Namespace) -> Namespace
     if args.tool == "pip":
         return args
     if args.tool in ("uv", "poetry", "pdm"):
@@ -767,13 +770,23 @@ def auto_detect_tool(args):
         elif pyproject not in files:
             return args  # Same as args.tool == 'pip'
         else:
+            tools = set()  # type: set[str]
             for line in read_lines(pyproject):
                 if not line:
                     continue
-                m = re.match(r"\[\[?tool\.(uv|pdm|poetry)[.\]]", line)
-                if m:
-                    tool = m.group(1)
-                    break
+                elif line.startswith("build-backend"):
+                    m = re.search(r"(uv|pdm|poetry)", line)
+                    if m:
+                        tools = {m.group(1)}
+                        break
+                else:
+                    m = re.match(r"\[\[?tool\.(uv|pdm|poetry)[.\]]", line)
+                    if m:
+                        tools.add(m.group(1))
+            if len(tools) == 1:
+                tool = list(tools)[0]
+            else:  # Can't determine which tool, change pip mirror only.
+                return args
         if is_command_exists(tool):
             setattr(args, tool, True)
     return args
