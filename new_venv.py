@@ -45,49 +45,58 @@ def parse_dry():
     return dry, args
 
 
+def build_cmd(args, path, fmt):
+    # type: (list[str], str, str) -> str
+    for a2 in args[1:]:
+        if a2.startswith("-"):
+            a2 = a2.split("=")[-1].strip()
+            if not a2:
+                continue
+        path = a2
+        break
+    v = args[0]
+    if v in ("2", "3"):
+        cmd = "python{} {}".format(v, __file__)
+    else:
+        if re.match(VERSION_PATTERN, v):
+            if "." not in v:  # e.g.: 38, 39, 310, 311
+                version = v[0] + "." + v[1:]
+            elif v.count(".") > 1:
+                vs = v.split(".")[:2]
+                version = ".".join(vs)
+            else:
+                version = v
+            if not all(i.isdigit() for i in version.split(".")):
+                raise ValueError("Invalid version value: {v!r}".format(v=v))
+        else:
+            path = v
+            version = "{0}.{1}".format(*sys.version_info)
+            if args[1:]:
+                a1 = args[1].split("=")[-1].strip()
+                if re.match(VERSION_PATTERN, a1):
+                    version = a1
+        cmd = fmt.format(version, path)
+    return cmd
+
+
 def main():
     # type: () -> int | None
+    if "-h" in sys.argv or "--help" in sys.argv:
+        print(__doc__)
+        return None
     fmt = "python{0} -m venv {1} --prompt venv{0}"
     path = "venv"
     dry, args = parse_dry()
     if args:
-        for a2 in args[1:]:
-            if a2.startswith("-"):
-                a2 = a2.split("=")[-1].strip()
-                if not a2:
-                    continue
-            path = a2
-            break
-        v = args[0]
-        if v in ("2", "3"):
-            cmd = "python{} {}".format(v, __file__)
-        elif v in ("-h", "--help"):
-            print(__doc__)
-            return None
-        else:
-            if re.match(VERSION_PATTERN, v):
-                if "." not in v:  # e.g.: 38, 39, 310, 311
-                    version = v[0] + "." + v[1:]
-                elif v.count(".") > 1:
-                    vs = v.split(".")[:2]
-                    version = ".".join(vs)
-                else:
-                    version = v
-                if not all(i.isdigit() for i in version.split(".")):
-                    raise ValueError("Invalid version value: {v!r}".format(v=v))
-            else:
-                path = v
-                version = "{0}.{1}".format(*sys.version_info)
-            cmd = fmt.format(version, path)
-            print(cmd)
+        cmd = build_cmd(args, path, fmt)
     else:
         version = "{0}.{1}".format(*sys.version_info)
         cmd = fmt.format(version, path)
+    cmd += " --upgrade-deps"
+    print("--> " + cmd)
     if dry:
-        print("--> " + cmd)
-        rc = 0
-    else:
-        rc = os.system(cmd)
+        return None
+    rc = os.system(cmd)
     return 1 if rc else None
 
 

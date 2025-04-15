@@ -16,6 +16,7 @@ import argparse
 import os
 import pprint
 import re
+import shutil
 import socket
 import sys
 import time
@@ -295,7 +296,7 @@ def validated_args(ret_pre=False):
     if not args.force:
         pyx = "python" + target_version
         can_upgrade = current_version < version
-        if not has_same_version and silently_run("which {}".format(pyx)).strip():
+        if not has_same_version and is_command_exists(pyx):
             has_same_version = True
             can_upgrade = python_version(pyx) < version
         if has_same_version and not args.dry:
@@ -354,18 +355,28 @@ def install_py(folder, url, alt, configure_options=""):
     return commands + install.split(" && ")
 
 
-def get_tool_name():
-    # type: () -> str
-    for name in PREDEPENDS:
-        if detect_command(name):
-            return name
-    return ""
-
-
 def detect_command(name):
     # type: (str) -> bool
     r = silently_run("which {name}".format(name=name))
     return bool(r) and "not found" not in r
+
+
+def is_command_exists(tool):
+    # type: (str) -> bool
+    try:
+        return shutil.which(tool) is not None
+    except AttributeError:  # For Python2
+        if tool.startswith("python"):
+            return os.system(tool + " --version") == 0
+        return detect_command(tool)
+
+
+def get_tool_name():
+    # type: () -> str
+    for name in PREDEPENDS:
+        if is_command_exists(name):
+            return name
+    return ""
 
 
 def gen_cmds(ret_dry=False):
@@ -377,15 +388,9 @@ def gen_cmds(ret_dry=False):
     is_mac = sys.platform == "darwin"
     if is_mac:
         print("For MacOS, try this:\n")
-        if silently_run("which pyenv"):
-            print("    brew update&&brew upgrade pyenv&&./pyinstall.py " + version)
-            print("\nSee more at https://github.com/pyenv/pyenv\n")
-        else:
-            minor_version = ".".join(version.split(".")[:2])
-            if silently_run("which python" + minor_version):
-                print("    brew upgrade python@" + minor_version)
-            else:
-                print("    brew install python@" + minor_version)
+        minor_version = ".".join(version.split(".")[:2])
+        action = "upgrade" if is_command_exists("python" + minor_version) else "install"
+        print("    brew {} python@{}\n".format(action, minor_version))
         sys.exit(1)
     cmds = []
     tool = get_tool_name()

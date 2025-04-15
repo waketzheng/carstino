@@ -131,3 +131,4 @@ dev_requirements.txt
 new*.jpg
 .dmypy.json
 .pdm-python
+.DS_Store
