@@ -96,6 +96,14 @@ def main():
     print("--> " + cmd)
     if dry:
         return None
+    if os.path.exists(path) and "--no-input" not in sys.argv:
+        tip = "Directory '{}' exists! Do you want to override it?[y/N] "
+        try:
+            a = raw_input(tip)  # type:ignore[name-defined]
+        except NameError:
+            a = input(tip)
+        if not (a.strip() and a.lower().startswith("y")):
+            return 1
     rc = os.system(cmd)
     return 1 if rc else None
 
