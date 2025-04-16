@@ -7,21 +7,22 @@ Usage::
     $ python pad_brew_download_url.py
 """
 
+import datetime
 import os
 import subprocess
 import sys
 
-HOST = "https://ghfast.top/"
+PROXY = "https://ghfast.top/"
 PY_HOST = "https://mirrors.huaweicloud.com/python/"
 PAD = """
-      elsif (url.start_with?("https://cdn.") || url.start_with?("https://desktop.docker.com"))
-        puts "Leave #{url} to be itself."
-      elsif (url.start_with?("https://ftpmirror.") || url.start_with?("https://ftp.gnu.org"))
-        puts "Skip #{url} padding."
-      elsif url.start_with?("https://www.python.org/ftp/python/3.")
-        url = "%s" + url[34,url.length]
-      elsif !url.start_with?("https://mirror") && !url.start_with?("%s")
-        url = "%s" + url
+elsif (url.start_with?("https://cdn.") || url.start_with?("https://desktop.docker.com"))
+  puts "Leave #{url} to be itself."
+elsif (url.start_with?("https://ftpmirror.") || url.start_with?("https://ftp.gnu.org"))
+  puts "Skip #{url} padding."
+elsif url.start_with?("https://www.python.org/ftp/python/3.")
+  url = "%s" + url[34,url.length]
+elsif !url.start_with?("https://mirror") && !url.start_with?("%s")
+  url = "%s" + url
 """
 
 
@@ -48,29 +49,91 @@ def capture_output(cmd):
 
 
 def remove_old_pad(text, s):
-    # type: (str, str) -> str
+    # type: (str, str) -> tuple[str, str, bool]
     s_index = text.index(s)
     pre = text[:s_index]
     lines = pre.splitlines()
     length = len(lines)
     if_index = length
+    indent = " "
     for i in range(length - 1, -1, -1):
         line = lines[i]
-        if line.strip().startswith("if "):
+        trim = line.lstrip()
+        if trim.startswith("if "):
             if_index = i
+            indent *= len(line) - len(trim)
             break
+    updated = False
     elif_index = 0
     start = if_index + 2
     for i, one in enumerate(lines[start:], start):
-        if one.strip().startswith("elsif "):
+        if one.lstrip().startswith("elsif "):
             elif_index = i
             break
     if elif_index:
         cut = "\n".join(lines[:elif_index])
         if pre.endswith("\n"):
             cut += "\n"
+        removed = text[len(cut) + 1 : s_index]
         text = cut + text[s_index:]
-    return text
+        updated = True
+        print("Old pad removed:\n" + removed)
+    return text, indent, updated
+
+
+def backup_it(file, text):
+    # type: (str, str) -> None
+    bak_file = file + ".{}.bak".format(datetime.date.today())
+    if os.path.exists(bak_file):
+        return
+    with open(bak_file, "w") as fp:
+        fp.write(text)
+    print("Create backup file at: {}".format(bak_file))
+
+
+def already_padded(pad, text):
+    # type: (str, str) -> bool
+    requires = {i.strip() for i in pad.splitlines()}
+    got = {i.strip() for i in text.splitlines()}
+    return not (requires - got)
+
+
+def parse_endpoint(text, file):
+    # type: (str, str) -> str
+    s = '        end\n\n        ohai "Downloading #{url}"'
+    if ("\n" + s) in text:
+        return s
+    ohai = s.splitlines()[-1].strip()
+    try:
+        index = text.index(ohai)
+    except IndexError:
+        index = 0
+    for idx in range(index - 1, -1, -1):
+        c = text[idx]
+        if c not in ("\n", " "):
+            break
+        ohai = c + ohai
+    ohai = "end" + ohai
+    try:
+        index = text.index(ohai)
+    except IndexError:
+        index = 0
+    if index == 0:
+        raise ValueError("Failed to find {} in {}".format(repr(ohai), file))
+    for idx in range(index - 1, -1, -1):
+        c = text[idx]
+        if c == "\n":
+            break
+        ohai = c + ohai
+    return ohai
+
+
+def pad_it(text, pad, indent, endpoint):
+    # type: (str, str, str, str) -> tuple[str, str]
+    pad = "".join([indent + i + "\n" for i in pad.splitlines()])
+    if not text[: text.index(endpoint)].endswith("\n"):
+        pad = "\n" + pad
+    return text.replace(endpoint, pad + endpoint), pad
 
 
 def main():
@@ -81,30 +144,25 @@ def main():
     file = os.path.join(brew_root, folder, name)
     with open(file) as f:
         text = f.read()
-    pad = (PAD % (PY_HOST, HOST, HOST)).lstrip("\n")
-    if pad in text:
-        print("{} already in {}\nNothing to do!".format(HOST, file))
+    pad = (PAD % (PY_HOST, PROXY, PROXY)).strip()
+    if already_padded(pad, text) and "--force" not in sys.argv:
+        print("{} already in {}\nNothing to do!".format(PROXY, file))
         return
-
-    bak_file = file + ".bak"
-    if not os.path.exists(bak_file):
-        with open(bak_file, "w") as fp:
-            fp.write(text)
-        print("Create backup file at: {}".format(bak_file))
-    else:
-        print("Going to pad {}".format(file))
-    s = '      end\n\n      ohai "Downloading #{url}"'
-    try:
-        text = remove_old_pad(text, s)
-    except ValueError:
-        w = "ohai"
-        s = s.replace(w, " " * 2 + w)
-        text = remove_old_pad(text, s)
-    new_text = text.replace(s, pad + s)
+    s = parse_endpoint(text, file)
+    text, indent, updated = remove_old_pad(text, s)
+    if not updated:
+        backup_it(file, text)
+    print("Going to pad {}".format(file))
+    new_text, pad = pad_it(text, pad, indent, s)
     if "--dry" in sys.argv:
         import difflib
 
-        diffs = difflib.unified_diff(text, new_text)
+        try:
+            a, b = text.splitlines(keepends=True), new_text.splitlines(keepends=True)
+        except TypeError:
+            a = [i + "\n" for i in text.splitlines()]
+            b = [i + "\n" for i in new_text.splitlines()]
+        diffs = difflib.context_diff(a, b, fromfile="before.py", tofile="after.py")
         sys.stdout.writelines(diffs)
     else:
         with open(file, "w") as f:
