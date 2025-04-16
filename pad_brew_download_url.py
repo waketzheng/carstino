@@ -9,8 +9,9 @@ Usage::
 
 import os
 import subprocess
+import sys
 
-HOST = "https://mirror.ghproxy.com/"
+HOST = "https://ghfast.top/"
 PY_HOST = "https://mirrors.huaweicloud.com/python/"
 PAD = """
       elsif (url.start_with?("https://cdn.") || url.start_with?("https://desktop.docker.com"))
@@ -19,7 +20,7 @@ PAD = """
         puts "Skip #{url} padding."
       elsif url.start_with?("https://www.python.org/ftp/python/3.")
         url = "%s" + url[34,url.length]
-      elsif !url.start_with?("https://mirror")
+      elsif !url.start_with?("https://mirror") && !url.start_with?("%s")
         url = "%s" + url
 """
 
@@ -80,7 +81,7 @@ def main():
     file = os.path.join(brew_root, folder, name)
     with open(file) as f:
         text = f.read()
-    pad = (PAD % (PY_HOST, HOST)).lstrip("\n")
+    pad = (PAD % (PY_HOST, HOST, HOST)).lstrip("\n")
     if pad in text:
         print("{} already in {}\nNothing to do!".format(HOST, file))
         return
@@ -100,10 +101,16 @@ def main():
         s = s.replace(w, " " * 2 + w)
         text = remove_old_pad(text, s)
     new_text = text.replace(s, pad + s)
-    with open(file, "w") as f:
-        f.write(new_text)
-    print("Insert\n{} into {}".format(pad, file))
-    say_done()
+    if "--dry" in sys.argv:
+        import difflib
+
+        diffs = difflib.unified_diff(text, new_text)
+        sys.stdout.writelines(diffs)
+    else:
+        with open(file, "w") as f:
+            f.write(new_text)
+        print("Insert\n{} into {}".format(pad, file))
+        say_done()
 
 
 if __name__ == "__main__":
