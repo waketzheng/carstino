@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/Users/mac10.12/archives/carstino/.venv/bin/python
 """
 Remove MySQL databases whose name is more than 10 characters and startswith 'test_'
 """

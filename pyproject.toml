@@ -41,7 +41,7 @@ ignore_errors = true
 
 [tool.uv]
 dev-dependencies = [
-    "asynctor>=0.7.2,<1",
+    "asynctor[redis]>=0.8.0,<1",
     "fast-dev-cli>=0.14.0,<1",
     "pymysql>=1.1.1",
     "tqdm>=4.67.1",

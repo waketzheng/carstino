@@ -7,6 +7,7 @@ Usage:
     $ ./createdatbase.py -d  # Drop db if exists and then create a new one
     $ ./createdatabase.py -m  # Run `./manage.py migrate` after create
     $ ./createdatabase.py -dm  # drop, create, migrate
+    $ ./createdatbase.py --engine=postgres --name=db_name  # without manage.py
 """
 
 import os

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 """
-This script is for pip source config.
+This script is for pip/poetry/pdm/uv source config.
 Worked both Windows and Linux/Mac, support python2.7 and python3.5+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Usage:
@@ -29,8 +29,8 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2025.04.14"
-__version__ = "0.7.4"
+__updated_at__ = "2025.05.25"
+__version__ = "0.8.0"
 import contextlib
 import functools
 import os
@@ -152,6 +152,7 @@ def check_mirror_by_pip_download(domain, tmp=False):
     cmd = "python -m pip download -i {} --isolated six".format(domain)
     if tmp:
         cmd += " -d /tmp"
+    print("Checking whether {} reachable...".format(repr(domain)))
     if os.system(cmd) == 0:
         dirname = "/tmp" if tmp else "."
         for name in os.listdir(dirname):
@@ -874,7 +875,7 @@ def main():
 
 
 if __name__ == "__main__":
-    if "--url" not in sys.argv:
+    if "--url" not in sys.argv and "--list" not in sys.argv:
         try:
             from asynctor import timeit
         except (ImportError, SyntaxError, AttributeError):
