@@ -472,7 +472,7 @@ class UvMirror(Mirror):
         # type: (Optional[str]) -> str
         if url is None:
             url = self.url
-        text = 'index-url="{}"'.format(url)
+        text = '[[index]]\nurl = "{}"\ndefault = true'.format(url)
         if not url.startswith("https"):
             text += '\nallow-insecure-host=["{}"]'.format(parse_host(url))
         return text
@@ -493,6 +493,16 @@ class UvMirror(Mirror):
                 return None
             if "index-url" in content:
                 pattern = r'index-url\s*=\s*"([^"]*)"'
+                m = re.search(pattern, content, re.S)
+                if m:
+                    already = m.group(1)
+                    if not self.replace:
+                        self.prompt_y(filename, m.group())
+                        return None
+                    if self.url.startswith("https"):
+                        text = content.replace(already, self.url)
+            elif "[[index]]" in content:
+                pattern = r'url\s*=\s*"([^"]*)"'
                 m = re.search(pattern, content, re.S)
                 if m:
                     already = m.group(1)
