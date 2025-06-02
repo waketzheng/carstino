@@ -12,7 +12,8 @@ import os
 import subprocess
 import sys
 
-PROXY = "https://ghfast.top/"
+# PROXY = "https://ghfast.top/"
+PROXY = "https://hub.gitmirror.com/"
 PY_HOST = "https://mirrors.huaweicloud.com/python/"
 PAD = """
 elsif (url.start_with?("https://cdn.") || url.start_with?("https://desktop.docker.com"))
