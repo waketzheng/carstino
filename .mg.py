@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import re
 import sys
 
 
@@ -14,7 +15,8 @@ def run_shell(cmd, verbose=True):
     return 0
 
 
-def is_venv() -> bool:
+def is_venv():
+    # type: () -> bool
     """Whether in a virtual environment"""
     return hasattr(sys, "real_prefix") or (
         hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix
@@ -32,11 +34,15 @@ def main():
         if sys.argv[1:]:
             command = sys.argv[1]
             if command == "shell":
-                py = "python"
-                if run_shell(f"{py} -m IPython") != 0:
+                try:
+                    from IPython import start_ipython
+                except ImportError:
                     if is_venv():
-                        return 1
-                    return run_shell("{py} -m IPython".format(py=py + "3.11"))
+                        raise
+                    return run_shell("python3.11 -m IPython")
+                else:
+                    sys.argv[0] = re.sub(r"(-script\.pyw|\.exe)?$", "", sys.argv[0])
+                    return start_ipython()
             elif command == "runserver":
                 if run_shell("which fast") == 0:
                     return run_shell("fast dev")
