@@ -9,9 +9,16 @@ def run_shell(cmd, verbose=True):
         print("--> " + str(cmd))
     rc = os.system(cmd)
     if rc != 0:
-        # rc如果大于255，sys.exit会报错
+        # if rc > 255, sys.exit will raise error
         return 1
     return 0
+
+
+def is_venv() -> bool:
+    """Whether in a virtual environment"""
+    return hasattr(sys, "real_prefix") or (
+        hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix
+    )
 
 
 def main():
@@ -25,7 +32,11 @@ def main():
         if sys.argv[1:]:
             command = sys.argv[1]
             if command == "shell":
-                return run_shell("python -m IPython")
+                py = "python"
+                if run_shell(f"{py} -m IPython") != 0:
+                    if is_venv():
+                        return 1
+                    return run_shell("{py} -m IPython".format(py=py + "3.11"))
             elif command == "runserver":
                 if run_shell("which fast") == 0:
                     return run_shell("fast dev")
