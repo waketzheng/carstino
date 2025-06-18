@@ -6,7 +6,25 @@ Remove MySQL databases whose name is more than 10 characters and startswith 'tes
 import sys
 
 import pymysql
-from tqdm import tqdm
+
+try:
+    from tqdm import tqdm
+except ImportError:
+    from collections.abc import Generator, Sequence
+    from typing import TypeVar
+
+    _T = TypeVar("_T")
+
+    def tqdm(items: Sequence[_T]) -> Generator[_T]:  # type:ignore[no-redef]
+        try:
+            total = len(items)
+        except TypeError:
+            items = list(items)
+            total = len(items)
+        for i, v in enumerate(items, 1):
+            print(f"Progressbar: {i}/{total} ...")
+            yield v
+
 
 pymysql.install_as_MySQLdb()
 
