@@ -56,10 +56,10 @@ jobs:
           ./upgrade_py.py --version=313 --dry --no-input
 
   ConfPip:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9, '3.10', 3.11, 3.12, 3.13]
+        python-version: [3.9, 3.13, 3.14]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -68,6 +68,46 @@ jobs:
           allow-prereleases: true
       - name: Verify pip conf script
         run: python pip_conf.py --tool=pip
+      - name: Verify python upgrade script
+        run: python upgrade_py.py --dry --no-input
+
+  conf_pip_py36:
+    runs-on: ubuntu-latest
+    container: python:3.6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.13'
+      - name: setup pdm
+        run: |
+          python3 -V
+          curl https://bootstrap.pypa.io/pip/3.7/get-pip.py -o get-pip.py
+          python3 get-pip.py
+          python3 -m pip install pip --upgrade
+          python3 -m pip install pdm
+      - name: setup poetry
+        run: |
+          curl https://bootstrap.pypa.io/get-pip.py -o get_pip.py
+          python3.13 get_pip.py
+          python3.13 -m pip install poetry
+      - name: Verify pip conf script
+        run: |
+          python3.6 pip_conf.py --tool=pip
+          python3.6 upgrade_py.py --dry --no-input
+          python3.6 -V
+      - name: Check mirror setting for uv/pdm/poetry
+        run: |
+          python3.6 pip_conf.py --pdm
+          python3.6 pip_conf.py --poetry
+          python3.6 pip_conf.py --uv
+      - name: Verify pdm mirror work
+        run: pdm add pytz --frozen
+      - name: Verify poetry mirror work
+        run: poetry add six
+      - name: Verify uv mirror work
+        run: uv add packaging --frozen
       - name: Verify python upgrade script
         run: python upgrade_py.py --dry --no-input
 
