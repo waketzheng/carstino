@@ -85,43 +85,49 @@ def get_venv():
     common_venv_names = ["venv"]
     if is_windows or not is_poetry_project(filename):
         common_venv_names += [".venv"]
-    venv_dir = ""
-    for dirname in common_venv_names:
-        if os.path.exists(dirname):
-            venv_dir = dirname
+    for venv_dir in common_venv_names:
+        if os.path.exists(venv_dir):
             break
     else:
         if os.path.exists("activate"):
             return "source activate"
-        elif (is_windows and os.path.exists("Scripts/activate")) or os.path.exists(
-            "bin/activate"  # Cygwin in Windows system also use this
-        ):
-            venv_dir = "."
-        elif (is_windows or is_controlled_by_ssh()) and is_poetry_project(filename):
-            if not is_poetry_installed():
-                msg = (
-                    "{0} not found!\n"
-                    "You can install it by:\n"
-                    "    pip install --user --upgrade pipx\n"
-                    "    pipx install {0}\n"
-                )
-                raise RuntimeError(msg.format("poetry"))
-            # If use Git Bash at Windows, which does not show venv prefix after
-            # running `poetry shell`, should use `source ../activate` instead;
-            # When controlling by ssh in cloud server, `poetry shell` something
-            # cost 100% of CPU, sb got the similar issue in aws, and the `python-poetry`
-            # suggest to run `poetry run` or `source ../activate` to avoid it.
-            cache_dir = run_cmd("poetry run poetry env info --path")
-            if cache_dir:
-                try:
-                    from pathlib import Path
-                except ImportError:
-                    import sys
+        fastapi_full_stack_venv_path = "backend/.venv"
+        for venv_dir in (".", fastapi_full_stack_venv_path):
+            if (
+                is_windows and os.path.exists("{}/Scripts/activate".format(venv_dir))
+            ) or os.path.exists(
+                "{}/bin/activate".format(
+                    venv_dir
+                )  # Cygwin in Windows system also use this
+            ):
+                break
+        else:
+            venv_dir = ""
+            if (is_windows or is_controlled_by_ssh()) and is_poetry_project(filename):
+                if not is_poetry_installed():
+                    msg = (
+                        "{0} not found!\n"
+                        "You can install it by:\n"
+                        "    pip install --user --upgrade pipx\n"
+                        "    pipx install {0}\n"
+                    )
+                    raise RuntimeError(msg.format("poetry"))
+                # If use Git Bash at Windows, which does not show venv prefix after
+                # running `poetry shell`, should use `source ../activate` instead;
+                # When controlling by ssh in cloud server, `poetry shell` something
+                # cost 100% of CPU, sb got the similar issue in aws, and the `python-poetry`
+                # suggest to run `poetry run` or `source ../activate` to avoid it.
+                cache_dir = run_cmd("poetry run poetry env info --path")
+                if cache_dir:
+                    try:
+                        from pathlib import Path
+                    except ImportError:
+                        import sys
 
-                    # If sys.executable is Python2, use python3 to run this script
-                    sys.exit(os.system("python3 " + sys.argv[0]))
+                        # If sys.executable is Python2, use python3 to run this script
+                        sys.exit(os.system("python3 " + sys.argv[0]))
 
-                venv_dir = Path(cache_dir.splitlines()[-1]).as_posix()
+                    venv_dir = Path(cache_dir.splitlines()[-1]).as_posix()
     if venv_dir:
         bin_dir = "*" if is_windows else "bin"
         return "source {}/{}/activate".format(venv_dir, bin_dir)
@@ -132,7 +138,7 @@ def get_venv():
     elif b"[tool.uv]" in read_content(filename):
         return "uv venv"
     else:
-        return "ERROR: Virtual environment not found! You should create it first."
+        return "echo ERROR: Virtual environment not found! You should create it first."
 
 
 def main():
