@@ -203,6 +203,12 @@ def main():
         help="the db name to be created(default:auto detect from manage.py)",
     )
     parser.add_argument(
+        "db_name",
+        type=str,
+        nargs="?",
+        help="the db name to be created(when --name='auto' and manage.py not exist)",
+    )
+    parser.add_argument(
         "--user",
         default="root",
         help="the engine client user name(default:root)",
@@ -216,6 +222,8 @@ def main():
         help="What's the database engine(default:postgres)",
     )
     args, unknown = parser.parse_known_args()
+    if args.db_name and args.name == "auto":
+        args.name = args.db_name
     if args.name != "auto":
         if args.engine == "mysql":
             return prompt_mysql_create_db(args.name, args.user, args.delete)
