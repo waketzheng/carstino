@@ -8,13 +8,14 @@ fi
 if [[ $NPM_MIRROR == "tx" ]]; then
   export NPM_MIRROR="http://mirrors.cloud.tencent.com/npm/"
 elif [[ $NPM_MIRROR == "hw" ]]; then
-  export NPM_MIRROR=http://mirrors.tools.huawei.com/npm/
+  # export NPM_MIRROR=http://mirrors.tools.huawei.com/npm/
+  export NPM_MIRROR=http://repo.huaweicloud.com/repository/npm/
 elif [[ $NPM_MIRROR == "ali" ]]; then
   export NPM_MIRROR=https://registry.npm.taobao.org
 elif [ $NPM_MIRROR ]; then
   echo npm mirror is $NPM_MIRROR
 else
-  export NPM_MIRROR=http://repo.huaweicloud.com/repository/npm/
+  export NPM_MIRROR=https://npmmirror.com/mirrors/npm/
 fi
 
 (echo "---- Initial nodejs/npm/yarn/pnpm/zx for frontend")
@@ -30,7 +31,7 @@ elif ! command -v nvm  &> /dev/null; then
   if [ $NVM_NODEJS_ORG_MIRROR ]; then
     echo NVM_NODEJS_ORG_MIRROR is $NVM_NODEJS_ORG_MIRROR
   else
-    export NVM_NODEJS_ORG_MIRROR=http://repo.huaweicloud.com/nodejs/
+    export NVM_NODEJS_ORG_MIRROR=https://npmmirror.com/mirrors/node/
   fi
   if [[ $NVM_REPO_URL == "github.com" ]]; then
     export NVM_REPO_URL="https://github.com/nvm-sh/nvm.git"

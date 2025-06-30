@@ -45,8 +45,9 @@ class Create(StrEnum):
     )
     mssql = (
         "docker run -d -p 1433:1433 --name mssql_latest"
-        " -e ACCEPT_EULA=Y -e SA_PASSWORD: Abcd12345678"
-        " mcr.microsoft.com/mssql/server:latest"
+        " -e ACCEPT_EULA=Y -e SA_PASSWORD=Abcd12345678"
+        " mcr.microsoft.com/mssql/server:2019-CU15-ubuntu-20.04"
+        # " mcr.microsoft.com/mssql/server:latest"
     )
     mongo = "docker run -d -p 27017:27017 --name mongo_latest mongo:latest"
     docker = "brew install colima"

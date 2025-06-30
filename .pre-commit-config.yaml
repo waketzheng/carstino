@@ -16,11 +16,11 @@ repos:
     hooks:
       - id: lint
         name: ruff/mypy
-        entry: uv run fast lint
+        entry: pdm run fast lint
         language: system
         types: [python]
       - id: compare
-        name: check py2 compare for pip_conf
-        entry: python2 pip_conf.py -l
+        name: check py2 compare in Mac for pip_conf
+        entry: python pip_conf.py -l
         language: system
         types: [python]

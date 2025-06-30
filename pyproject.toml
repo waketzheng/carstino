@@ -7,6 +7,20 @@ authors = [{name="Waket Zheng", email="waketzheng@gmail.com"}]
 requires-python = ">=3.11"
 dependencies = []
 
+[dependency-groups]
+dev = [
+    "asynctor[redis]>=0.8.0,<1",
+    "fast-dev-cli>=0.14.0,<1",
+    "pymysql>=1.1.1",
+    "tqdm>=4.67.1",
+    "types-pymysql>=1.1.0.20241103",
+    "types-tqdm>=4.67.0.20241221",
+    "typer>=0.16.0",
+]
+
+[tool.pdm]
+distribution = false
+
 [tool.ruff]
 line-length = 88
 exclude = ["node_modules", "*.bak"]
@@ -38,16 +52,3 @@ exclude = [
 [[tool.mypy.overrides]]
 module = "*.migrations.*"
 ignore_errors = true
-
-[tool.uv]
-dev-dependencies = [
-    "asynctor[redis]>=0.8.0,<1",
-    "fast-dev-cli>=0.14.0,<1",
-    "pymysql>=1.1.1",
-    "tqdm>=4.67.1",
-    "types-pymysql>=1.1.0.20241103",
-    "types-tqdm>=4.67.0.20241221",
-]
-
-[tool.pdm]
-distribution = false

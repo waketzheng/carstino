@@ -14,30 +14,26 @@ help:
 version ?= 3.12
 
 up:
-	uv lock --upgrade
-	uv sync --frozen
+	pdm update --verbose
+	$(MAKE) deps
 
 deps:
-ifeq ($(wildcard .venv),)
-	$(MAKE) venv version=$(version)
-else
-	uv sync --python=$(version)
-endif
+	pdm install --frozen
 
 _check:
-	uv run fast check
+	pdm run fast check
 check: deps _check
 
 _lint:
-	uv run fast lint
+	pdm run fast lint
 lint: deps _lint
 
 _test:
-	uv run fast test
+	pdm run fast test
 test: deps _test
 
 _style:
-	uv run fast lint --skip-mypy
+	pdm run fast lint --skip-mypy
 style: deps _style
 
 # Usage::
