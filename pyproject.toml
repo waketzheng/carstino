@@ -1,10 +1,18 @@
 [project]
-name = "carstino"
-version = "0.4.0"
-description = "Personal dev tools"
+name = "pip-conf-mirror"
+dynamic = ["version"]
+description = "Make it easy to set or change pip/pdm/uv/poetry mirrors."
 readme = "README.md"
 authors = [{name="Waket Zheng", email="waketzheng@gmail.com"}]
-requires-python = ">=3.11"
+requires-python = ">=2.7"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 2",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
 dependencies = []
 
 [dependency-groups]
@@ -18,8 +26,25 @@ dev = [
     "typer>=0.16.0",
 ]
 
+[project.urls]
+homepage = "https://github.com/waketzheng/carstino"
+repository = "https://github.com/waketzheng/carstino.git"
+"Bug Tracker" = "https://github.com/waketzheng/carstino/issues"
+
+[project.scripts]
+pip-conf = "pip_conf:main"
+pip_conf = "pip_conf:main"
+
 [tool.pdm]
-distribution = false
+distribution = true
+version = {source="file", path="pip_conf.py"}
+py_modules=['pip_conf']
+packages=['pip_conf']
+
+[tool.pdm.build]
+excludes = ["./**/.git"]
+includes = ["pip_conf.py"]
+source-includes = ["LICENSE", "README.md"]
 
 [tool.ruff]
 line-length = 88
@@ -52,3 +77,7 @@ exclude = [
 [[tool.mypy.overrides]]
 module = "*.migrations.*"
 ignore_errors = true
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"

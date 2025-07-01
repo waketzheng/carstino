@@ -14,17 +14,33 @@ This is a repo about init my dev environment
 
 
 Usage:
+- Change source of pip to mirrors.cloud.tencent.com, worked at both Linux and Windows(Run with Git Bash).
 ```bash
-# Change source of pip to mirrors.cloud.tencent.com, worked at both Linux and Windows(Run with Git Bash).
 curl https://raw.githubusercontent.com/waketzheng/carstino/main/pip_conf.py|python
 ```
-
+Or install `pip_conf.py` by pip/pipx:
 ```bash
-# Change apt source of ubuntu16/18/19/20 to tencent cloud.
+pip install --user pip-conf-mirror
+
+# Install by pipx
+#pipx install pip-conf-mirror
+
+# Install it from github:
+#pip install --user "pip-conf-mirror @git+https://github.com/waketzheng/carstino"
+
+# Set pip mirror
+pip-conf
+
+# Set pip mirror to qinghua source
+#pip-conf qh
+```
+
+- Change apt source of ubuntu16/18/19/20/22/24 to tencent cloud.
+```bash
 curl https://raw.githubusercontent.com/waketzheng/carstino/main/change_ubuntu_mirror_sources.py|python
 ```
 
-- init_my_dev.py: setting for vim, git store, pipenv aliases.
+- init_my_dev.py: setting for vim, git store, poetry aliases.
 
 PS: I usually init my development environment in a new machine as following
 

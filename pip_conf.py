@@ -180,13 +180,9 @@ def ensure_domain_name(host):
     return domain
 
 
-def is_pip_ready(python3_only=False):
-    # type: (bool) -> bool
-    if os.system("python -m pip --version") == 0:
-        return True
-    if python3_only:
-        return os.system("python3 -m pip --version") == 0
-    return False
+def is_pip_ready(py="python"):
+    # type: (str) -> bool
+    return os.system("{py} -m pip --version".format(py=py)) == 0
 
 
 def check_url_reachable(url):
@@ -252,7 +248,7 @@ def is_pingable(host="", is_windows=False, domain=""):
     except Exception:
         return False
     else:
-        if is_pip_ready(True):
+        if is_pip_ready(get_python()):
             return check_mirror_by_pip_download(host, tmp=True)
         return check_url_reachable(build_mirror_url(host))
     # Cost about 11 seconds to ping mirrors.cloud.aliyuncs.com
@@ -824,7 +820,8 @@ def main():
     parser = ArgumentParser()
     source_help = "the source of pip, ali/douban/hw/qinghua or tx(default)"
     parser.add_argument("name", nargs="?", default="", help=source_help)
-    parser.add_argument("files", nargs="*", default="", help="Add for pre-commit")
+    # Not support yet.
+    # parser.add_argument("files", nargs="*", default="", help="Add for pre-commit")
     # Be compatible with old version
     parser.add_argument("-s", "--source", default=DEFAULT, help=source_help)
     parser.add_argument(
