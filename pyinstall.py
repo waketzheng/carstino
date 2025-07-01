@@ -56,7 +56,7 @@ def say_cost(func):
 
 
 @say_cost
-def pyinstall(version: str) -> None:
+def pyinstall(version: str) -> subprocess.CompletedProcess[str]:
     cache_dir = Path.home() / ".pyenv" / "cache"
     cmd = "cd {} && (".format(cache_dir)
     url = build_url(version)
@@ -70,7 +70,7 @@ def pyinstall(version: str) -> None:
     cmd += "pyenv install {0};cd -)".format(version)
     print("Start running ...")
     print("-->", cmd)
-    subprocess.run(cmd, shell=True)
+    return subprocess.run(cmd, shell=True, text=True)
 
 
 def main() -> int:
