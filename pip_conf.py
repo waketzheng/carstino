@@ -133,6 +133,15 @@ def is_command_exists(tool):
         return os.system(tool + " --version --no-ansi") == 0
 
 
+def get_python():
+    # type: () -> str
+    if System.get_system() == "Linux":
+        py = "/usr/bin/python"
+        if not os.path.exists(py) and os.path.exists(py + "3"):
+            return "python3"
+    return "python"
+
+
 def check_mirror_by_pip_download(domain, tmp=False):
     # type: (str, bool) -> bool
     if "/" not in domain:
@@ -150,7 +159,7 @@ def check_mirror_by_pip_download(domain, tmp=False):
             + " --trusted-host "
             + ensure_domain_name(domain)
         )
-    cmd = "python -m pip download -i {} --isolated six".format(domain)
+    cmd = "{} -m pip download -i {} --isolated six".format(get_python(), domain)
     if tmp:
         cmd += " -d /tmp"
     print("Checking whether {} reachable...".format(repr(domain)))
@@ -171,9 +180,13 @@ def ensure_domain_name(host):
     return domain
 
 
-def is_pip_ready():
-    # type: () -> bool
-    return os.system("python -m pip --version") == 0
+def is_pip_ready(python3_only=False):
+    # type: (bool) -> bool
+    if os.system("python -m pip --version") == 0:
+        return True
+    if python3_only:
+        return os.system("python3 -m pip --version") == 0
+    return False
 
 
 def check_url_reachable(url):
@@ -239,7 +252,7 @@ def is_pingable(host="", is_windows=False, domain=""):
     except Exception:
         return False
     else:
-        if is_pip_ready():
+        if is_pip_ready(True):
             return check_mirror_by_pip_download(host, tmp=True)
         return check_url_reachable(build_mirror_url(host))
     # Cost about 11 seconds to ping mirrors.cloud.aliyuncs.com
@@ -344,7 +357,7 @@ def smart_detect(source, is_windows):
             with open(welcome_file) as f:
                 msg = f.read().strip()
         else:
-            msg = capture_output("python -m pip config list")
+            msg = capture_output("{} -m pip config list".format(get_python()))
         if msg:
             mirrors = [v for k, v in mirror_map.items() if k in msg.lower()]
         if not mirrors:
@@ -573,7 +586,7 @@ class PoetryMirror(Mirror):
             file = os.path.join(lib, ds[0], "site-packages", module, filename)
         else:
             code = "import {} as m;print(m.__file__)".format(module)
-            path = capture_output("python -c {}".format(repr(code)))
+            path = capture_output("{} -c {}".format(get_python(), repr(code)))
             file = os.path.join(get_parent_path(path), filename)
         if not os.path.exists(file):
             print("WARNING: plugin file not found {}".format(file))
@@ -893,5 +906,5 @@ if __name__ == "__main__":
         except (ImportError, SyntaxError, AttributeError):
             pass
         else:
-            main = timeit(main)
+            main = timeit(main)  # Display script cost time
     sys.exit(main())
