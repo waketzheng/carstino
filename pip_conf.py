@@ -18,8 +18,9 @@ Or:
 
     $ python pip_conf.py --list  # show choices
     $ python pip_conf.py --poetry  # set mirrors in poetry's config.toml
-    $ python pip_conf.py --pdm  # set pypi.url for pdm
-    $ python pip_conf.py --uv  # set mirror for uv
+    $ python pip_conf.py --pdm     # set pypi.url for pdm
+    $ python pip_conf.py --uv      # set mirror for uv
+    $ python pip_conf.py --pip     # set mirror for pip
     $ python pip_conf.py --tool=auto # find out manage tool at current directory and set mirror for it
 
     $ sudo python pip_conf.py --etc  # Set conf to /etc/pip.[conf|ini]
@@ -29,8 +30,8 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2025.05.25"
-__version__ = "0.8.0"
+__updated_at__ = "2025.07.01"
+__version__ = "0.8.1"
 import contextlib
 import functools
 import os
@@ -823,6 +824,7 @@ def main():
     parser.add_argument("--poetry", action="store_true", help="Set mirrors for poetry")
     parser.add_argument("--pdm", action="store_true", help="Set pypi.url for pdm")
     parser.add_argument("--uv", action="store_true", help="Set index url for uv")
+    parser.add_argument("--pip", action="store_true", help="Set index url for pip")
     parser.add_argument(
         "-t", "--tool", default="auto", help="Choices: pip/uv/pdm/poetry"
     )
@@ -854,7 +856,7 @@ def main():
         if args.url:  # Only display prefer source url, but not config
             print(url)
             return None
-        if not args.poetry and not args.pdm and not args.uv:
+        if not args.poetry and not args.pdm and not args.uv and not args.pip:
             args = auto_detect_tool(args)
             if (
                 args.tool == "auto"
