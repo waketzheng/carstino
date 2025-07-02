@@ -82,8 +82,6 @@ jobs:
           python-version: '3.13'
       - name: setup pdm
         uses: pdm-project/setup-pdm@v4
-        with:
-          python-version: '3.13'
       - name: setup poetry
         run: |
           curl https://bootstrap.pypa.io/get-pip.py -o get_pip.py
