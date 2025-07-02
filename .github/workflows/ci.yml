@@ -81,12 +81,9 @@ jobs:
         with:
           python-version: '3.13'
       - name: setup pdm
-        run: |
-          python3 -V
-          curl https://bootstrap.pypa.io/pip/3.6/get-pip.py -o get-pip.py
-          python3 get-pip.py
-          python3 -m pip install pip --upgrade
-          python3 -m pip install pdm
+        uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: '3.13'
       - name: setup poetry
         run: |
           curl https://bootstrap.pypa.io/get-pip.py -o get_pip.py
@@ -179,6 +176,7 @@ jobs:
       - name: Verify mirror work
         run: |
           pdm add pytz
+          python -c "version='0.1.0';from pathlib import Path;p=Path('pyproject.toml');s=p.read_text();python='>=2.7,<3.0||>=3.5';a=f'\n[tool.poetry]\n{version=}\n[tool.poetry.dependencies]\n{python=}\n';a in s or p.write_text(s+a)"
           poetry add six
           uv add tomli --frozen
           uv pip install tomlkit
