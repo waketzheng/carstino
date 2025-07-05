@@ -42,6 +42,7 @@ def main():
                     return run_shell("python3.11 -m IPython")
                 else:
                     sys.argv[0] = re.sub(r"(-script\.pyw|\.exe)?$", "", sys.argv[0])
+                    sys.argv.pop(1)
                     return start_ipython()
             elif command == "runserver":
                 if run_shell("which fast") == 0:
