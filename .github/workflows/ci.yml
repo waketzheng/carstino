@@ -84,9 +84,9 @@ jobs:
           python-version: '3.10'
       - uses: astral-sh/setup-uv@v6
       - name: setup poetry
-        run: python3.10 -m pip install poetry
+        run: uv tool install --python python3.10 poetry
       - name: setup pdm
-        run: python3.10 -m pip install pdm
+        run: uv tool install --python python3.10 pdm
       - name: Verify pip conf script
         run: |
           python3.6 pip_conf.py --tool=pip
