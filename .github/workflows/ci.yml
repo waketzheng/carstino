@@ -84,9 +84,9 @@ jobs:
           python-version: '3.11'
       - uses: astral-sh/setup-uv@v6
       - name: setup poetry
-        run: uv tool install --python python3.13 poetry
+        run: uv tool install --python python3.11 poetry
       - name: setup pdm
-        run: uv tool install --python python3.13 pdm
+        run: uv tool install --python python3.11 pdm
       - name: Verify pip conf script
         run: |
           python3.6 pip_conf.py --tool=pip
