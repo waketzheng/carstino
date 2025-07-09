@@ -87,7 +87,7 @@ jobs:
         run: uv tool install --python python3.11 pdm
       - name: setup poetry
         run: |
-          uv python install 3.10
+          uv python install 3.10 --preview
           uv tool install --python python3.10 poetry
       - name: Verify pip conf script
         run: |
