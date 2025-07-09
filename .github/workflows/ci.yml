@@ -75,18 +75,18 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.10]
+        python-version: [3.13]
     container: python:3.6-slim
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.13'
       - uses: astral-sh/setup-uv@v6
       - name: setup poetry
-        run: uv tool install --python python3.10 poetry
+        run: uv tool install --python python3.13 poetry
       - name: setup pdm
-        run: uv tool install --python python3.10 pdm
+        run: uv tool install --python python3.13 pdm
       - name: Verify pip conf script
         run: |
           python3.6 pip_conf.py --tool=pip
@@ -101,7 +101,7 @@ jobs:
         run: pdm add pytz --frozen
       - name: Verify poetry mirror work
         run: |
-          python3.10 -c "version='0.1.0';from pathlib import Path;p=Path('pyproject.toml');s=p.read_text();python='>=2.7,<3.0||>=3.5';a=f'\n[tool.poetry]\n{version=}\n[tool.poetry.dependencies]\n{python=}\n';a in s or p.write_text(s+a)"
+          python3.13 -c "version='0.1.0';from pathlib import Path;p=Path('pyproject.toml');s=p.read_text();python='>=2.7,<3.0||>=3.5';a=f'\n[tool.poetry]\n{version=}\n[tool.poetry.dependencies]\n{python=}\n';a in s or p.write_text(s+a)"
           poetry add six
       - name: Verify uv mirror work
         run: uv add packaging --frozen
