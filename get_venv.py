@@ -78,6 +78,31 @@ def is_poetry_project(filename):
     return b'build-backend = "poetry' in text
 
 
+def source_activate(venv_dir, is_windows=False):
+    # type: (str, bool) -> str
+    bin_dir = "*" if is_windows else "bin"
+    return "source {}/{}/activate".format(venv_dir, bin_dir)
+
+
+def get_poetry_venv_path():
+    # type: () -> str
+    # If use Git Bash at Windows, which does not show venv prefix after
+    # running `poetry shell`, should use `source ../activate` instead;
+    # When controlling by ssh in cloud server, `poetry shell` something
+    # cost 100% of CPU, sb got the similar issue in aws, and the `python-poetry`
+    # suggest to run `poetry run` or `source ../activate` to avoid it.
+    cache_dir = run_cmd("poetry run poetry env info --path")
+    if cache_dir:
+        project_virtualenv = cache_dir.splitlines()[-1]
+        try:
+            from pathlib import Path
+        except ImportError:
+            return project_virtualenv.strip()
+        else:
+            return Path(project_virtualenv).as_posix()
+    return ""
+
+
 def get_venv():
     # type: () -> str
     is_windows = platform.platform().lower().startswith("windows")
@@ -87,50 +112,34 @@ def get_venv():
         common_venv_names += [".venv"]
     for venv_dir in common_venv_names:
         if os.path.exists(venv_dir):
-            break
-    else:
-        if os.path.exists("activate"):
-            return "source activate"
-        fastapi_full_stack_venv_path = "backend/.venv"
-        for venv_dir in (".", fastapi_full_stack_venv_path):
-            if (
-                is_windows and os.path.exists("{}/Scripts/activate".format(venv_dir))
-            ) or os.path.exists(
-                "{}/bin/activate".format(
-                    venv_dir
-                )  # Cygwin in Windows system also use this
-            ):
-                break
-        else:
-            venv_dir = ""
-            if (is_windows or is_controlled_by_ssh()) and is_poetry_project(filename):
-                if not is_poetry_installed():
-                    msg = (
-                        "{0} not found!\n"
-                        "You can install it by:\n"
-                        "    pip install --user --upgrade pipx\n"
-                        "    pipx install {0}\n"
-                    )
-                    raise RuntimeError(msg.format("poetry"))
-                # If use Git Bash at Windows, which does not show venv prefix after
-                # running `poetry shell`, should use `source ../activate` instead;
-                # When controlling by ssh in cloud server, `poetry shell` something
-                # cost 100% of CPU, sb got the similar issue in aws, and the `python-poetry`
-                # suggest to run `poetry run` or `source ../activate` to avoid it.
-                cache_dir = run_cmd("poetry run poetry env info --path")
-                if cache_dir:
-                    try:
-                        from pathlib import Path
-                    except ImportError:
-                        import sys
-
-                        # If sys.executable is Python2, use python3 to run this script
-                        sys.exit(os.system("python3 " + sys.argv[0]))
-
-                    venv_dir = Path(cache_dir.splitlines()[-1]).as_posix()
+            return source_activate(venv_dir, is_windows)
+    if os.path.exists("activate"):
+        return "source activate"
+    fastapi_full_stack_venv_path = "backend/.venv"
+    for venv_dir in (".", fastapi_full_stack_venv_path):
+        if (
+            is_windows and os.path.exists("{}/Scripts/activate".format(venv_dir))
+        ) or os.path.exists(
+            "{}/bin/activate".format(venv_dir)  # Cygwin in Windows system also use this
+        ):
+            return source_activate(venv_dir, is_windows)
+    venv_dir = ""
+    if (is_windows or is_controlled_by_ssh()) and is_poetry_project(filename):
+        if not is_poetry_installed():
+            if not is_windows:
+                for path in (".venv", "../.venv"):
+                    if os.path.exists(path + "/bin"):
+                        return source_activate(path)
+            msg = (
+                "{0} not found!\n"
+                "You can install it by:\n"
+                "    pip install --user --upgrade pipx\n"
+                "    pipx install {0}\n"
+            )
+            raise RuntimeError(msg.format("poetry"))
+        venv_dir = get_poetry_venv_path()
     if venv_dir:
-        bin_dir = "*" if is_windows else "bin"
-        return "source {}/{}/activate".format(venv_dir, bin_dir)
+        return source_activate(venv_dir, is_windows)
     elif is_poetry_project(filename):
         return "poetry shell"
     elif b'build-backend = "pdm' in read_content(filename):
