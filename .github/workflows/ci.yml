@@ -103,7 +103,7 @@ jobs:
         run: pdm add pytz --frozen
       - name: Add poetry section
         run: |
-          python3 -c "version='0.1.0';from pathlib import Path;p=Path('pyproject.toml');s=p.read_text();python='>=2.7,<3.0||>=3.5';a=f'\n[tool.poetry]\nversion={version!r}\n[tool.poetry.dependencies]\npython={python!r}\n';a in s or p.write_text(s+a)"
+          python3.10 -c "version='0.1.0';from pathlib import Path;p=Path('pyproject.toml');s=p.read_text();python='>=2.7,<3.0||>=3.5';a=f'\n[tool.poetry]\nversion={version!r}\n[tool.poetry.dependencies]\npython={python!r}\n';a in s or p.write_text(s+a)"
       - name: Prepare poetry environment
         run: poetry env use python3.10
       - name: Verify poetry mirror work
