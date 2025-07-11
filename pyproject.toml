@@ -33,7 +33,7 @@ repository = "https://github.com/waketzheng/carstino.git"
 
 [project.scripts]
 pip-conf = "pip_conf:main"
-pip_conf = "pip_conf:main"
+pip-conf-mirror = "pip_conf:main"
 
 [tool.pdm]
 distribution = true
@@ -81,3 +81,14 @@ ignore_errors = true
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
+
+[tool.pdm.scripts]
+test = 'pdm run fast test'
+style = {composite = ["ruff format", "ruff check --fix {args}"]}
+check = 'pdm run fast check {args}'
+lint = 'pdm run fast lint {args}'
+deps = 'pdm sync -G :all {args}'
+prod = 'pdm install --prod --frozen'
+bump = "pdm run fast bump patch --commit {args}"
+tag = "pdm run fast tag {args}"
+start = {composite = ["pre-commit install", "deps"]}
