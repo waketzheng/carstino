@@ -84,7 +84,7 @@ build-backend = "pdm.backend"
 [tool.pdm.scripts]
 up = 'pdm update -G :all'
 type = "pdm run mypy ."
-tree = 'pdm list --tree'
+tree = 'pdm list --tree {args}'
 deps = 'pdm sync -G :all {args}'
 prod = 'pdm install --prod --frozen'
 fresh = {composite = ["up", "deps"]}
