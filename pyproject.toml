@@ -82,14 +82,17 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [tool.pdm.scripts]
+up = 'pdm update -G :all'
+type = "pdm run mypy ."
+tree = 'pdm list --tree'
+deps = 'pdm sync -G :all {args}'
+prod = 'pdm install --prod --frozen'
+fresh = {composite = ["up", "deps"]}
 test = 'pdm run fast test'
 style = {composite = ["ruff format", "ruff check --fix {args}"]}
-type = "pdm run mypy ."
 check = 'pdm run fast check {args}'
 lint = 'pdm run fast lint {args}'
-deps = 'pdm sync -G :all {args}'
-tree = 'pdm list --tree'
-prod = 'pdm install --prod --frozen'
 bump = "pdm run fast bump patch --commit {args}"
 tag = "pdm run fast tag {args}"
 start = {composite = ["pre-commit install", "deps"]}
+ci = {composite = ["deps", "check", "test"]}

@@ -35,28 +35,28 @@ files = [
 
 [[package]]
 name = "asynctor"
-version = "0.8.1"
+version = "0.8.3"
 summary = ""
 dependencies = [
     "anyio",
 ]
 files = [
-    {file = "asynctor-0.8.1-py3-none-any.whl", hash = "sha256:9398a3a8cfe7f122b953985c6bf03562864b5d339a7aa56c2f62468037c778a2"},
-    {file = "asynctor-0.8.1.tar.gz", hash = "sha256:6c28312fd21b168fde8241271a05898c7cada114825ed81c315b987b721934eb"},
+    {file = "asynctor-0.8.3-py3-none-any.whl", hash = "sha256:1c878f7be2d1bea273b324e73e08545063cf7d11a004f0284610ae0a64a53af0"},
+    {file = "asynctor-0.8.3.tar.gz", hash = "sha256:e58f427d9c18eb062efbd557a7fe3a3daf8f914c569299c44bca0f846a3486b4"},
 ]
 
 [[package]]
 name = "asynctor"
-version = "0.8.1"
+version = "0.8.3"
 extras = ["redis"]
 summary = ""
 dependencies = [
-    "asynctor==0.8.1",
+    "asynctor==0.8.3",
     "redis",
 ]
 files = [
-    {file = "asynctor-0.8.1-py3-none-any.whl", hash = "sha256:9398a3a8cfe7f122b953985c6bf03562864b5d339a7aa56c2f62468037c778a2"},
-    {file = "asynctor-0.8.1.tar.gz", hash = "sha256:6c28312fd21b168fde8241271a05898c7cada114825ed81c315b987b721934eb"},
+    {file = "asynctor-0.8.3-py3-none-any.whl", hash = "sha256:1c878f7be2d1bea273b324e73e08545063cf7d11a004f0284610ae0a64a53af0"},
+    {file = "asynctor-0.8.3.tar.gz", hash = "sha256:e58f427d9c18eb062efbd557a7fe3a3daf8f914c569299c44bca0f846a3486b4"},
 ]
 
 [[package]]
@@ -154,7 +154,7 @@ files = [
 
 [[package]]
 name = "fast-dev-cli"
-version = "0.16.1"
+version = "0.16.2"
 summary = ""
 dependencies = [
     "bumpversion2",
@@ -166,8 +166,8 @@ dependencies = [
     "typer",
 ]
 files = [
-    {file = "fast_dev_cli-0.16.1-py3-none-any.whl", hash = "sha256:076d45d2a33083ddba0230a855d257a2d72b9a9b2458e2a10cec552c557ec3f0"},
-    {file = "fast_dev_cli-0.16.1.tar.gz", hash = "sha256:c1afcf472bceb75af63b711530a3e2ce4ad00ff399b0351af33a4da5add41f5b"},
+    {file = "fast_dev_cli-0.16.2-py3-none-any.whl", hash = "sha256:a26d370a71879dde98c19b7c372006e78b76e718ac58d37b16ac0327e5a4b9c2"},
+    {file = "fast_dev_cli-0.16.2.tar.gz", hash = "sha256:f59cc8fd8c4b249dcf6df5b55c04564cccc62fd63733af79a667759d8ca18d57"},
 ]
 
 [[package]]
@@ -383,11 +383,11 @@ files = [
 
 [[package]]
 name = "types-pymysql"
-version = "1.1.0.20250516"
+version = "1.1.0.20250711"
 summary = ""
 files = [
-    {file = "types_pymysql-1.1.0.20250516-py3-none-any.whl", hash = "sha256:41c87a832e3ff503d5120cc6cebd64f6dcb3c407d9580a98b2cb3e3bcd109aa6"},
-    {file = "types_pymysql-1.1.0.20250516.tar.gz", hash = "sha256:fea4a9776101cf893dfc868f42ce10d2e46dcc498c792cc7c9c0fe00cb744234"},
+    {file = "types_pymysql-1.1.0.20250711-py3-none-any.whl", hash = "sha256:29c8dbaeb38c005ea0b81fd2e1fbe58f1774d58105f41812fbf1dfc4701ae392"},
+    {file = "types_pymysql-1.1.0.20250711.tar.gz", hash = "sha256:38690d5e6d290eb56b9a451c79643c86663e1993344b818c69128977867a5ab9"},
 ]
 
 [[package]]
