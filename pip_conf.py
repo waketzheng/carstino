@@ -2,7 +2,7 @@
 # -*- coding:utf-8 -*-
 """
 This script is for pip/poetry/pdm/uv source config.
-Worked both Windows and Linux/Mac, support python2.7 and python3.5+
+Worked both Windows and Linux/Mac, support python2.7 and python3.6+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Usage:
     $ ./pip_conf.py  # default to tencent source
@@ -30,8 +30,8 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2025.07.01"
-__version__ = "0.8.1"
+__updated_at__ = "2025.07.12"
+__version__ = "0.8.2"
 import contextlib
 import functools
 import os
@@ -93,8 +93,16 @@ INDEX_URL = "https://{}/simple/"
 socket.setdefaulttimeout(5)
 
 
-class ParamError(Exception):
+class PipConfError(Exception):
+    pass
+
+
+class ParamError(PipConfError):
     """Invalid parameters"""
+
+
+class ConfigError(PipConfError):
+    """Failed to determide or set config"""
 
 
 class System:
@@ -118,10 +126,10 @@ class System:
         # type: () -> bool
         return cls.get_system() == "Darwin"
 
-
-def is_mac():
-    # type: () -> bool
-    return System.is_mac()
+    @classmethod
+    def is_linux(cls):
+        # type: () -> bool
+        return cls.get_system() == "Linux"
 
 
 def is_command_exists(tool):
@@ -133,12 +141,34 @@ def is_command_exists(tool):
         return os.system(tool + " --version --no-ansi") == 0
 
 
-def get_python():
-    # type: () -> str
-    if System.get_system() == "Linux":
-        py = "/usr/bin/python"
-        if not os.path.exists(py) and os.path.exists(py + "3"):
+def get_python(check_download_command=False):
+    # type: (bool) -> str
+    if not System.is_linux():
+        return "python"
+    py = "/usr/bin/python"
+    if not os.path.exists(py) and os.path.exists(py + "3"):
+        # Ubuntu default to have python3 but not python
+        return "python3"
+    if not check_download_command:
+        return "python"
+    is_py3 = sys.version_info >= (3,)
+    try:
+        import pip
+    except ImportError:
+        # Virtual environment created by uv/pdm may no include pip module
+        return "python"
+    else:
+        if is_py3 or pip.__version__ >= "18.1":
+            return sys.executable
+        if os.system("python3 -V") == 0:
             return "python3"
+        # Does not support `pip download`
+        is_py2 = "import sys;py2=int(sys.version_info<(3,));sys.exit(py2)"
+        if os.system('python -c "{}"'.format(is_py2)) == 1:
+            # Default python is py2
+            cmd = "python -m pip download --help"
+            if capture_output(cmd).lower().startswith("error"):
+                raise ConfigError("pip is to old, need to be upgraded")
     return "python"
 
 
@@ -159,15 +189,20 @@ def check_mirror_by_pip_download(domain, tmp=False):
             + " --trusted-host "
             + ensure_domain_name(domain)
         )
-    cmd = "{} -m pip download -i {} --isolated six".format(get_python(), domain)
-    if tmp:
-        cmd += " -d /tmp"
+    try:
+        cmd = "{} -m pip download -i {} --isolated six".format(get_python(True), domain)
+    except ConfigError:
+        cmd = ping_command(ensure_domain_name(domain))
+    else:
+        if tmp:
+            cmd += " -d /tmp"
     print("Checking whether {} reachable...".format(repr(domain)))
     if os.system(cmd) == 0:
-        dirname = "/tmp" if tmp else "."
-        for name in os.listdir(dirname):
-            if name.startswith("six-") and name.endswith(".whl"):
-                os.remove(os.path.join(dirname, name))
+        if not cmd.startswith("ping"):
+            dirname = "/tmp" if tmp else "."
+            for name in os.listdir(dirname):
+                if name.startswith("six-") and name.endswith(".whl"):
+                    os.remove(os.path.join(dirname, name))
         return True
     return False
 
@@ -231,6 +266,12 @@ def build_mirror_url(host):
     return url
 
 
+def ping_command(domain):
+    # type: (str) -> str
+    # Cost about 11 seconds to ping mirrors.cloud.aliyuncs.com
+    return "ping -c 1 {}".format(domain)
+
+
 def is_pingable(host="", is_windows=False, domain=""):
     # type: (str, bool,str) -> bool
     host = host or domain
@@ -251,9 +292,7 @@ def is_pingable(host="", is_windows=False, domain=""):
         if is_pip_ready(get_python()):
             return check_mirror_by_pip_download(host, tmp=True)
         return check_url_reachable(build_mirror_url(host))
-    # Cost about 11 seconds to ping mirrors.cloud.aliyuncs.com
-    cmd = "ping -c 1 {}".format(domain)
-    return os.system(cmd) == 0
+    return os.system(ping_command(domain)) == 0
 
 
 def load_bool(name):
@@ -306,7 +345,9 @@ def capture_output(cmd):
 
 def config_by_cmd(url, is_windows=False):
     # type: (str, bool) -> None
-    if not is_windows and is_mac():
+    if is_windows:
+        _config_by_cmd(url, is_windows=True)
+    elif System.is_mac():
         # MacOS need sudo to avoid PermissionError
         _config_by_cmd(url, sudo=True)
     else:
@@ -341,7 +382,7 @@ def smart_detect(source, is_windows):
     if is_windows:
         if is_hw_inner(True):
             return "hw_inner", True
-    elif not is_mac():
+    elif not System.is_mac():
         mirror_map = {
             "huawei": (is_hw_inner, "hw_inner"),
             "tencent": (is_tx_cloud_server, "tx_ecs"),
@@ -658,7 +699,7 @@ class PoetryMirror(Mirror):
         dirpath = "~/Library/Application Support/pypoetry/"
         if is_windows:
             dirpath = os.getenv("APPDATA", "") + "/pypoetry/"
-        elif not is_mac():
+        elif not System.is_mac():
             dirpath = "~/.config/pypoetry/"
         elif self.poetry_version < "1.5":
             dirpath = "~/Library/Preferences/pypoetry/"

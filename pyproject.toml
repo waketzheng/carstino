@@ -2,7 +2,6 @@
 name = "pip-conf-mirror"
 dynamic = ["version"]
 description = "Make it easy to set or change pip/pdm/uv/poetry mirrors."
-readme = "README.md"
 authors = [{name="Waket Zheng", email="waketzheng@gmail.com"}]
 requires-python = ">=2.7"
 classifiers = [
@@ -85,9 +84,11 @@ build-backend = "pdm.backend"
 [tool.pdm.scripts]
 test = 'pdm run fast test'
 style = {composite = ["ruff format", "ruff check --fix {args}"]}
+type = "pdm run mypy ."
 check = 'pdm run fast check {args}'
 lint = 'pdm run fast lint {args}'
 deps = 'pdm sync -G :all {args}'
+tree = 'pdm list --tree'
 prod = 'pdm install --prod --frozen'
 bump = "pdm run fast bump patch --commit {args}"
 tag = "pdm run fast tag {args}"

@@ -111,7 +111,7 @@ jobs:
       - name: Verify uv mirror work
         run: uv add packaging --frozen
       - name: Verify python upgrade script
-        run: python upgrade_py.py --dry --no-input
+        run: python3.10 upgrade_py.py --dry --no-input
 
   conf_pip_py27:
     runs-on: ubuntu-latest
