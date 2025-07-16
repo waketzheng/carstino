@@ -886,6 +886,7 @@ def main():
         help="Display cmd command without actually executing",
     )
     parser.add_argument("--verbose", action="store_true", help="Print more info")
+    parser.add_argument("--version", action="store_true", help="Show script version")
     parser.add_argument(
         "--fix", action="store_true", help="Fix poetry pypi mirror plugin error"
     )
@@ -900,6 +901,8 @@ def main():
         pprint.pprint(SOURCES)
     elif args.fix:
         PoetryMirror.fix_v1_6_error()
+    elif args.version:
+        print("pip-conf-mirror {}".format(__version__))
     else:
         source = args.name or args.source
         is_windows = System.is_win()

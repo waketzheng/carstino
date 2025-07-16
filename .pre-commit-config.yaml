@@ -20,8 +20,7 @@ repos:
         language: system
         types: [python]
       - id: compare
-        name: check py2 compare in Mac for pip_conf
-        # python pip_conf.py -l
+        name: check py2 compare for pip-conf-mirror
         entry: pdm run python tests/check_py2_compare.py
         language: system
         types: [python]
