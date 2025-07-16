@@ -148,7 +148,11 @@ def prompt_mysql_create_db(name, user, drop_db=False):
 
 
 def postgres(config, db_name, drop=False):
-    man = "docker exec postgres_latest " if using_docker() else "sudo -u postgres "
+    man = (
+        "docker exec postgres_latest "
+        if using_docker()
+        else ("" if sys.platform == "darwin" else "sudo -u postgres ")
+    )
     who = man + "psql -U postgres -d postgres -c "
     option = "encoding='utf-8'"
     if drop:

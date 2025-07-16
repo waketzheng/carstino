@@ -21,6 +21,7 @@ repos:
         types: [python]
       - id: compare
         name: check py2 compare in Mac for pip_conf
-        entry: python pip_conf.py -l
+        # python pip_conf.py -l
+        entry: pdm run python tests/check_py2_compare.py
         language: system
         types: [python]
