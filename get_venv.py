@@ -111,6 +111,10 @@ def get_venv():
         venv_dir = get_poetry_venv_path()
         if venv_dir:
             return source_activate(venv_dir, is_windows)
+    if sys.argv[1:]:
+        a1 = sys.argv[1]
+        if not a1.startswith("-") and os.path.exists(a1):
+            return source_activate(a1, is_windows)
     filename = "pyproject.toml"
     common_venv_names = ["venv"]
     if is_windows or not is_poetry_project(filename):
@@ -147,15 +151,17 @@ def get_venv():
         return source_activate(venv_dir, is_windows)
     elif is_poetry_project(filename):
         return "poetry shell"
-    elif b'build-backend = "pdm' in read_content(filename):
-        return "pdm shell"
-    elif b"[tool.uv]" in read_content(filename):
-        return "uv venv"
     else:
-        if "--pdm" in sys.argv:
-            return "pdm venv create && " + source_activate(".venv", is_windows)
-        elif "--uv" in sys.argv:
-            return "uv venv && " + source_activate(".venv", is_windows)
+        cmd = ""
+        if "--pip" in sys.argv:
+            script = os.path.join(os.path.dirname(__file__), "new_venv.py")
+            cmd = "{} --project .venv".format(script)
+        elif "--pdm" in sys.argv or b'build-backend = "pdm' in read_content(filename):
+            cmd = "pdm venv create"
+        elif "--uv" in sys.argv or b"[tool.uv]" in read_content(filename):
+            cmd = "uv venv"
+        if cmd:
+            return cmd + " && " + source_activate(".venv", is_windows)
         return "echo ERROR: Virtual environment not found! You should create it first."
 
 

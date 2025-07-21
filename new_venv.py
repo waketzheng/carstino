@@ -28,10 +28,12 @@ Usage::
     .venv/bin/python
 """
 
+import functools
 import os
 import re
 import sys
 
+__version__ = "0.1.1"
 VERSION_PATTERN = r"\d+(\.\d+)?"
 
 
@@ -45,8 +47,8 @@ def parse_dry():
     return dry, args
 
 
-def build_cmd(args, path, fmt):
-    # type: (list[str], str, str) -> str
+def build_cmd(args, path, fmt, prompt):
+    # type: (list[str], str, str, str) -> str
     for a2 in args[1:]:
         if a2.startswith("-"):
             a2 = a2.split("=")[-1].strip()
@@ -75,8 +77,19 @@ def build_cmd(args, path, fmt):
                 a1 = args[1].split("=")[-1].strip()
                 if re.match(VERSION_PATTERN, a1):
                     version = a1
-        cmd = fmt.format(version, path)
+        cmd = fmt.format(version, path, prompt)
     return cmd
+
+
+def pop_flag(option, args):
+    # type: (str, list[str]) -> bool
+    try:
+        index = args.index(option)
+    except ValueError:
+        return False
+    else:
+        args.pop(index)
+        return True
 
 
 def main():
@@ -84,15 +97,23 @@ def main():
     if "-h" in sys.argv or "--help" in sys.argv:
         print(__doc__)
         return None
-    fmt = "python{0} -m venv {1} --prompt venv{0}"
-    path = "venv"
+    if "-v" in sys.argv or "--version" in sys.argv:
+        print(__version__)
+        return None
+    fmt = "python{0} -m venv {1} --prompt {2}{0}"
+    prompt = path = "venv"
     dry, args = parse_dry()
+    pop_arg_option = functools.partial(pop_flag, args=args)
+    if pop_arg_option("--project"):
+        prompt = os.path.split(os.getcwd())[-1].replace(" ", "_")
+    upgrade_deps = not pop_arg_option("--no-upgrade")
     if args:
-        cmd = build_cmd(args, path, fmt)
+        cmd = build_cmd(args, path, fmt, prompt)
     else:
         version = "{0}.{1}".format(*sys.version_info)
-        cmd = fmt.format(version, path)
-    cmd += " --upgrade-deps"
+        cmd = fmt.format(version, path, prompt)
+    if upgrade_deps:
+        cmd += " --upgrade-deps"
     print("--> " + cmd)
     if dry:
         return None
