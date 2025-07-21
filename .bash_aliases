@@ -21,13 +21,20 @@ alias prun='poetry run'
 alias poetrysync='poetry export --with=dev --without-hashes -o dev_requirements.txt && pip install -r dev_requirements.txt'
 alias psync='poetrysync'
 getVenv() {
-  if [ -f $CARST_PATH/get_venv.py ]; then
-    python $CARST_PATH/get_venv.py
+  FILE=$CARST_PATH/get_venv.py
+  if [ -f $FILE ]; then
+    CMD=$(python $FILE $1)
   else
-    echo 'poetry shell'
+    CMD='poetry shell'
   fi
+  echo "$CMD"
 }
-alias ve='echo "--> $(getVenv)" && $(getVenv)'
+ve() {
+    CMD=$(getVenv $*)
+    echo "--> $CMD"
+    eval "$CMD"
+}
+alias vve='echo "--> $(getVenv)" && $(getVenv)'
 alias vv='echo "--> source venv/*/activate" && source venv/*/activate'
 alias venv="$CARST_PATH/new_venv.py"
 

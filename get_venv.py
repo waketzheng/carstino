@@ -13,6 +13,7 @@ import functools
 import os
 import platform
 import shutil
+import sys
 
 try:
     from functools import cache
@@ -106,6 +107,10 @@ def get_poetry_venv_path():
 def get_venv():
     # type: () -> str
     is_windows = platform.platform().lower().startswith("windows")
+    if "--poetry" in sys.argv:
+        venv_dir = get_poetry_venv_path()
+        if venv_dir:
+            return source_activate(venv_dir, is_windows)
     filename = "pyproject.toml"
     common_venv_names = ["venv"]
     if is_windows or not is_poetry_project(filename):
@@ -147,13 +152,17 @@ def get_venv():
     elif b"[tool.uv]" in read_content(filename):
         return "uv venv"
     else:
+        if "--pdm" in sys.argv:
+            return "pdm venv create && " + source_activate(".venv", is_windows)
+        elif "--uv" in sys.argv:
+            return "uv venv && " + source_activate(".venv", is_windows)
         return "echo ERROR: Virtual environment not found! You should create it first."
 
 
 def main():
     # type: () -> None
     shell_command_to_activate_virtual_env = get_venv()
-    print(shell_command_to_activate_virtual_env)
+    print(shell_command_to_activate_virtual_env.replace("source ", ". "))
 
 
 if __name__ == "__main__":
