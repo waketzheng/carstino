@@ -107,14 +107,18 @@ def get_poetry_venv_path():
 def get_venv():
     # type: () -> str
     is_windows = platform.platform().lower().startswith("windows")
-    if "--poetry" in sys.argv:
-        venv_dir = get_poetry_venv_path()
-        if venv_dir:
-            return source_activate(venv_dir, is_windows)
-    if sys.argv[1:]:
-        a1 = sys.argv[1]
-        if not a1.startswith("-") and os.path.exists(a1):
-            return source_activate(a1, is_windows)
+    args = sys.argv[1:]
+    if args:
+        a1 = args[0]
+        if not a1.startswith("-"):
+            if os.path.isdir(a1):
+                return source_activate(a1, is_windows)
+            elif os.path.isfile(a1):
+                return "source {}".format(a1)
+        elif "--poetry" in args:
+            venv_dir = get_poetry_venv_path()
+            if venv_dir:
+                return source_activate(venv_dir, is_windows)
     filename = "pyproject.toml"
     common_venv_names = ["venv"]
     if is_windows or not is_poetry_project(filename):
@@ -153,12 +157,12 @@ def get_venv():
         return "poetry shell"
     else:
         cmd = ""
-        if "--pip" in sys.argv:
+        if "--pip" in args:
             script = os.path.join(os.path.dirname(__file__), "new_venv.py")
             cmd = "{} --project .venv".format(script)
-        elif "--pdm" in sys.argv or b'build-backend = "pdm' in read_content(filename):
+        elif "--pdm" in args or b'build-backend = "pdm' in read_content(filename):
             cmd = "pdm venv create"
-        elif "--uv" in sys.argv or b"[tool.uv]" in read_content(filename):
+        elif "--uv" in args or b"[tool.uv]" in read_content(filename):
             cmd = "uv venv"
         if cmd:
             return cmd + " && " + source_activate(".venv", is_windows)

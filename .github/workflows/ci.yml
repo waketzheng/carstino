@@ -167,7 +167,10 @@ jobs:
           pip install --user --upgrade pip
       - uses: pdm-project/setup-pdm@v4
       - uses: astral-sh/setup-uv@v6
-      - uses: abatilo/actions-poetry@v3
+      - name: Setup poetry
+        run: |
+          pip install poetry
+          poetry config virtualenvs.create false
       - name: Check mirror setting for uv/pdm/poetry
         run: |
           ./pip_conf.py --pdm
