@@ -161,16 +161,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-      - name: Verify mirror setting
-        run: |
-          python pip_conf.py --tool=pip
-          pip install --user --upgrade pip
       - uses: pdm-project/setup-pdm@v4
       - uses: astral-sh/setup-uv@v6
       - name: Setup poetry
         run: |
+          pip install --upgrade pip
           pip install poetry
           poetry config virtualenvs.create false
+      - name: Verify mirror setting
+        run: |
+          python pip_conf.py --tool=pip
+          pip install six
       - name: Check mirror setting for uv/pdm/poetry
         run: |
           ./pip_conf.py --pdm
