@@ -5,7 +5,7 @@ name: ci
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
   pull_request:
     branches: [ "main" ]
 
@@ -35,7 +35,7 @@ jobs:
       - name: Install dependencies
         run: |
           pdm config use_uv true
-          pdm sync
+          make deps
         env:
           PYO3_USE_ABI3_FORWARD_COMPATIBILITY: 1
       - uses: astral-sh/ruff-action@v3

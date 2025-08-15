@@ -14,11 +14,11 @@ help:
 version ?= 3.12
 
 up:
-	pdm update --verbose
-	$(MAKE) deps
+	uv lock --upgrade
+	$(MAKE) deps options=--frozen
 
 deps:
-	pdm install --frozen
+	uv sync --inexact --all-extras --all-groups $(options)
 
 _check:
 	pdm run fast check
@@ -41,7 +41,7 @@ style: deps _style
 venv:
 ifeq ($(wildcard .venv),)
 	uv venv --python=$(version) --prompt=carstino-$(version)
-	$(MAKE) deps version=$(version)
+	$(MAKE) deps
 else
 	@echo "'.venv'" exists, skip virtual environment creating"("uv venv --python=$(version) --prompt=carstino-$(version)")".
 	./.venv/bin/python -V

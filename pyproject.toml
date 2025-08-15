@@ -16,13 +16,13 @@ dependencies = []
 
 [dependency-groups]
 dev = [
-    "asynctor[redis]>=0.8.0,<1",
-    "fast-dev-cli>=0.14.0,<1",
-    "pymysql>=1.1.1",
-    "tqdm>=4.67.1",
-    "types-pymysql>=1.1.0.20241103",
-    "types-tqdm>=4.67.0.20241221",
-    "typer>=0.16.0",
+    "asynctor[redis]>=0.8.0,<1; python_version >= '3.9'",
+    "fast-dev-cli>=0.14.0,<1; python_version >= '3.9'",
+    "pymysql>=1.1.1; python_version >= '3.9'",
+    "tqdm>=4.67.1; python_version >= '3.9'",
+    "types-pymysql>=1.1.0.20241103; python_version >= '3.9'",
+    "types-tqdm>=4.67.0.20241221; python_version >= '3.9'",
+    "typer>=0.16.0; python_version >= '3.9'",
 ]
 
 [project.urls]

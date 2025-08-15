@@ -600,7 +600,7 @@ class PoetryMirror(Mirror):
 
     def fix_poetry_v1_6_error(self, version):
         # type: (str) -> None
-        if version >= "1.6":
+        if version.startswith("1.6."):
             self.fix_v1_6_error()
 
     @classmethod
