@@ -17,6 +17,10 @@ up:
 	uv lock --upgrade
 	$(MAKE) deps options=--frozen
 
+lock:
+	uv lock
+	pdm lock
+
 deps:
 	uv sync --inexact --all-extras --all-groups $(options)
 
@@ -55,3 +59,8 @@ venv312:
 
 venv313:
 	$(MAKE) venv version=3.13
+
+publish:
+	# pdm publish
+	@echo "Do not publish by command line, use '.github/workflow/publish.yml' instead."
+	@echo "Just push a new tag, and the github action will auto publish it to pypi.org"
