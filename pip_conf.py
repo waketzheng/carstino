@@ -354,23 +354,47 @@ def config_by_cmd(url, is_windows=False):
         _config_by_cmd(url, is_windows=is_windows)
 
 
+class ExtraIndex:
+    caching = {}  # type: dict[str, Optional[tuple[str, str]]]
+
+    def __init__(self, host):
+        self._host = host
+
+    def get(self):
+        # type: () -> Optional[tuple[str, str]]
+        host = self._host
+        if host in self.caching:
+            return self.caching[host]
+        value = self.caching[host] = self.get_extra_index(host)
+        return value
+
+    @staticmethod
+    def get_extra_index(host):
+        # type: (str) -> Optional[tuple[str, str]]
+        if host not in _hw_inner_source:
+            return None
+        extra_host = host.replace("mirrors", "socapi").replace("tools", "cloudbu")
+        try:
+            socket.gethostbyname(ensure_domain_name(extra_host))
+        except socket.gaierror:
+            print("Ignore {} as it's not pingable".format(extra_host))
+            return None
+        extra_index = _hw_inner_source.replace(host, extra_host)
+        extra_index_url = INDEX_URL.replace("https", "http").format(extra_index)
+        return extra_host, extra_index_url
+
+
 def _config_by_cmd(url, sudo=False, is_windows=False):
     # type: (str, bool, bool) -> int
     cmd = CONF_PIP + url
     if not url.startswith("https"):
         print("cmd = {}".format(repr(cmd)))
         host = parse_host(url)
-        if host in _hw_inner_source:
-            extra_host = host.replace("mirrors", "socapi").replace("tools", "cloudbu")
-            try:
-                socket.gethostbyname(ensure_domain_name(extra_host))
-            except socket.gaierror:
-                print("Ignore {} as it's not pingable".format(extra_host))
-            else:
-                extra_index = _hw_inner_source.replace(host, extra_host)
-                extra_index_url = INDEX_URL.replace("https", "http").format(extra_index)
-                cmd += " && pip config set global.extra-index-url " + extra_index_url
-                host = '"{host} {extra_host}"'.format(host=host, extra_host=extra_host)
+        extra_info = ExtraIndex(host).get()
+        if extra_info is not None:
+            extra_host, extra_index_url = extra_info
+            cmd += " && pip config set global.extra-index-url " + extra_index_url
+            host = '"{host} {extra_host}"'.format(host=host, extra_host=extra_host)
         cmd += " && pip config set global.trusted-host " + host
     if sudo:
         cmd = " && ".join("sudo " + i.strip() for i in cmd.split("&&"))
@@ -477,8 +501,22 @@ class PdmMirror:
     def set(url):
         # type: (str) -> int
         cmd = "pdm config pypi.url " + url
-        if url.startswith("http:"):
+        host = parse_host(url)
+        trusted_hosts = []  # type: list[str]
+        if url.startswith("https:"):
             cmd = "pdm config pypi.verify_ssl false && " + cmd
+        else:
+            trusted_hosts.append(host)
+        extra_info = ExtraIndex(host).get()
+        if extra_info is not None:
+            extra_host, extra_index_url = extra_info
+            cmd += " && pdm config pypi.extra.urls " + extra_index_url
+            if extra_index_url.startswith("http:"):
+                trusted_hosts.append(extra_host)
+        if trusted_hosts:
+            cmd += ' && pdm config pypi.trusted_hosts "{}"'.format(
+                ",".join(trusted_hosts)
+            )
         return run_and_echo(cmd, dry="--dry" in sys.argv)
 
 
@@ -519,13 +557,28 @@ class Mirror:
 
 
 class UvMirror(Mirror):
-    def build_content(self, url=None):
-        # type: (Optional[str]) -> str
+    @staticmethod
+    def allow_insecure(url):
+        # type: (str) -> str
+        if url.startswith("https"):
+            return ""
+        return '\nallow-insecure-host=["{}"]'.format(parse_host(url))
+
+    def build_content(self, url=None, extra_index=None):
+        # type: (Optional[str], Optional[str]) -> str
         if url is None:
             url = self.url
-        text = '[[index]]\nurl = "{}"\ndefault = true'.format(url)
-        if not url.startswith("https"):
-            text += '\nallow-insecure-host=["{}"]'.format(parse_host(url))
+        text = '[[index]]\nurl = "{}"\ndefault = true'.format(
+            url
+        ) + self.allow_insecure(url)
+        if extra_index is None:
+            extra_info = ExtraIndex(parse_host(url)).get()
+            if extra_info is not None:
+                _, extra_index = extra_info
+        if extra_index:
+            text += '\n[[index]]\nurl = "{}"'.format(extra_index) + self.allow_insecure(
+                extra_index
+            )
         return text
 
     def set(self):
