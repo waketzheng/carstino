@@ -122,19 +122,11 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: '3.13'
-      - name: setup pdm
-        run: |
-          python3 -V
-          curl https://bootstrap.pypa.io/pip/3.7/get-pip.py -o get-pip.py
-          python3 get-pip.py
-          python3 -m pip install pip --upgrade
-          python3 -m pip install pdm --upgrade
-          pdm config python.use_freethreaded false
-      - name: setup poetry
+      - name: setup poetry/pdm
         run: |
           curl https://bootstrap.pypa.io/get-pip.py -o get_pip.py
           python3.13 get_pip.py
-          python3.13 -m pip install poetry
+          python3.13 -m pip install poetry pdm
       - name: Verify pip conf script
         run: |
           python2.7 pip_conf.py --tool=pip
