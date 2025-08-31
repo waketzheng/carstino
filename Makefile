@@ -22,7 +22,7 @@ lock:
 	pdm lock
 
 deps:
-	uv sync --inexact --all-extras --all-groups $(options)
+	uv sync --active --inexact --all-extras --all-groups $(options)
 
 _check:
 	pdm run fast check
