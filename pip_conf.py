@@ -498,25 +498,18 @@ def get_conf_path(is_windows, at_etc):
 
 class PdmMirror:
     @staticmethod
-    def set(url):
-        # type: (str) -> int
+    def set(url, verify_ssl=False):
+        # type: (str, bool) -> int
         cmd = "pdm config pypi.url " + url
         host = parse_host(url)
-        trusted_hosts = []  # type: list[str]
-        if url.startswith("https:"):
+        if url.startswith("https:") and not verify_ssl:
             cmd = "pdm config pypi.verify_ssl false && " + cmd
-        else:
-            trusted_hosts.append(host)
         extra_info = ExtraIndex(host).get()
         if extra_info is not None:
             extra_host, extra_index_url = extra_info
-            cmd += " && pdm config pypi.extra.urls " + extra_index_url
-            if extra_index_url.startswith("http:"):
-                trusted_hosts.append(extra_host)
-        if trusted_hosts:
-            cmd += ' && pdm config pypi.trusted_hosts "{}"'.format(
-                ",".join(trusted_hosts)
-            )
+            cmd += " && pdm config pypi.extra.url " + extra_index_url
+            if extra_index_url.startswith("https:") and not verify_ssl:
+                cmd += " && pdm config pypi.extra.verify_ssl false"
         return run_and_echo(cmd, dry="--dry" in sys.argv)
 
 
@@ -802,8 +795,9 @@ def init_pip_conf(
     verbose=False,
     uv=False,
     is_windows=False,
+    verify_ssl=False,
 ):
-    # type: (str, bool, bool, bool, bool, bool, bool, bool, bool) -> Optional[int]
+    # type: (str, bool, bool, bool, bool, bool, bool, bool, bool, bool) -> Optional[int]
     if poetry:
         return PoetryMirror(url, is_windows, replace).set()
     poetry_set_env = "SET_POETRY"
@@ -822,7 +816,7 @@ def init_pip_conf(
             print(tip.format(repr(poetry_set_env), os.getenv(poetry_set_env)))
         return PoetryMirror(url, is_windows, replace).set()
     if pdm or load_bool("PIP_CONF_SET_PDM"):
-        return PdmMirror.set(url)
+        return PdmMirror.set(url, verify_ssl)
     if uv or load_bool("PIP_CONF_SET_UV"):
         return UvMirror(url, is_windows, replace).set()
     if not write and (not at_etc or is_windows) and can_set_global():
@@ -927,6 +921,7 @@ def main():
     parser.add_argument("--write", action="store_true", help="Conf by write file")
     parser.add_argument("--poetry", action="store_true", help="Set mirrors for poetry")
     parser.add_argument("--pdm", action="store_true", help="Set pypi.url for pdm")
+    parser.add_argument("--verify_ssl", action="store_true", help="Verify ssl for pdm")
     parser.add_argument("--uv", action="store_true", help="Set index url for uv")
     parser.add_argument("--pip", action="store_true", help="Set index url for pip")
     parser.add_argument(
@@ -989,6 +984,7 @@ def main():
             verbose=args.verbose,
             uv=args.uv,
             is_windows=is_windows,
+            verify_ssl=args.verify_ssl,
         ):
             return 1
 

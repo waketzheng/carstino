@@ -33,15 +33,15 @@ wheels = [
 
 [[package]]
 name = "asynctor"
-version = "0.8.7"
+version = "0.8.8"
 source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
 dependencies = [
     { name = "anyio", marker = "python_full_version >= '3.9'" },
     { name = "eval-type-backport", marker = "python_full_version == '3.9.*'" },
 ]
-sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/97/90/3e679410b2710bbc3da5c9878d06cb46a9d4118a91308254d02b25f54cfc/asynctor-0.8.7.tar.gz", hash = "sha256:9dac24873942eda483481e893dd77aea0320d3fd5eb1604030d5bc638803950d", size = 35254, upload-time = "2025-08-15T04:03:50.387Z" }
+sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/a4/b8/2a64836fd17ed36e6dd551b2d052763b7f429222820697acc55e8ecc20d4/asynctor-0.8.8.tar.gz", hash = "sha256:221ef1685a28c51e5d7ff5ce0e6a7d993b3dfd181a65d4eb4aefa29cccb33d46", size = 36825, upload-time = "2025-09-07T08:26:20.783Z" }
 wheels = [
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/a8/83/b55d8466ddc5bb6afc274c2d421b53dcd858fd79bc213de7b472b3303367/asynctor-0.8.7-py3-none-any.whl", hash = "sha256:0a29304148465388c2f8e0a1c3afec4f6ab9d1c91f447f6e9174eec9a5add090", size = 20075, upload-time = "2025-08-15T04:03:49.104Z" },
+    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/94/54/4e96d3526372d6bdf565fad7267c2b32c743e1b501a16aa9b449ec6abd9b/asynctor-0.8.8-py3-none-any.whl", hash = "sha256:774189bbffe105168b19eb5568ce0d946096c9ac5715d577a364291d661bb921", size = 21207, upload-time = "2025-09-07T08:26:19.469Z" },
 ]
 
 [package.optional-dependencies]
@@ -224,7 +224,7 @@ wheels = [
 
 [[package]]
 name = "fast-dev-cli"
-version = "0.17.3"
+version = "0.18.1"
 source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
 dependencies = [
     { name = "bumpversion2", marker = "python_full_version >= '3.9'" },
@@ -234,11 +234,11 @@ dependencies = [
     { name = "packaging", marker = "python_full_version >= '3.9'" },
     { name = "pytest", marker = "python_full_version >= '3.9'" },
     { name = "tomli", marker = "python_full_version >= '3.9' and python_full_version < '3.11'" },
-    { name = "typer", marker = "python_full_version >= '3.9'" },
+    { name = "typer-slim", marker = "python_full_version >= '3.9'" },
 ]
-sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/fa/2c/d1581060f41a17382083b9113aea0dea08c761a0e2cfc2d410bab1553fbd/fast_dev_cli-0.17.3.tar.gz", hash = "sha256:4246b6081a85695235d385b05dac12cf39f578b170a5988851999f905ac0b580", size = 36023, upload-time = "2025-08-26T07:29:53.29Z" }
+sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/c6/9f/09dcc07d4d4ceb39aab03a879e6393de82d6831fef40deee6262573b980b/fast_dev_cli-0.18.1.tar.gz", hash = "sha256:8552fa2af3576dea970892f601819ac211eee5b76b34e8b23d24d7483a25aa6a", size = 180555, upload-time = "2025-09-07T08:25:15.176Z" }
 wheels = [
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/92/7e/ec87c33cd2a2152faaf1f0cbc98abb20651bdebcb5c25e88d34f8a90cc16/fast_dev_cli-0.17.3-py3-none-any.whl", hash = "sha256:c4898336507b670f4df331f879774fc527440631998d5e5eda7a7402f763069b", size = 38399, upload-time = "2025-08-26T07:29:52.051Z" },
+    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/cd/46/dee0c353feb23f77339cda9b18bfddbf5cb6a1310843842be8b0cd91bad9/fast_dev_cli-0.18.1-py3-none-any.whl", hash = "sha256:62b32877278dbc1b23a7d5dc3f8ffeaf852307a7247fda922d6bf4b3a7ad381b", size = 183405, upload-time = "2025-09-07T08:25:13.82Z" },
 ]
 
 [[package]]
@@ -433,7 +433,7 @@ wheels = [
 
 [[package]]
 name = "pytest"
-version = "8.4.1"
+version = "8.4.2"
 source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
 dependencies = [
     { name = "colorama", marker = "python_full_version >= '3.9' and sys_platform == 'win32'" },
@@ -444,9 +444,9 @@ dependencies = [
     { name = "pygments", marker = "python_full_version >= '3.9'" },
     { name = "tomli", marker = "python_full_version >= '3.9' and python_full_version < '3.11'" },
 ]
-sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/08/ba/45911d754e8eba3d5a841a5ce61a65a685ff1798421ac054f85aa8747dfb/pytest-8.4.1.tar.gz", hash = "sha256:7c67fd69174877359ed9371ec3af8a3d2b04741818c51e5e99cc1742251fa93c", size = 1517714, upload-time = "2025-06-18T05:48:06.109Z" }
+sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/a3/5c/00a0e072241553e1a7496d638deababa67c5058571567b92a7eaa258397c/pytest-8.4.2.tar.gz", hash = "sha256:86c0d0b93306b961d58d62a4db4879f27fe25513d4b969df351abdddb3c30e01", size = 1519618, upload-time = "2025-09-04T14:34:22.711Z" }
 wheels = [
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/29/16/c8a903f4c4dffe7a12843191437d7cd8e32751d5de349d45d3fe69544e87/pytest-8.4.1-py3-none-any.whl", hash = "sha256:539c70ba6fcead8e78eebbf1115e8b589e7565830d7d006a8723f19ac8a0afb7", size = 365474, upload-time = "2025-06-18T05:48:03.955Z" },
+    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/a8/a4/20da314d277121d6534b3a980b29035dcd51e6744bd79075a6ce8fa4eb8d/pytest-8.4.2-py3-none-any.whl", hash = "sha256:872f880de3fc3a5bdc88a11b39c9710c3497a547cfa9320bc3c5e62fbf272e79", size = 365750, upload-time = "2025-09-04T14:34:20.226Z" },
 ]
 
 [[package]]
@@ -546,7 +546,7 @@ wheels = [
 
 [[package]]
 name = "typer"
-version = "0.17.3"
+version = "0.17.4"
 source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
 dependencies = [
     { name = "click", version = "8.1.8", source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }, marker = "python_full_version == '3.9.*'" },
@@ -555,9 +555,23 @@ dependencies = [
     { name = "shellingham", marker = "python_full_version >= '3.9'" },
     { name = "typing-extensions", marker = "python_full_version >= '3.9'" },
 ]
-sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/dd/82/f4bfed3bc18c6ebd6f828320811bbe4098f92a31adf4040bee59c4ae02ea/typer-0.17.3.tar.gz", hash = "sha256:0c600503d472bcf98d29914d4dcd67f80c24cc245395e2e00ba3603c9332e8ba", size = 103517, upload-time = "2025-08-30T12:35:24.05Z" }
+sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/92/e8/2a73ccf9874ec4c7638f172efc8972ceab13a0e3480b389d6ed822f7a822/typer-0.17.4.tar.gz", hash = "sha256:b77dc07d849312fd2bb5e7f20a7af8985c7ec360c45b051ed5412f64d8dc1580", size = 103734, upload-time = "2025-09-05T18:14:40.746Z" }
 wheels = [
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/ca/e8/b3d537470e8404659a6335e7af868e90657efb73916ef31ddf3d8b9cb237/typer-0.17.3-py3-none-any.whl", hash = "sha256:643919a79182ab7ac7581056d93c6a2b865b026adf2872c4d02c72758e6f095b", size = 46494, upload-time = "2025-08-30T12:35:22.391Z" },
+    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/93/72/6b3e70d32e89a5cbb6a4513726c1ae8762165b027af569289e19ec08edd8/typer-0.17.4-py3-none-any.whl", hash = "sha256:015534a6edaa450e7007eba705d5c18c3349dcea50a6ad79a5ed530967575824", size = 46643, upload-time = "2025-09-05T18:14:39.166Z" },
+]
+
+[[package]]
+name = "typer-slim"
+version = "0.17.4"
+source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
+dependencies = [
+    { name = "click", version = "8.1.8", source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }, marker = "python_full_version == '3.9.*'" },
+    { name = "click", version = "8.2.1", source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }, marker = "python_full_version >= '3.10'" },
+    { name = "typing-extensions", marker = "python_full_version >= '3.9'" },
+]
+sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/e2/ef/dc076911b8f4123943c1957e31351a5a98afc780468f5e8a50e7b581e464/typer_slim-0.17.4.tar.gz", hash = "sha256:c25430a74e45546df3e76b53bdfd0a1d86569d319f9c387e76e1b25a4dd72a0c", size = 103755, upload-time = "2025-09-05T18:14:38.961Z" }
+wheels = [
+    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/c3/87/542ac401409f79534ef435dafd2d7532cd018c017157322975f76de2f0ee/typer_slim-0.17.4-py3-none-any.whl", hash = "sha256:b0edb16f7978d945b5bc23c057c2af99e58c0601827bddbbe240b4b52eb364bc", size = 46703, upload-time = "2025-09-05T18:14:37.301Z" },
 ]
 
 [[package]]

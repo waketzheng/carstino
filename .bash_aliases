@@ -109,3 +109,13 @@ fi
 
 # For Python
 alias new="python $CARST_PATH/new_venv.py"
+
+# pipx/uv
+export UVTOOLUPGRADE="uv tool upgrade --all"
+alias pipxupgradeall='fast exec "pipx upgrade-all --include-injected" && pipx list && echo "--> $UVTOOLUPGRADE" && sh -c "$UVTOOLUPGRADE" && uv tool list'
+
+# fast-dev-cli
+alias fastlint='fast lint'
+alias fastcheck='fast check'
+alias fastdeps='fast deps'
+alias fastpypi='fast pypi'
