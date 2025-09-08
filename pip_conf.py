@@ -31,7 +31,7 @@ If there is any bug or feature request, report it to:
 
 __author__ = "waketzheng@gmail.com"
 __updated_at__ = "2025.07.12"
-__version__ = "0.8.3"
+__version__ = "0.8.4"
 import contextlib
 import functools
 import os
