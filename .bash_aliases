@@ -119,3 +119,5 @@ alias fastlint='fast lint'
 alias fastcheck='fast check'
 alias fastdeps='fast deps'
 alias fastpypi='fast pypi'
+
+alias show0="python $CARST_PATH/show0.py"

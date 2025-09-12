@@ -908,10 +908,10 @@ def main():
     parser = ArgumentParser()
     source_help = "the source of pip, ali/douban/hw/qinghua or tx(default)"
     parser.add_argument("name", nargs="?", default="", help=source_help)
-    # Not support yet.
-    # parser.add_argument("files", nargs="*", default="", help="Add for pre-commit")
     # Be compatible with old version
     parser.add_argument("-s", "--source", default=DEFAULT, help=source_help)
+    # Not support yet.
+    # parser.add_argument("files", nargs="*", default="", help="Add for pre-commit")
     parser.add_argument(
         "-l", "--list", action="store_true", help="Show available mirrors"
     )
@@ -945,8 +945,13 @@ def main():
             sys.argv.extend(env.split())
     args = parser.parse_args()
     if args.list:
-        print("There are several mirrors that can be used for pip/poetry:")
-        pprint.pprint(SOURCES)
+        print("There are several mirrors that can be used for pip/uv/pdm/poetry:")
+        sources = (
+            SOURCES
+            if args.verbose
+            else ({k: v for k, v in SOURCES.items() if len(k) > 3 and k != "tengxun"})
+        )
+        pprint.pprint(sources)
     elif args.fix:
         PoetryMirror.fix_v1_6_error()
     elif args.version:
