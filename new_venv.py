@@ -104,8 +104,10 @@ def main():
     prompt = path = "venv"
     dry, args = parse_dry()
     pop_arg_option = functools.partial(pop_flag, args=args)
-    if pop_arg_option("--project"):
-        prompt = os.path.split(os.getcwd())[-1].replace(" ", "_")
+    for i, flag in enumerate(["--project", "--parent"], 1):
+        if pop_arg_option(flag):
+            prompt = os.path.split(os.getcwd())[-i].replace(" ", "_") + "-"
+            break
     upgrade_deps = not pop_arg_option("--no-upgrade")
     if args:
         cmd = build_cmd(args, path, fmt, prompt)
