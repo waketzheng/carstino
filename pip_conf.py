@@ -550,12 +550,24 @@ class Mirror:
 
 
 class UvMirror(Mirror):
+    GITHUB_PROXY = "https://hub.gitmirror.com/"
+    PYTHON_DOWNLOAD_URL = (
+        "https://github.com/astral-sh/python-build-standalone/releases/download"
+    )
+    TEMPLATE = 'python-install-mirror = "{}"'
+    _python = False
+
     @staticmethod
     def allow_insecure(url):
         # type: (str) -> str
         if url.startswith("https"):
             return ""
         return '\nallow-insecure-host=["{}"]'.format(parse_host(url))
+
+    @classmethod
+    def python_install_mirror(cls):
+        # type: () -> str
+        return cls.TEMPLATE.format(cls.GITHUB_PROXY + cls.PYTHON_DOWNLOAD_URL)
 
     def build_content(self, url=None, extra_index=None):
         # type: (Optional[str], Optional[str]) -> str
@@ -572,10 +584,17 @@ class UvMirror(Mirror):
             text += '\n[[index]]\nurl = "{}"'.format(extra_index) + self.allow_insecure(
                 extra_index
             )
+        return self.set_python(text)
+
+    def set_python(self, text):
+        # type: (str) -> str
+        if self._python:
+            text = self.python_install_mirror() + "\n\n" + text
         return text
 
-    def set(self):
-        # type: () -> Optional[int]
+    def set(self, set_python_mirror=False):
+        # type: (bool) -> Optional[int]
+        self._python = set_python_mirror
         filename = "uv.toml"
         dirpath = self.get_dirpath(self.is_windows, self.url, filename)
         if not dirpath:
@@ -597,7 +616,7 @@ class UvMirror(Mirror):
                         self.prompt_y(filename, m.group())
                         return None
                     if self.url.startswith("https"):
-                        text = content.replace(already, self.url)
+                        text = self.set_python(content.replace(already, self.url))
             elif "[[index]]" in content:
                 pattern = r'url\s*=\s*"([^"]*)"'
                 m = re.search(pattern, content, re.S)
@@ -607,7 +626,7 @@ class UvMirror(Mirror):
                         self.prompt_y(filename, m.group())
                         return None
                     if self.url.startswith("https"):
-                        text = content.replace(already, self.url)
+                        text = self.set_python(content.replace(already, self.url))
         elif not os.path.exists(dirpath):
             parent = get_parent_path(dirpath)
             if not os.path.exists(parent):
@@ -796,8 +815,9 @@ def init_pip_conf(
     uv=False,
     is_windows=False,
     verify_ssl=False,
+    set_python_mirror=False,
 ):
-    # type: (str, bool, bool, bool, bool, bool, bool, bool, bool, bool) -> Optional[int]
+    # type: (str, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool) -> Optional[int]
     if poetry:
         return PoetryMirror(url, is_windows, replace).set()
     poetry_set_env = "SET_POETRY"
@@ -818,7 +838,8 @@ def init_pip_conf(
     if pdm or load_bool("PIP_CONF_SET_PDM"):
         return PdmMirror.set(url, verify_ssl)
     if uv or load_bool("PIP_CONF_SET_UV"):
-        return UvMirror(url, is_windows, replace).set()
+        set_python_mirror = set_python_mirror or load_bool("PIP_CONF_PYTHON_MIRROR")
+        return UvMirror(url, is_windows, replace).set(set_python_mirror)
     if not write and (not at_etc or is_windows) and can_set_global():
         config_by_cmd(url, is_windows)
         return None
@@ -923,6 +944,9 @@ def main():
     parser.add_argument("--pdm", action="store_true", help="Set pypi.url for pdm")
     parser.add_argument("--verify_ssl", action="store_true", help="Verify ssl for pdm")
     parser.add_argument("--uv", action="store_true", help="Set index url for uv")
+    parser.add_argument(
+        "--python", action="store_true", help="Set python download mirror url for uv"
+    )
     parser.add_argument("--pip", action="store_true", help="Set index url for pip")
     parser.add_argument(
         "-t", "--tool", default="auto", help="Choices: pip/uv/pdm/poetry"
@@ -990,6 +1014,7 @@ def main():
             uv=args.uv,
             is_windows=is_windows,
             verify_ssl=args.verify_ssl,
+            set_python_mirror=args.python,
         ):
             return 1
 
