@@ -69,7 +69,7 @@ trusted-host = {}
 DEFAULT = "tx"
 SOURCES = {
     "ali": "mirrors.aliyun.com/pypi",
-    "db": "pypi.douban.com",
+    "db": "pypi.doubanio.com",
     "qh": "pypi.tuna.tsinghua.edu.cn",
     "tx": "mirrors.cloud.tencent.com/pypi",
     "tx_ecs": "mirrors.tencentyun.com/pypi",
