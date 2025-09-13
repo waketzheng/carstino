@@ -52,6 +52,10 @@ except ImportError:  # For Python2
 
 if sys.version_info < (3,):
     input = raw_input  # NOQA:F821 type:ignore
+elif shutil.which("uv") is not None:
+    import warnings
+
+    warnings.warn("Consider to use `uv python install xxx` instead", stacklevel=2)
 
 VERSION = "3.12.10"
 # Mirror of> https://www.python.org/ftp/python/

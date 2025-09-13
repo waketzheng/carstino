@@ -12,6 +12,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 license = "MIT"
+readme = "README.pip_conf.md"
 dependencies = []
 
 [dependency-groups]
@@ -43,7 +44,7 @@ packages=['pip_conf']
 [tool.pdm.build]
 excludes = ["./**/.git"]
 includes = ["pip_conf.py"]
-source-includes = ["LICENSE", "README.md"]
+source-includes = ["LICENSE", "PIP_CONF.md"]
 
 [tool.ruff]
 line-length = 88
