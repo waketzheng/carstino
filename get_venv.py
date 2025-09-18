@@ -32,7 +32,7 @@ except ImportError:
         return runner
 
 
-def run_cmd(command):
+def capture_output(command):
     # type: (str) -> str
     with os.popen(command) as fp:
         if not hasattr(fp, "_stream"):  # For python2
@@ -42,6 +42,9 @@ def run_cmd(command):
         return bf.decode()
     except UnicodeDecodeError:
         return bf.decode("gbk")
+
+
+run_cmd = capture_output  # Leave it here for compatibility
 
 
 @cache
@@ -154,7 +157,7 @@ def get_venv():
     if venv_dir:
         return source_activate(venv_dir, is_windows)
     elif is_poetry_project(filename):
-        return "poetry shell"
+        return capture_output("poetry env activate")
     else:
         cmd = ""
         if "--pip" in args:
@@ -165,7 +168,11 @@ def get_venv():
         elif "--uv" in args or b"[tool.uv]" in read_content(filename):
             cmd = "uv venv"
         if cmd:
-            return cmd + " && " + source_activate(".venv", is_windows)
+            activate = source_activate(".venv", is_windows)
+            if is_windows:
+                capture_output(cmd)
+                return activate
+            return cmd + " && " + activate
         return "echo ERROR: Virtual environment not found! You should create it first."
 
 

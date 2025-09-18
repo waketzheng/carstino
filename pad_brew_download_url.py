@@ -157,7 +157,8 @@ def main():
         backup_it(file, text)
     print("Going to pad {}".format(file))
     new_text, pad = pad_it(text, pad, indent, s)
-    if "--dry" in sys.argv:
+    args = sys.argv[1:]
+    if args and "--dry" in args:
         import difflib
 
         try:
@@ -167,6 +168,11 @@ def main():
             b = [i + "\n" for i in new_text.splitlines()]
         diffs = difflib.context_diff(a, b, fromfile="before.py", tofile="after.py")
         sys.stdout.writelines(diffs)
+    elif args and args[0].startswith("http"):
+        url = PROXY + args[0]
+        cmd = "wget " + url
+        print("--> {}".format(cmd))
+        os.system(cmd)
     else:
         with open(file, "w") as f:
             f.write(new_text)

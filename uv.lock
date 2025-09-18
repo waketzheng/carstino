@@ -224,7 +224,7 @@ wheels = [
 
 [[package]]
 name = "fast-dev-cli"
-version = "0.18.3"
+version = "0.18.4"
 source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
 dependencies = [
     { name = "bumpversion2", marker = "python_full_version >= '3.9'" },
@@ -236,9 +236,9 @@ dependencies = [
     { name = "tomli", marker = "python_full_version >= '3.9' and python_full_version < '3.11'" },
     { name = "typer-slim", marker = "python_full_version >= '3.9'" },
 ]
-sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/89/4b/52e2649d3e21a572e14c02a7fd856d0b5792a6d1955f0e5b188e32fd6a06/fast_dev_cli-0.18.3.tar.gz", hash = "sha256:03adae47219ae4b069a97182fa86933cd8182965c08d74cfdedea1e5068a907c", size = 181028, upload-time = "2025-09-12T07:41:46.406Z" }
+sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/3e/98/9b50dfc165902f99fdb0965e52542eb35c469f437e79e1ca082d15615eb7/fast_dev_cli-0.18.4.tar.gz", hash = "sha256:782b3cab3842d9a2f6a6bbec1db0787a83b24a671568ef8b6dada1334e455802", size = 181352, upload-time = "2025-09-16T06:58:09.101Z" }
 wheels = [
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/6c/21/7ae1bcb44b1713ddf09341471afd5f27b694ece5f37ac476e75e62882049/fast_dev_cli-0.18.3-py3-none-any.whl", hash = "sha256:c6610e524c765895d19bd5451f8cd9d346a2ea75f25044ac81ad1e91db36d888", size = 183844, upload-time = "2025-09-12T07:41:45.152Z" },
+    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/c2/6b/a1966a987f974b450ee88819b03635d41d2e0371ce6f9582804223d6ff61/fast_dev_cli-0.18.4-py3-none-any.whl", hash = "sha256:d9781fc1e8a5cdc546c562b31b20ff5e10e20a357ab0c59eb9f83771a15824f3", size = 184149, upload-time = "2025-09-16T06:58:07.497Z" },
 ]
 
 [[package]]
@@ -576,11 +576,11 @@ wheels = [
 
 [[package]]
 name = "types-pymysql"
-version = "1.1.0.20250909"
+version = "1.1.0.20250916"
 source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
-sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/ae/0f/bb4331221fd560379ec702d61a11d5a5eead9a2866bb39eae294bde29988/types_pymysql-1.1.0.20250909.tar.gz", hash = "sha256:5ba7230425635b8c59316353701b99a087b949e8002dfeff652be0b62cee445b", size = 22189, upload-time = "2025-09-09T02:55:31.039Z" }
+sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/1f/12/bda1d977c07e0e47502bede1c44a986dd45946494d89e005e04cdeb0f8de/types_pymysql-1.1.0.20250916.tar.gz", hash = "sha256:98d75731795fcc06723a192786662bdfa760e1e00f22809c104fbb47bac5e29b", size = 22131, upload-time = "2025-09-16T02:49:22.039Z" }
 wheels = [
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/d2/35/5681d881506a31bbbd9f7d5f6edcbf65489835081965b539b0802a665036/types_pymysql-1.1.0.20250909-py3-none-any.whl", hash = "sha256:c9957d4c10a31748636da5c16b0a0eef6751354d05adcd1b86acb27e8df36fb6", size = 23179, upload-time = "2025-09-09T02:55:29.873Z" },
+    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/21/eb/a225e32a6e7b196af67ab2f1b07363595f63255374cc3b88bfdab53b4ee8/types_pymysql-1.1.0.20250916-py3-none-any.whl", hash = "sha256:873eb9836bb5e3de4368cc7010ca72775f86e9692a5c7810f8c7f48da082e55b", size = 23063, upload-time = "2025-09-16T02:49:20.933Z" },
 ]
 
 [[package]]
