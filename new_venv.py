@@ -48,13 +48,14 @@ def parse_dry():
 
 
 def build_cmd(args, path, fmt, prompt):
-    # type: (list[str], str, str, str) -> str
+    # type: (list[str], str, str, str) -> tuple[str, str]
     for a2 in args[1:]:
         if a2.startswith("-"):
             a2 = a2.split("=")[-1].strip()
             if not a2:
                 continue
-        path = a2
+        if not re.match(VERSION_PATTERN, a2):
+            path = a2
         break
     v = args[0]
     if v in ("2", "3"):
@@ -78,7 +79,7 @@ def build_cmd(args, path, fmt, prompt):
                 if re.match(VERSION_PATTERN, a1):
                     version = a1
         cmd = fmt.format(version, path, prompt)
-    return cmd
+    return cmd, path
 
 
 def pop_flag(option, args):
@@ -110,7 +111,7 @@ def main():
             break
     upgrade_deps = not pop_arg_option("--no-upgrade")
     if args:
-        cmd = build_cmd(args, path, fmt, prompt)
+        cmd, path = build_cmd(args, path, fmt, prompt)
     else:
         version = "{0}.{1}".format(*sys.version_info)
         cmd = fmt.format(version, path, prompt)
@@ -120,7 +121,7 @@ def main():
     if dry:
         return None
     if os.path.exists(path) and "--no-input" not in sys.argv:
-        tip = "Directory '{}' exists! Do you want to override it?[y/N] "
+        tip = "Directory '{}' exists! Do you want to override it?[y/N] ".format(path)
         try:
             a = raw_input(tip)  # type:ignore[name-defined]
         except NameError:
