@@ -121,3 +121,8 @@ alias fastdeps='fast deps'
 alias fastpypi='fast pypi'
 
 alias show0="python $CARST_PATH/show0.py"
+
+# Upgrade ubuntu packages
+alias goodgoodstudy='fast exec "sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y"'
+alias daydayup='goodgoodstudy && pipxupgradeall && omz update && echo done.'
+alias upgradeall=daydayup
