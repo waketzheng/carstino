@@ -18,10 +18,12 @@ PY_HOST = "https://mirrors.huaweicloud.com/python/"
 PAD = """
 elsif (url.start_with?("https://cdn.") || url.start_with?("https://desktop.docker.com"))
   puts "Leave #{url} to be itself."
-elsif (url.start_with?("https://ftpmirror.") || url.start_with?("https://ftp.gnu.org"))
+elsif (url.start_with?("https://ftpmirror.") || url.start_with?("https://ftp.gnu.org") || url.start_with?("https://zed.dev"))
   puts "Skip #{url} padding."
 elsif (url.start_with?("https://ftp.postgresql.org") || url.start_with?("https://ftp.mariadb.org"))
   puts "No need to pad #{url} as it is easy to reachable."
+elsif (url.start_with?("https://kerberos.org") || url.start_with?("https://hub.gitmirror.com"))
+  puts "Ignore #{url} as it failed to be padded."
 elsif url.start_with?("https://www.python.org/ftp/python/3.")
   url = "%s" + url[34,url.length]
 elsif !url.start_with?("https://mirror") && !url.start_with?("%s")
