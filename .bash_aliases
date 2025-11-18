@@ -1,5 +1,14 @@
+# Tool directory path
+export CARST_PATH="$HOME/archives/carstino"
+
 # Shortcuts for `python manage.py` and its completion
-alias mg='python ~/.mg.py'
+if [ -f $HOME/.mg.py ]; then
+    alias mg='python ~/.mg.py'
+elif [ -f $CARST_PATH/.mg.py ]; then
+    alias mg='python ~/.mg.py'
+else
+    alias mg='python ~/.mg.py'
+fi
 alias mgshell="mg shell"
 alias mgtest="mg test"
 alias mgrunserver="mg runserver 0.0.0.0:9000"
@@ -8,8 +17,6 @@ alias mgmigrate="mg migrate"
 alias mgcreatesuperuser="mg createsuperuser"
 alias mgcollectstatic='mg collectstatic'
 
-# Tool directory path
-export CARST_PATH="$HOME/archives/carstino"
 
 # python poetry
 alias peotry="poetry"
@@ -20,6 +27,7 @@ alias prun='poetry run'
 # `poetry install` not work at GitBash for Windows, so add psync to install dependencies
 alias poetrysync='poetry export --with=dev --without-hashes -o dev_requirements.txt && pip install -r dev_requirements.txt'
 alias psync='poetrysync'
+
 getVenv() {
   FILE=$CARST_PATH/get_venv.py
   if [ -f $FILE ]; then
@@ -81,7 +89,11 @@ alias rs="tmux rename-session"
 alias httpa="sh $CARST_PATH/httpa.sh"
 
 # reformat py file
-alias lint="sh ~/.lint.sh"
+if [ -f $HOME/.lint.sh ]; then
+    alias lint="sh ~/.lint.sh"
+else
+    alias lint="fast lint"
+fi
 
 # For windows to open directory
 if [ -f /usr/bin/open ]; then
@@ -111,18 +123,21 @@ fi
 alias new="python $CARST_PATH/new_venv.py"
 
 # pipx/uv
-export UVTOOLUPGRADE="uv tool upgrade --all"
+export UVTOOLUPGRADE="uv tool upgrade --all --verbose"
 alias pipxupgradeall='fast exec "pipx upgrade-all --include-injected" && pipx list && echo "--> $UVTOOLUPGRADE" && sh -c "$UVTOOLUPGRADE" && uv tool list'
-
-# fast-dev-cli
-alias fastlint='fast lint'
-alias fastcheck='fast check'
-alias fastdeps='fast deps'
-alias fastpypi='fast pypi'
-
-alias show0="python $CARST_PATH/show0.py"
 
 # Upgrade ubuntu packages
 alias goodgoodstudy='fast exec "sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y"'
 alias daydayup='goodgoodstudy && pipxupgradeall && omz update && echo done.'
 alias upgradeall=daydayup
+
+# fastdevcli-slim
+alias fastlint='fast lint'
+alias fastcheck='fast check'
+alias fastdeps='fast deps'
+alias fastpypi='fast pypi'
+alias flint=fastlint
+alias fdeps=fastdeps
+alias fpypi=fastpypi
+
+alias show0="python $CARST_PATH/show0.py"
