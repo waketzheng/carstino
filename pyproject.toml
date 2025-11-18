@@ -83,7 +83,7 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [tool.pdm.scripts]
-up = 'pdm update -G :all'
+up = {composite = ["uv lock --upgrade", 'pdm update -G :all']}
 type = "pdm run mypy ."
 tree = 'pdm list --tree {args}'
 deps = 'pdm sync -G :all {args}'
