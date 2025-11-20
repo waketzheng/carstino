@@ -502,7 +502,7 @@ class PdmMirror:
         # type: (str, bool) -> int
         cmd = "pdm config pypi.url " + url
         host = parse_host(url)
-        if url.startswith("https:") and not verify_ssl:
+        if not verify_ssl:
             cmd = "pdm config pypi.verify_ssl false && " + cmd
         extra_info = ExtraIndex(host).get()
         if extra_info is not None:
