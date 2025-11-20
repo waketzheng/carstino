@@ -234,11 +234,22 @@ def ensure_domain_name(host):
 
 def is_pip_ready(py="python"):
     # type: (str) -> bool
+    if py == sys.executable or (
+        py == "python"
+        and capture_output('python -c "import sys;print(sys.executable)"').strip()
+        == sys.executable
+    ):
+        try:
+            import pip  # NOQA:F401
+        except ImportError:
+            return False
+        else:
+            return True
     return os.system("{py} -m pip --version".format(py=py)) == 0
 
 
-def check_url_reachable(url):
-    # type: (str) -> bool
+def check_url_reachable(url, verbose=False):
+    # type: (str,bool) -> bool
     try:
         from urllib.request import urlopen as _urlopen
 
@@ -262,7 +273,9 @@ def check_url_reachable(url):
             if response.status == 200:
                 return True
     except Exception as e:
-        print(e)
+        if verbose:
+            print(e)
+            print("URL {} is not readable.".format(url))
         pass
     return False
 
@@ -279,7 +292,7 @@ def build_mirror_url(host):
     else:
         url = "http://" + host
         if "simple" not in host:
-            url += url.rstrip("/") + "/simple/"
+            url = url.rstrip("/") + "/simple/"
     return url
 
 
@@ -299,16 +312,21 @@ def is_pingable(host="", is_windows=False, domain="", verbose=False):
             return check_mirror_by_pip_download(host, verbose=verbose)
         else:
             url = build_mirror_url(host)
-            return check_url_reachable(url)
+            return check_url_reachable(url, verbose=verbose)
     domain = ensure_domain_name(host)
     try:
         socket.gethostbyname(domain)
     except Exception:
         return False
     else:
-        if is_pip_ready(get_python()):
+        py = get_python(verbose=verbose)
+        if is_pip_ready(py):
+            if verbose:
+                print("pip ready, going to check readable by pip download ...")
             return check_mirror_by_pip_download(host, tmp=True, verbose=verbose)
-        return check_url_reachable(build_mirror_url(host))
+        if verbose:
+            print("pip not available, check readable by urlopen ...")
+        return check_url_reachable(build_mirror_url(host), verbose=verbose)
     return os.system(ping_command(domain)) == 0
 
 
@@ -367,15 +385,15 @@ def capture_output(cmd, verbose=False):
         return r.stdout.decode(errors="ignore").strip()
 
 
-def config_by_cmd(url, is_windows=False):
-    # type: (str, bool) -> None
+def config_by_cmd(url, is_windows=False, verbose=False):
+    # type: (str, bool, bool) -> None
     if is_windows:
-        _config_by_cmd(url, is_windows=True)
+        _config_by_cmd(url, is_windows=True, verbose=verbose)
     elif System.is_mac():
         # MacOS need sudo to avoid PermissionError
-        _config_by_cmd(url, sudo=True)
+        _config_by_cmd(url, sudo=True, verbose=verbose)
     else:
-        _config_by_cmd(url, is_windows=is_windows)
+        _config_by_cmd(url, is_windows=is_windows, verbose=verbose)
 
 
 class ExtraIndex:
@@ -408,11 +426,12 @@ class ExtraIndex:
         return extra_host, extra_index_url
 
 
-def _config_by_cmd(url, sudo=False, is_windows=False):
-    # type: (str, bool, bool) -> int
+def _config_by_cmd(url, sudo=False, is_windows=False, verbose=False):
+    # type: (str, bool, bool, bool) -> int
     cmd = CONF_PIP + url
     if not url.startswith("https"):
-        print("cmd = {}".format(repr(cmd)))
+        if verbose:
+            print("cmd = {}".format(repr(cmd)))
         host = parse_host(url)
         extra_info = ExtraIndex(host).get()
         if extra_info is not None:
@@ -880,7 +899,7 @@ def init_pip_conf(
         set_python_mirror = set_python_mirror or load_bool("PIP_CONF_PYTHON_MIRROR")
         return UvMirror(url, is_windows, replace).set(set_python_mirror)
     if not write and (not at_etc or is_windows) and can_set_global():
-        config_by_cmd(url, is_windows)
+        config_by_cmd(url, is_windows, verbose=verbose)
         return None
     text = TEMPLATE.format(url, parse_host(url))
     conf_file = get_conf_path(is_windows, at_etc)
