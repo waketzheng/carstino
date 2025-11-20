@@ -141,6 +141,19 @@ def is_command_exists(tool):
         return os.system(tool + " --version --no-ansi") == 0
 
 
+def show_func_result(func):
+    def go(*args, **kw):
+        verbose = kw.pop("verbose", False)
+        rv = func(*args, **kw)
+        if verbose:
+            msg = "Result of `{}(*{}, **{})` is {}"
+            print(msg.format(func.__name__, args, kw, repr(rv)))
+        return rv
+
+    return go
+
+
+@show_func_result
 def get_python(check_download_command=False):
     # type: (bool) -> str
     if not System.is_linux():
@@ -172,8 +185,8 @@ def get_python(check_download_command=False):
     return "python"
 
 
-def check_mirror_by_pip_download(domain, tmp=False):
-    # type: (str, bool) -> bool
+def check_mirror_by_pip_download(domain, tmp=False, verbose=False):
+    # type: (str, bool, bool) -> bool
     if "/" not in domain:
         domain = "http://{0}/pypi/simple/ --trusted-host {0}".format(domain)
     elif "https:" not in domain:
@@ -190,13 +203,17 @@ def check_mirror_by_pip_download(domain, tmp=False):
             + ensure_domain_name(domain)
         )
     try:
-        cmd = "{} -m pip download -i {} --isolated six".format(get_python(True), domain)
+        cmd = "{} -m pip download --timeout 5 --retries 2 -i {} --isolated six".format(
+            get_python(True), domain
+        )
     except ConfigError:
         cmd = ping_command(ensure_domain_name(domain))
     else:
         if tmp:
             cmd += " -d /tmp"
     print("Checking whether {} reachable...".format(repr(domain)))
+    if verbose:
+        print("Command: {}".format(cmd))
     if os.system(cmd) == 0:
         if not cmd.startswith("ping"):
             dirname = "/tmp" if tmp else "."
@@ -272,14 +289,14 @@ def ping_command(domain):
     return "ping -c 1 {}".format(domain)
 
 
-def is_pingable(host="", is_windows=False, domain=""):
-    # type: (str, bool,str) -> bool
+def is_pingable(host="", is_windows=False, domain="", verbose=False):
+    # type: (str,bool,str,bool) -> bool
     host = host or domain
     if is_windows:
         # 2024.12.23 Windows may need administrator to run `ping -c 1 xxx`
         # So use `pip download ...` instead.
         if is_pip_ready():
-            return check_mirror_by_pip_download(host)
+            return check_mirror_by_pip_download(host, verbose=verbose)
         else:
             url = build_mirror_url(host)
             return check_url_reachable(url)
@@ -290,7 +307,7 @@ def is_pingable(host="", is_windows=False, domain=""):
         return False
     else:
         if is_pip_ready(get_python()):
-            return check_mirror_by_pip_download(host, tmp=True)
+            return check_mirror_by_pip_download(host, tmp=True, verbose=verbose)
         return check_url_reachable(build_mirror_url(host))
     return os.system(ping_command(domain)) == 0
 
@@ -303,19 +320,19 @@ def load_bool(name):
     return v.lower() in ("1", "yes", "on", "true", "y")
 
 
-def is_tx_cloud_server(is_windows=False):
-    # type: (bool) -> bool
-    return is_pingable(SOURCES["tx_ecs"], is_windows=is_windows)
+def is_tx_cloud_server(is_windows=False, verbose=False):
+    # type: (bool,bool) -> bool
+    return is_pingable(SOURCES["tx_ecs"], is_windows=is_windows, verbose=verbose)
 
 
-def is_ali_cloud_server(is_windows=False):
-    # type: (bool) -> bool
-    return is_pingable(SOURCES["ali_ecs"], is_windows=is_windows)
+def is_ali_cloud_server(is_windows=False, verbose=False):
+    # type: (bool,bool) -> bool
+    return is_pingable(SOURCES["ali_ecs"], is_windows=is_windows, verbose=verbose)
 
 
-def is_hw_inner(is_windows=False):
-    # type: (bool) -> bool
-    return is_pingable(_hw_inner_source, is_windows=is_windows)
+def is_hw_inner(is_windows=False, verbose=False):
+    # type: (bool,bool) -> bool
+    return is_pingable(_hw_inner_source, is_windows=is_windows, verbose=verbose)
 
 
 def parse_host(url):
@@ -337,8 +354,10 @@ def run_and_echo(cmd, dry=False):
     return os.system(cmd)
 
 
-def capture_output(cmd):
-    # type: (str) -> str
+def capture_output(cmd, verbose=False):
+    # type: (str,bool) -> str
+    if verbose:
+        print("--> {}".format(cmd))
     try:
         r = subprocess.run(cmd, shell=True, capture_output=True)
     except (TypeError, AttributeError):  # For python<=3.6
@@ -411,7 +430,7 @@ def smart_detect(source, is_windows, verbose=False):
     if is_windows:
         if verbose:
             printf("Going to detect hw inner ...")
-        if is_hw_inner(True):
+        if is_hw_inner(True, verbose=verbose):
             return "hw_inner", True
     elif not System.is_mac():
         if verbose:
@@ -427,13 +446,15 @@ def smart_detect(source, is_windows, verbose=False):
             with open(welcome_file) as f:
                 msg = f.read().strip()
         else:
-            msg = capture_output("{} -m pip config list".format(get_python()))
+            msg = capture_output(
+                "{} -m pip config list".format(get_python(verbose=verbose))
+            )
         if msg:
             mirrors = [v for k, v in mirror_map.items() if k in msg.lower()]
         if not mirrors:
             mirrors = list(mirror_map.values())
         for detect_func, source_name in mirrors:
-            if detect_func(False):
+            if detect_func(False, verbose=verbose):
                 return source_name, True
     return source, False
 
@@ -449,20 +470,20 @@ def detect_inner_net(source, verbose=False, is_windows=False):
         if is_linux or is_windows:
             if verbose:
                 printf("Going to detect hw inner ...")
-            if is_hw_inner(is_windows):
+            if is_hw_inner(is_windows, verbose=verbose):
                 source = "hw_inner"
             inner = True
     elif is_linux:
         if "ali" in source:
             if verbose:
                 printf("Going to detect ali inner ...")
-            if is_ali_cloud_server(is_windows):
+            if is_ali_cloud_server(is_windows, verbose=verbose):
                 source = "ali_ecs"
                 inner = True
         elif "tx" in source or "ten" in source:
             if verbose:
                 printf("Going to detect tx inner ...")
-            inner = is_tx_cloud_server(is_windows)
+            inner = is_tx_cloud_server(is_windows, verbose=verbose)
             source = "tx_ecs" if inner else "tx"
     if verbose and inner:
         print("Use {} as it's pingable".format(source))
@@ -474,7 +495,7 @@ def build_index_url(source, force, verbose=False, strict=False, is_windows=False
     if source.startswith("http"):
         return source
     if not force:
-        source = detect_inner_net(source, verbose, is_windows=is_windows)
+        source = detect_inner_net(source, verbose=verbose, is_windows=is_windows)
     if source in ("hw_inner", "hw_ecs"):
         host = _hw_inner_source
     elif strict:
@@ -1018,7 +1039,9 @@ def main():
     else:
         source = args.name or args.source
         is_windows = System.is_win()
-        url = build_index_url(source, args.f, args.verbose, is_windows=is_windows)
+        url = build_index_url(
+            source, args.f, verbose=args.verbose, is_windows=is_windows
+        )
         if args.url:  # Only display prefer source url, but not config
             print(url)
             return None
