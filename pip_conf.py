@@ -323,10 +323,15 @@ def parse_host(url):
     return url.split("://", 1)[-1].split("/", 1)[0]
 
 
+def printf(msg):
+    # type: (str) -> None
+    print(msg)
+    sys.stdout.flush()
+
+
 def run_and_echo(cmd, dry=False):
     # type: (str, bool) -> int
-    print("--> " + cmd)
-    sys.stdout.flush()
+    printf("--> " + cmd)
     if dry:
         return 1
     return os.system(cmd)
@@ -401,12 +406,16 @@ def _config_by_cmd(url, sudo=False, is_windows=False):
     return run_and_echo(cmd, dry="--dry" in sys.argv)
 
 
-def smart_detect(source, is_windows):
-    # type: (str, bool) -> tuple[str, bool]
+def smart_detect(source, is_windows, verbose=False):
+    # type: (str, bool, bool) -> tuple[str, bool]
     if is_windows:
+        if verbose:
+            printf("Going to detect hw inner ...")
         if is_hw_inner(True):
             return "hw_inner", True
     elif not System.is_mac():
+        if verbose:
+            printf("Going to detect all inner source because of not special ...")
         mirror_map = {
             "huawei": (is_hw_inner, "hw_inner"),
             "tencent": (is_tx_cloud_server, "tx_ecs"),
@@ -431,21 +440,30 @@ def smart_detect(source, is_windows):
 
 def detect_inner_net(source, verbose=False, is_windows=False):
     # type: (str, bool, bool) -> str
-    args = sys.argv[1:]
     inner = False
-    if not args or all(i.startswith("-") for i in args):
-        source, inner = smart_detect(source, is_windows=is_windows)
+    is_linux = System.is_linux()
+    sys_args = sys.argv[1:]
+    if not sys_args or all(i.startswith("-") for i in sys_args):
+        source, inner = smart_detect(source, is_windows=is_windows, verbose=verbose)
     elif source in ("huawei", "hw"):
-        if is_hw_inner(is_windows):
-            source = "hw_inner"
+        if is_linux or is_windows:
+            if verbose:
+                printf("Going to detect hw inner ...")
+            if is_hw_inner(is_windows):
+                source = "hw_inner"
             inner = True
-    elif "ali" in source:
-        if is_ali_cloud_server(is_windows):
-            source = "ali_ecs"
-            inner = True
-    elif "tx" in source or "ten" in source:
-        inner = is_tx_cloud_server(is_windows)
-        source = "tx_ecs" if inner else "tx"
+    elif is_linux:
+        if "ali" in source:
+            if verbose:
+                printf("Going to detect ali inner ...")
+            if is_ali_cloud_server(is_windows):
+                source = "ali_ecs"
+                inner = True
+        elif "tx" in source or "ten" in source:
+            if verbose:
+                printf("Going to detect tx inner ...")
+            inner = is_tx_cloud_server(is_windows)
+            source = "tx_ecs" if inner else "tx"
     if verbose and inner:
         print("Use {} as it's pingable".format(source))
     return source
@@ -892,12 +910,20 @@ def auto_detect_tool(args):
     elif args.tool != "auto":
         raise ValueError("Unknown tool: " + repr(args.tool))
     else:
+        if args.verbose:
+            printf("tool not sepcial. Going to auto detect it by lock/pyproject ...")
         files = os.listdir(".")
         pyproject = "pyproject.toml"
-        locks = {"uv.lock", "poetry.lock", "pdm.lock"} - set(files)
+        locks = {"uv.lock", "poetry.lock", "pdm.lock"} & set(files)
         if len(locks) == 1:
-            tool = list(locks)[0].split(".")[0]
+            lock_file = list(locks)[0]
+            tool = lock_file.split(".")[0]
+            if args.verbose:
+                printf("Only {} exists, use tool={}".format(lock_file, tool))
         elif pyproject not in files:
+            if args.verbose:
+                msg = "Multi lock files detected({}) ".format(list(locks))
+                printf(msg + "without pyproject.toml, use tool=pip")
             return args  # Same as args.tool == 'pip'
         else:
             tools = set()  # type: set[str]
@@ -915,10 +941,15 @@ def auto_detect_tool(args):
                         tools.add(m.group(1))
             if len(tools) == 1:
                 tool = list(tools)[0]
+                if args.verbose:
+                    printf("Pick {} as tool in favor of pyproject.toml".format(tool))
             else:  # Can't determine which tool, change pip mirror only.
                 return args
         if is_command_exists(tool):
             setattr(args, tool, True)
+        elif args.verbose:
+            msg = "WARNING: will not set mirror for {}".format(tool)
+            printf(msg + ", because of command not found.")
     return args
 
 
@@ -964,9 +995,13 @@ def main():
     )
     if not sys.argv[1:]:
         # In case of runing by curl result, try to get args from ENV
-        env = os.getenv("PIP_CONF_ARGS")
+        name = "PIP_CONF_ARGS"
+        env = os.getenv(name)
         if env:
-            sys.argv.extend(env.split())
+            opts = env.split()
+            if "--verbose" in opts:
+                print("Got options from env {}".format(repr(name)))
+            sys.argv.extend(opts)
     args = parser.parse_args()
     if args.list:
         print("There are several mirrors that can be used for pip/uv/pdm/poetry:")
