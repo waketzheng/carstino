@@ -23,6 +23,7 @@ lock:
 
 deps:
 	uv sync --active --inexact --all-extras --all-groups $(options)
+	pdm run fast pypi --quiet
 
 _check:
 	pdm run fast check
