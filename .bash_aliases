@@ -141,3 +141,5 @@ alias fdeps=fastdeps
 alias fpypi=fastpypi
 
 alias show0="python $CARST_PATH/show0.py"
+alias tard="python $CARST_PATH/tard.py"
+alias tarxz="tard --xz"
