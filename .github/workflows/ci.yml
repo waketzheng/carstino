@@ -131,11 +131,9 @@ jobs:
           uv tool install --python 3.13 pdm --with msgpack
           pdm config check_update false
           pdm config use_uv true
-      - name: setup poetry by pip
+      - name: setup poetry by uv
         run: |
-          curl https://bootstrap.pypa.io/get-pip.py -o get_pip.py
-          python3.13 get_pip.py
-          python3.13 -m pip install poetry
+          uv tool install --python 3.13 poetry
       - name: Verify pip conf script
         run: |
           python2.7 pip_conf.py --tool=pip
