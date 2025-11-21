@@ -235,27 +235,6 @@ wheels = [
 ]
 
 [[package]]
-name = "markdown-it-py"
-version = "4.0.0"
-source = { registry = "http://mirrors.tencentyun.com/pypi/simple/" }
-dependencies = [
-    { name = "mdurl", marker = "python_full_version >= '3.10'" },
-]
-sdist = { url = "http://mirrors.tencentyun.com/pypi/packages/5b/f5/4ec618ed16cc4f8fb3b701563655a69816155e79e24a17b651541804721d/markdown_it_py-4.0.0.tar.gz", hash = "sha256:cb0a2b4aa34f932c007117b194e945bd74e0ec24133ceb5bac59009cda1cb9f3" }
-wheels = [
-    { url = "http://mirrors.tencentyun.com/pypi/packages/94/54/e7d793b573f298e1c9013b8c4dade17d481164aa517d1d7148619c2cedbf/markdown_it_py-4.0.0-py3-none-any.whl", hash = "sha256:87327c59b172c5011896038353a81343b6754500a08cd7a4973bb48c6d578147" },
-]
-
-[[package]]
-name = "mdurl"
-version = "0.1.2"
-source = { registry = "http://mirrors.tencentyun.com/pypi/simple/" }
-sdist = { url = "http://mirrors.tencentyun.com/pypi/packages/d6/54/cfe61301667036ec958cb99bd3efefba235e65cdeb9c84d24a8293ba1d90/mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba" }
-wheels = [
-    { url = "http://mirrors.tencentyun.com/pypi/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8" },
-]
-
-[[package]]
 name = "mypy"
 version = "1.18.2"
 source = { registry = "http://mirrors.tencentyun.com/pypi/simple/" }
@@ -343,7 +322,6 @@ dev = [
     { name = "fast-dev-cli", marker = "python_full_version >= '3.10'" },
     { name = "pymysql", marker = "python_full_version >= '3.10'" },
     { name = "tqdm", marker = "python_full_version >= '3.10'" },
-    { name = "typer", marker = "python_full_version >= '3.10'" },
     { name = "types-pymysql", marker = "python_full_version >= '3.10'" },
     { name = "types-tqdm", marker = "python_full_version >= '3.10'" },
 ]
@@ -356,7 +334,6 @@ dev = [
     { name = "fast-dev-cli", marker = "python_full_version >= '3.10'", specifier = ">=0.14.0,<1" },
     { name = "pymysql", marker = "python_full_version >= '3.10'", specifier = ">=1.1.1" },
     { name = "tqdm", marker = "python_full_version >= '3.10'", specifier = ">=4.67.1" },
-    { name = "typer", marker = "python_full_version >= '3.10'", specifier = ">=0.16.0" },
     { name = "types-pymysql", marker = "python_full_version >= '3.10'", specifier = ">=1.1.0.20241103" },
     { name = "types-tqdm", marker = "python_full_version >= '3.10'", specifier = ">=4.67.0.20241221" },
 ]
@@ -416,28 +393,6 @@ dependencies = [
 sdist = { url = "http://mirrors.tencentyun.com/pypi/packages/43/c8/983d5c6579a411d8a99bc5823cc5712768859b5ce2c8afe1a65b37832c81/redis-7.1.0.tar.gz", hash = "sha256:b1cc3cfa5a2cb9c2ab3ba700864fb0ad75617b41f01352ce5779dabf6d5f9c3c" }
 wheels = [
     { url = "http://mirrors.tencentyun.com/pypi/packages/89/f0/8956f8a86b20d7bb9d6ac0187cf4cd54d8065bc9a1a09eb8011d4d326596/redis-7.1.0-py3-none-any.whl", hash = "sha256:23c52b208f92b56103e17c5d06bdc1a6c2c0b3106583985a76a18f83b265de2b" },
-]
-
-[[package]]
-name = "rich"
-version = "14.2.0"
-source = { registry = "http://mirrors.tencentyun.com/pypi/simple/" }
-dependencies = [
-    { name = "markdown-it-py", marker = "python_full_version >= '3.10'" },
-    { name = "pygments", marker = "python_full_version >= '3.10'" },
-]
-sdist = { url = "http://mirrors.tencentyun.com/pypi/packages/fb/d2/8920e102050a0de7bfabeb4c4614a49248cf8d5d7a8d01885fbb24dc767a/rich-14.2.0.tar.gz", hash = "sha256:73ff50c7c0c1c77c8243079283f4edb376f0f6442433aecb8ce7e6d0b92d1fe4" }
-wheels = [
-    { url = "http://mirrors.tencentyun.com/pypi/packages/25/7a/b0178788f8dc6cafce37a212c99565fa1fe7872c70c6c9c1e1a372d9d88f/rich-14.2.0-py3-none-any.whl", hash = "sha256:76bc51fe2e57d2b1be1f96c524b890b816e334ab4c1e45888799bfaab0021edd" },
-]
-
-[[package]]
-name = "shellingham"
-version = "1.5.4"
-source = { registry = "http://mirrors.tencentyun.com/pypi/simple/" }
-sdist = { url = "http://mirrors.tencentyun.com/pypi/packages/58/15/8b3609fd3830ef7b27b655beb4b4e9c62313a4e8da8c676e142cc210d58e/shellingham-1.5.4.tar.gz", hash = "sha256:8dbca0739d487e5bd35ab3ca4b36e11c4078f3a234bfce294b0a0291363404de" }
-wheels = [
-    { url = "http://mirrors.tencentyun.com/pypi/packages/e0/f9/0595336914c5619e5f28a1fb793285925a8cd4b432c9da0a987836c7f822/shellingham-1.5.4-py2.py3-none-any.whl", hash = "sha256:7ecfff8f2fd72616f7481040475a65b2bf8af90a56c89140852d1120324e8686" },
 ]
 
 [[package]]
@@ -508,21 +463,6 @@ dependencies = [
 sdist = { url = "http://mirrors.tencentyun.com/pypi/packages/a8/4b/29b4ef32e036bb34e4ab51796dd745cdba7ed47ad142a9f4a1eb8e0c744d/tqdm-4.67.1.tar.gz", hash = "sha256:f8aef9c52c08c13a65f30ea34f4e5aac3fd1a34959879d7e59e63027286627f2" }
 wheels = [
     { url = "http://mirrors.tencentyun.com/pypi/packages/d0/30/dc54f88dd4a2b5dc8a0279bdd7270e735851848b762aeb1c1184ed1f6b14/tqdm-4.67.1-py3-none-any.whl", hash = "sha256:26445eca388f82e72884e0d580d5464cd801a3ea01e63e5601bdff9ba6a48de2" },
-]
-
-[[package]]
-name = "typer"
-version = "0.20.0"
-source = { registry = "http://mirrors.tencentyun.com/pypi/simple/" }
-dependencies = [
-    { name = "click", marker = "python_full_version >= '3.10'" },
-    { name = "rich", marker = "python_full_version >= '3.10'" },
-    { name = "shellingham", marker = "python_full_version >= '3.10'" },
-    { name = "typing-extensions", marker = "python_full_version >= '3.10'" },
-]
-sdist = { url = "http://mirrors.tencentyun.com/pypi/packages/8f/28/7c85c8032b91dbe79725b6f17d2fffc595dff06a35c7a30a37bef73a1ab4/typer-0.20.0.tar.gz", hash = "sha256:1aaf6494031793e4876fb0bacfa6a912b551cf43c1e63c800df8b1a866720c37" }
-wheels = [
-    { url = "http://mirrors.tencentyun.com/pypi/packages/78/64/7713ffe4b5983314e9d436a90d5bd4f63b6054e2aca783a3cfc44cb95bbf/typer-0.20.0-py3-none-any.whl", hash = "sha256:5b463df6793ec1dca6213a3cf4c0f03bc6e322ac5e16e13ddd622a889489784a" },
 ]
 
 [[package]]
