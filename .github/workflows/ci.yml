@@ -58,6 +58,7 @@ jobs:
 
   ConfPip:
     runs-on: ubuntu-latest
+    needs: lint
     strategy:
       matrix:
         python-version: [3.9, 3.13, 3.14]
@@ -74,6 +75,7 @@ jobs:
 
   conf_pip_py36:
     runs-on: ubuntu-latest
+    needs: lint
     strategy:
       matrix:
         python-version: [3.11]
@@ -119,6 +121,7 @@ jobs:
 
   conf_pip_py27:
     runs-on: ubuntu-latest
+    needs: lint
     container: python:2.7
     steps:
       - uses: actions/checkout@v5
@@ -130,7 +133,6 @@ jobs:
         run: |
           uv tool install --python 3.13 pdm --with msgpack
           pdm config check_update false
-          pdm config use_uv true
       - name: setup poetry by uv
         run: |
           uv tool install --python 3.13 poetry
@@ -145,7 +147,7 @@ jobs:
           python2.7 pip_conf.py --poetry
           python2.7 pip_conf.py --uv
       - name: Verify pdm mirror work
-        run: pdm add "pytz; python_version>='3.13'" --frozen
+        run: pdm add "pytz; python_version>='3.13'" --no-lock
       - name: Verify poetry mirror work
         run: |
           python3.13 -c "version='0.1.0';from pathlib import Path;p=Path('pyproject.toml');s=p.read_text();python='>=2.7,<3.0||>=3.5';a=f'\n[tool.poetry]\n{version=}\n[tool.poetry.dependencies]\n{python=}\n';a in s or p.write_text(s+a)"
@@ -155,6 +157,7 @@ jobs:
 
   set_pip_mirror:
     runs-on: ${{ matrix.os }}
+    needs: lint
     strategy:
       matrix:
         os: [macOS-latest, windows-latest]
