@@ -133,10 +133,10 @@ jobs:
         run: |
           uv tool install --python 3.13 pdm --with msgpack
           pdm config check_update false
-          pdm config python.use_venv false
       - name: setup poetry by uv
         run: |
           uv tool install --python 3.13 poetry
+          poetry config virtualenvs.in-project true
       - name: Verify pip conf script
         run: |
           python2.7 pip_conf.py --tool=pip
@@ -147,6 +147,8 @@ jobs:
           python2.7 pip_conf.py --pdm
           python2.7 pip_conf.py --poetry
           python2.7 pip_conf.py --uv
+      - name: Use py3.13 to create venv
+        run: pdm venv create 3.13
       - name: Verify pdm mirror work
         run: pdm add "pytz; python_version>='3.13'" --frozen-lock
       - name: Verify poetry mirror work
