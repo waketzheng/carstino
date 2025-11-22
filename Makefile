@@ -65,3 +65,7 @@ publish:
 	# pdm publish
 	@echo "Do not publish by command line, use '.github/workflow/publish.yml' instead."
 	@echo "Just push a new tag, and the github action will auto publish it to pypi.org"
+
+bump:
+	python edit_pip_conf_updated_at.py
+	fast bump patch --commit
