@@ -23,15 +23,21 @@ Usage::
 """
 
 import contextlib
+import platform
 import shlex
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 
-def run_and_echo(cmd: str) -> bool:
+def run_and_echo(cmd: str, cwd: Path | None = None) -> bool:
     print("-->", cmd)
-    r = subprocess.run(shlex.split(cmd))
+    r = (
+        subprocess.run(cmd, shell=True, cwd=cwd)
+        if "&&" in cmd
+        else subprocess.run(shlex.split(cmd), cwd=cwd)
+    )
     return r.returncode == 0
 
 
@@ -51,22 +57,44 @@ def main() -> int:
                 opts.append(" " + a)
         else:
             files.append(a)
+    cwd = None
     if not files:
         cmd = "xz" if xz else "zstd"
     else:
         target = files[0]
-        suffix = Path(target).suffix
+        src = Path(target)
+        if not src.exists():
+            raise FileNotFoundError(target)
+        suffix = src.suffix
         if suffix == ".xz":
             cmd = "tar -xf " + target
         elif suffix == ".zst":
-            cmd = "tar --use-compress-program=zstd -xf " + target
+            cmd = f"tar --use-compress-program=zstd -xf {target}"
+            if platform.system() == "Darwin":
+                # 2025.11.22 MacOS not support decompress zstd by tar
+                day = datetime.now().date()
+                tmpfile = f"{src.stem}.{day}.tmp"
+                cmd = (
+                    f"zstd -d {target} -o {tmpfile} && tar xf {tmpfile} && rm {tmpfile}"
+                )
         else:
             cmd = "tar " + ("-cJf" if xz else "--use-compress-program=zstd -cf")
-            out = target.strip(".") + ".tar." + ("xz" if xz else "zst")
+            stem = Path(target.strip(".")).name
+            if not stem.endswith(".tar"):
+                stem += ".tar"
+            out = stem + "." + ("xz" if xz else "zst")
+            if Path(src.parent, out).exists() and input(
+                f"{out} exists! Does you want to replace it?[y/N] "
+            ).lower() not in ("y", "yes", "1"):
+                return 0
+            if len(files) == 1 and src.name != target:  # 切换工作目录，避免嵌套路径
+                cwd = src.parent
+                print(f"--> cd {cwd}")
+                files[0] = src.name
             cmd += " " + out + " " + " ".join(files)
     if opts:
         cmd += "".join(opts)
-    return int(run_and_echo(cmd))
+    return int(run_and_echo(cmd, cwd=cwd))
 
 
 if __name__ == "__main__":

@@ -68,7 +68,7 @@ if [ "$SSH_PASS" ]; then
       EXP_FILE=""
     fi
     if [ "$EXP_FILE" ]; then
-      cmd="expect $EXP_FILE '$cmd' $SSH_PASS"
+      cmd="expect $EXP_FILE '$cmd' '$SSH_PASS'"
     else
       echo "--> $cmd"
       echo "$SSH_PASS"
