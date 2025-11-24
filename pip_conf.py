@@ -608,7 +608,7 @@ class Mirror:
 
 
 class UvMirror(Mirror):
-    GITHUB_PROXY = "https://hub.gitmirror.com/"
+    GITHUB_PROXY = "https://hk.gh-proxy.org/"
     PYTHON_DOWNLOAD_URL = (
         "https://github.com/astral-sh/python-build-standalone/releases/download"
     )
@@ -623,9 +623,38 @@ class UvMirror(Mirror):
         return '\nallow-insecure-host=["{}"]'.format(parse_host(url))
 
     @classmethod
+    def _get_python_mirror(cls, default):
+        # type: (str) -> str
+        choices = {"default": default}
+        for name in ("PIP_CONF_PYTHON_MIRROR", "UV_PYTHON_INSTALL_MIRROR"):
+            value = os.getenv(name)
+            if value and value not in choices.values():
+                choices[name] = value
+        if len(choices) == 1:
+            return default
+        tip = "Which url do you want to set for python install mirror? (Leave blank to use default)"
+        items = list(choices.items())
+        choices_text = "\n".join(
+            [
+                "{i}. {key} ({value})".format(i=i, key=key, value=value)
+                for i, (key, value) in enumerate(items)
+            ]
+        )
+        a = input(tip + "\n" + choices_text + "\n").strip()
+        if a:
+            try:
+                url = items[int(a)][1]
+            except (TypeError, ValueError, IndexError):
+                print("Invalid choice, default will be used.")
+            else:
+                return url
+        return default
+
+    @classmethod
     def python_install_mirror(cls):
         # type: () -> str
-        return cls.TEMPLATE.format(cls.GITHUB_PROXY + cls.PYTHON_DOWNLOAD_URL)
+        default = cls.GITHUB_PROXY + cls.PYTHON_DOWNLOAD_URL
+        return cls.TEMPLATE.format(cls._get_python_mirror(default))
 
     def build_content(self, url=None, extra_index=None):
         # type: (Optional[str], Optional[str]) -> str
