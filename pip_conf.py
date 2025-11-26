@@ -689,8 +689,8 @@ class UvMirror(Mirror):
         config_toml_path = os.path.join(dirpath, filename)
         text = self.build_content()
         if os.path.exists(config_toml_path):
-            with open(config_toml_path) as f:
-                content = f.read().strip()
+            with open(config_toml_path, "rb") as f:
+                content = f.read().strip().decode("utf-8")
             if text in content:
                 print("uv mirror set as expected. Skip!")
                 return None
@@ -781,8 +781,8 @@ class PoetryMirror(Mirror):
             print("WARNING: plugin file not found {}".format(file))
             return
         s = "semver"
-        with open(file) as f:
-            text = f.read()
+        with open(file, "rb") as f:
+            text = f.read().decode("utf-8")
         if s in text:
             text = text.replace(s, "constraints")
             with open(file, "w") as f:
@@ -867,8 +867,8 @@ class PoetryMirror(Mirror):
         item = "[plugins.pypi_mirror]"
         text = item + '{}url = "{}"'.format(os.linesep, self.url)
         if os.path.exists(config_toml_path):
-            with open(config_toml_path) as f:
-                content = f.read().strip()
+            with open(config_toml_path, "rb") as f:
+                content = f.read().strip().decode("utf-8")
             if text in content:
                 print("poetry mirror set as expected. Skip!")
                 return None
@@ -933,8 +933,8 @@ def init_pip_conf(
     text = TEMPLATE.format(url, parse_host(url))
     conf_file = get_conf_path(is_windows, at_etc)
     if os.path.exists(conf_file):
-        with open(conf_file) as fp:
-            s = fp.read()
+        with open(conf_file, "rb") as fp:
+            s = fp.read().decode("utf-8")
         if text in s:
             print("Pip source already be configured as expected.\nSkip!")
             return None
@@ -965,8 +965,8 @@ def can_set_global():
 
 def read_lines(filename):
     # type: (str) -> list[str]
-    with open(filename) as f:
-        s = f.read()
+    with open(filename, "rb") as f:
+        s = f.read().decode("utf-8")
     return s.splitlines()
 
 
