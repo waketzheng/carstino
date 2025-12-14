@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import platform
 import re
 import shutil
 import sys
@@ -32,9 +33,30 @@ def without_manage_py():
             try:
                 from IPython import start_ipython
             except ImportError:
+                offline = "--offline" in sys.argv
+                not_windows = platform.system() != "Windows"
                 if is_venv():
-                    raise
-                if hasattr(shutil, "which"):  # For Python3
+                    msg = "ipython not installed. "
+                    if offline or (
+                        (not_windows and shutil.which("uvx") is None)
+                        or (not not_windows and shutil.which("ipython") is None)
+                    ):
+                        print(msg + "You may need to install it by:\n")
+                        tip = "pip install ipython"
+                        if not_windows:
+                            tip = "uv " + tip
+                        print("  " + tip)
+                        raise
+                    command = "uvx ipython" if not_windows else "ipython"
+                    prompt = msg + f"Do you want to run it by `{command}`?[Y/n] "
+                    a = input(prompt).strip().lower()
+                    if a in ("n", "0", "no"):
+                        print("Abort!")
+                        sys.exit(1)
+                    return run_shell(command)
+                if not offline and not_windows:
+                    return run_shell("uvx ipython")
+                elif hasattr(shutil, "which"):  # For Python3
                     if shutil.which("ipython") is not None:
                         return run_shell("ipython")
                     return run_shell("python3 -m IPython")

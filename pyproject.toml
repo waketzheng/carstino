@@ -18,7 +18,9 @@ dependencies = []
 [dependency-groups]
 dev = [
     "asynctor[redis]>=0.10.3,<1; python_version >= '3.10'",
-    "fast-dev-cli>=0.19.4,<1; python_version >= '3.10'",
+    "mypy>=1.19.0; python_version >= '3.10'",
+    "pytest>=9.0.0; python_version >= '3.10'",
+    "coverage>=7.13.0; python_version >= '3.10'",
     "pymysql>=1.1.1; python_version >= '3.10'",
     "tqdm>=4.67.1; python_version >= '3.10'",
     "types-pymysql>=1.1.0.20241103; python_version >= '3.10'",
