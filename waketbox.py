@@ -18,6 +18,15 @@ import zlib
 from functools import cached_property
 from pathlib import Path
 
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    env_file = Path(".env")
+    if env_file.exists() and b"FIX_ZWJ" in env_file.read_bytes():
+        raise
+else:
+    load_dotenv()
+
 
 class DigitGame:
     def __init__(self, token: str) -> None:
