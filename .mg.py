@@ -70,7 +70,7 @@ def uvx_ipython(not_windows=True):
         elif os.path.exists(os.path.join("..", "..", toml)):
             directory = os.path.join("..", "..")
             argument = get_argument(not_windows, directory, verbose)
-    return "uvx" + argument + " ipython"
+    return "uvx --with ensure-import" + argument + " ipython"
 
 
 def is_venv():
