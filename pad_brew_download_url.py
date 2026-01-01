@@ -16,7 +16,7 @@ import sys
 PROXY = "https://hub.gitmirror.com/"
 PY_HOST = "https://mirrors.huaweicloud.com/python/"
 PAD = """
-elsif (url.start_with?("https://cdn.") || url.start_with?("https://desktop.docker.com"))
+elsif (url.start_with?("https://cdn.") || url.start_with?("https://desktop.docker.com") || url.start_with?("https://nodejs.org"))
   puts "Leave #{url} to be itself."
 elsif (url.start_with?("https://ftpmirror.") || url.start_with?("https://ftp.gnu.org") || url.start_with?("https://zed.dev"))
   puts "Skip #{url} padding."
