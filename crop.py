@@ -15,8 +15,8 @@ from datetime import datetime
 from pathlib import Path
 
 # pip install pillow humanize
-from humanize.filesize import naturalsize
-from PIL import Image
+from humanize.filesize import naturalsize  # ty:ignore[unresolved-import]
+from PIL import Image  # ty:ignore[unresolved-import]
 
 RE_FLOAT = re.compile(r"\d*\.?\d+")
 RE_EXPRESS = re.compile(r"(\d*\.?\d+)([-+*/])(\d*\.?\d+)")

@@ -74,14 +74,13 @@ def pyinstall(version: str) -> subprocess.CompletedProcess[str]:
 
 
 def main() -> int:
-    version = sys.argv[1:] and sys.argv[1]
-    if version:
-        if version.count(".") > 1:
-            return pyinstall(version).returncode
-        else:
+    cmd = "pyenv --help"
+    if sys.argv[1:]:
+        version = sys.argv[1]
+        if version:
+            if version.count(".") > 1:
+                return pyinstall(version).returncode
             cmd = "pyenv install " + version
-    else:
-        cmd = "pyenv --help"
     return os.system(cmd)
 
 

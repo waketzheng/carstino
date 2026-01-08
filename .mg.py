@@ -88,7 +88,7 @@ def without_manage_py():
         command = args[0]
         if command == "shell":
             try:
-                from IPython import start_ipython
+                from IPython import start_ipython  # ty:ignore[unresolved-import]
             except ImportError:
                 offline = "--offline" in sys.argv
                 not_windows = platform.system() != "Windows"

@@ -37,7 +37,10 @@ def capture_output(command):
     with os.popen(command) as fp:
         if not hasattr(fp, "_stream"):  # For python2
             return fp.read().strip()
-        bf = fp._stream.buffer.read().strip()
+        buffer = getattr(fp._stream, "buffer", None)
+        if buffer is None:
+            return ""
+        bf = buffer.read().strip()
     try:
         return bf.decode()
     except UnicodeDecodeError:

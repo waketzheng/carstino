@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 with contextlib.suppress(ImportError):
-    from rich import print
+    from rich import print  # ty:ignore[unresolved-import]
 
 NAME = ".bash_aliases"
 SH = "[[ -f ~/{0} ]] && . ~/{0}".format(NAME)

@@ -80,7 +80,10 @@ class DigitGame:
 
 def main():
     if len(sys.argv) < 2:
-        print(__doc__.replace("<me>", Path(__file__).stem))
+        if __doc__:
+            print(__doc__.replace("<me>", Path(__file__).stem))
+        else:
+            os.system("cat " + __file__)
         return
     file = Path(sys.argv[1])
     text = file.read_text()

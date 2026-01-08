@@ -23,31 +23,11 @@ import time
 from datetime import date
 
 try:
-    from enum import Enum
-except ImportError:  # For Python2
+    from enum import StrEnum  # ty: ignore[unresolved-import]
+except ImportError:
 
-    class Value(object):
-        def __init__(self, value):
-            self.value = value
-
-        def __str__(self):
-            return str(self.value)
-
-        def __repr__(self):
-            return "Value({})".format(repr(self.value))
-
-    class ValueMeta(type):
-        def __new__(cls, name, bases, dct):
-            valued_dct = {
-                k: Value(v)
-                if not k.startswith("_") and isinstance(v, (str, int, bool))
-                else v
-                for k, v in dct.items()
-            }
-            return super(ValueMeta, cls).__new__(cls, name, bases, valued_dct)
-
-    class Enum(object):  # type:ignore
-        __metaclass__ = ValueMeta
+    class StrEnum(object):
+        pass
 
 
 if sys.version_info < (3,):
@@ -199,7 +179,10 @@ def silently_run(cmd):
     with os.popen(cmd) as fp:
         if not hasattr(fp, "_stream"):  # For python2
             return fp.read().strip()
-        bf = fp._stream.buffer.read().strip()
+        buffer = getattr(fp._stream, "buffer", None)
+        if buffer is None:
+            return ""
+        bf = buffer.read().strip()
     try:
         return bf.decode()
     except UnicodeDecodeError:
@@ -212,7 +195,7 @@ def run_and_echo(cmd):
     return os.system(cmd)
 
 
-class Options(Enum):
+class Options(StrEnum):
     dir = "--dir"
     version = "--version"
     dep = "--dep"
@@ -230,51 +213,51 @@ def parse_args():
     """parse custom arguments and set default value"""
     parser = argparse.ArgumentParser(description="Install python by source")
     parser.add_argument(
-        "-d", Options.dir.value, nargs="?", default=DEFAULT_DIR, help="Where to install"
+        "-d", Options.dir, nargs="?", default=DEFAULT_DIR, help="Where to install"
     )
     parser.add_argument(
         "-v",
-        Options.version.value,
+        Options.version,
         nargs="?",
         default=VERSION,
         help="Python version to be installed",
     )
     parser.add_argument(
-        Options.dep.value,
+        Options.dep,
         action="store_true",
         help="Install some ubuntu/centos packages",
     )
     parser.add_argument(
-        Options.dry.value, action="store_true", help="Only print command without run it"
+        Options.dry, action="store_true", help="Only print command without run it"
     )
     parser.add_argument(
-        Options.list.value,
+        Options.list,
         action="store_true",
         help="List available python version shortcuts",
     )
     parser.add_argument(
         "-f",
-        Options.force.value,
+        Options.force,
         action="store_true",
         help="Force update (example:3.8.1 -> 3.8.6)",
     )
     parser.add_argument(
-        Options.no_sqlite.value,
+        Options.no_sqlite,
         action="store_true",
         help="Do not enable sqlite option",
     )
     parser.add_argument(
-        Options.no_ops.value,
+        Options.no_ops,
         action="store_true",
         help="Do not enable optimizations",
     )
     parser.add_argument(
         "-n",
-        Options.no_input.value,
+        Options.no_input,
         action="store_true",
         help="Do not ask me anything",
     )
-    parser.add_argument(Options.alt.value, action="store_true", help="Want altinstall?")
+    parser.add_argument(Options.alt, action="store_true", help="Want altinstall?")
     return parser.parse_args()
 
 
@@ -411,7 +394,7 @@ def gen_cmds(ret_dry=False):
             cmds.extend(deps)
     url = (HOST + DOWNLOAD_PATH).format(version)
     conf = ""
-    if Options.no_ops.value not in sys.argv:
+    if Options.no_ops not in sys.argv:
         centos_info = "/etc/centos-release"
         if os.path.exists(centos_info):
             with open(centos_info) as f:
@@ -419,7 +402,7 @@ def gen_cmds(ret_dry=False):
             args.no_ops = "release 7.9" in text
     if not args.no_ops:
         conf += ENABLE_OPTIMIZE + " "
-    if Options.no_sqlite.value not in sys.argv:
+    if Options.no_sqlite not in sys.argv:
         openssl_version = silently_run("openssl version")
         if openssl_version and openssl_version.lower() < "openssl 3":
             args.no_sqlite = True

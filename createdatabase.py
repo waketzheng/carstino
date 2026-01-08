@@ -21,7 +21,7 @@ SQL = "create database {} CHARACTER SET {}"
 
 def secho(*args, **kw):
     try:
-        from click import secho
+        from click import secho  # ty:ignore[unresolved-import]
     except ImportError:
         print(*args, **kw)
     else:
@@ -55,7 +55,7 @@ def configure_settings():
 
 
 def get_db(alias="default", all_=False):
-    from django.conf import settings
+    from django.conf import settings  # ty:ignore[unresolved-import]
 
     dbs = settings.DATABASES
     if all_:
@@ -67,6 +67,7 @@ def get_db(alias="default", all_=False):
 
 
 def getconf(dbconf):
+    # type: (dict) -> tuple[dict, str|None, str|None]
     config = {
         "host": dbconf.get("HOST"),
         "user": dbconf.get("USER"),
@@ -81,6 +82,7 @@ def getconf(dbconf):
 
 
 def creat_db(config, db_name, engine, drop=False):
+    # type: (dict, str|None, str|None, bool) -> None
     if "mysql" in engine:
         mysql(config, db_name, drop)
     elif "postgres" in engine:
@@ -92,7 +94,7 @@ def creat_db(config, db_name, engine, drop=False):
 
 
 def mysql(config, db_name, drop=False):
-    import MySQLdb
+    import MySQLdb  # ty:ignore[unresolved-import]
 
     try:
         conn = MySQLdb.connect(**config)
@@ -242,7 +244,8 @@ def main():
         else:
             aliases, dbs = [args.alias], [get_db(args.alias)]
     for db in dbs:
-        creat_db(*getconf(db), drop=args.delete)
+        config, db_name, engine = getconf(db)
+        creat_db(config, db_name, engine, drop=args.delete)
     if args.migrate:
         cmd = f"python {manage_path} makemigrations"
         secho("\n-->", cmd, "...")

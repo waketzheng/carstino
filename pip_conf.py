@@ -166,7 +166,7 @@ def get_python(check_download_command=False):
         return "python"
     is_py3 = sys.version_info >= (3,)
     try:
-        import pip
+        import pip  # ty: ignore[unresolved-import]
     except ImportError:
         # Virtual environment created by uv/pdm may no include pip module
         return "python"
@@ -240,7 +240,7 @@ def is_pip_ready(py="python"):
         == sys.executable
     ):
         try:
-            import pip  # NOQA:F401
+            import pip  # ty: ignore[unresolved-import] # NOQA:F401
         except ImportError:
             return False
         else:
@@ -814,7 +814,9 @@ class PoetryMirror(Mirror):
         config_path = self._get_dirpath(is_windows)
         if not os.path.exists(os.path.join(config_path, "pyproject.toml")):
             try:
-                from poetry.console.commands.self.self_command import SelfCommand
+                from poetry.console.commands.self.self_command import (  # ty: ignore[unresolved-import]
+                    SelfCommand,
+                )
             except ImportError:
                 pass
             else:
@@ -1132,5 +1134,6 @@ if __name__ == "__main__":
         except (ImportError, SyntaxError, AttributeError):
             pass
         else:
-            main = timeit(main)  # Display script cost time
+            # Display script cost time
+            main = timeit(main)  # ty: ignore[invalid-assignment]
     sys.exit(main())

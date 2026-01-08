@@ -24,7 +24,7 @@ import re
 import sys
 
 try:
-    from enum import StrEnum
+    from enum import StrEnum  # ty: ignore[unresolved-import]
 except ImportError:
     try:
         from enum import Enum
@@ -116,7 +116,7 @@ def get_filepaths(args):
     try:
         from pathlib import Path
     except ImportError:
-        from pathlib2 import Path
+        from pathlib2 import Path  # ty: ignore[unresolved-import]
 
     fpaths = []
     if args.dir:
@@ -200,7 +200,7 @@ def main():
         elif linesep == "n":
             linesep = "\n"
         else:
-            choices = [i.value for i in LineBreakChoices]
+            choices = [i.value for i in LineBreakChoices]  # ty: ignore[not-iterable]
             if linesep not in choices:
                 print("linesep: {}".format(repr(linesep)))
                 print("br must be one of this: {}".format(choices))

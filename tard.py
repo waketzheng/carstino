@@ -44,7 +44,7 @@ def run_and_echo(cmd: str, cwd: Path | None = None) -> bool:
 def main() -> int:
     args = sys.argv[1:]
     if not args:
-        print(__doc__.replace("<me>", Path(__file__).stem))
+        print(__doc__ and __doc__.replace("<me>", Path(__file__).stem))
         return 1
     xz = False
     opts: list[str] = []
@@ -101,5 +101,5 @@ if __name__ == "__main__":
     with contextlib.suppress(ImportError):
         from asynctor import Timer
 
-        main = Timer(main, decimal_places=2)
+        main = Timer(main, decimal_places=2)  # ty: ignore[invalid-assignment]
     sys.exit(main())
