@@ -14,31 +14,28 @@ help:
 version ?= 3.12
 
 up:
-	uv lock --upgrade
-	$(MAKE) deps options=--frozen
+	@just up
 
 lock:
-	uv lock
-	pdm lock
+	@just lock
 
 deps:
-	uv sync --active --inexact --all-extras --all-groups $(options)
-	pdm run fast pypi --quiet
+	@just deps $(options)
 
 _check:
-	pdm run fast check
+	@just _check
 check: deps _check
 
 _lint:
-	pdm run fast lint
+	@just _lint
 lint: deps _lint
 
 _test:
-	pdm run fast test
+	@just _test
 test: deps _test
 
 _style:
-	pdm run fast lint --skip-mypy
+	@just fmt
 style: deps _style
 
 # Usage::

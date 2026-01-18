@@ -38,13 +38,17 @@ jobs:
       - name: Install the fast command
         run: |
           uv tool install --python 3.11 fastdevcli-slim
+      - uses: extractions/setup-just@v3  # Or: uv tool install rust-just
       - name: Install dependencies
-        run: uv sync
+        run: just deps
         env:
           PYO3_USE_ABI3_FORWARD_COMPATIBILITY: 1
       - uses: astral-sh/ruff-action@v3
       - name: Check code style and Type Hint
-        run: fast check
+        run: |
+          just _check
+          uv pip install mypy
+          mypy pip_conf.py
       - name: Verify pip conf script
         run: |
           ./pip_conf.py
@@ -91,7 +95,7 @@ jobs:
       - uses: astral-sh/setup-uv@v7
       - name: Set up PDM by uv
         run: |
-          uv tool install --python 3.11 pdm --with msgpack
+          uv tool install --python 3.11 pdm
           pdm config check_update false
           pdm config use_uv true
       - name: setup poetry
@@ -134,7 +138,7 @@ jobs:
           python-version: '3.13'
       - name: Set up PDM by uv
         run: |
-          uv tool install --python 3.13 pdm --with msgpack
+          uv tool install --python 3.13 pdm
           pdm config check_update false
       - name: setup poetry by uv
         run: |
@@ -173,7 +177,7 @@ jobs:
       - uses: astral-sh/setup-uv@v7
       - name: Set up PDM by uv
         run: |
-          uv tool install pdm --with msgpack
+          uv tool install pdm
           pdm config check_update false
           pdm config use_uv true
       - name: Setup poetry by pipx

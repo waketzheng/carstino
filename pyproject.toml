@@ -69,6 +69,9 @@ extend-select = ["I", "B", "UP", "SIM"]
 [tool.ty.environment]
 python-version = "3.10"
 
+[tool.ty.rules]
+unused-ignore-comment = "ignore"
+
 [tool.mypy]
 ignore_missing_imports = true
 warn_no_return = false

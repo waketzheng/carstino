@@ -37,6 +37,7 @@ venv313:
     {{ VENV_CREATE }} 3.13
 
 uv_deps *args:
+    @uv run --no-sync fast pypi --quiet --reverse
     {{ UV_DEPS }} {{args}}
     @just install_me
     @uv run --no-sync fast pypi --quiet
@@ -49,12 +50,14 @@ deps *args: venv
     if (-Not (Test-Path '~/AppData/Roaming/uv/tools/rust-just')) { echo 'Using pdm ...'; {{ PDM_DEPS }} {{ args }} } else { echo 'uv sync...'; just uv_deps {{ args }} }
 
 uv_lock *args:
+    @uv run --no-sync fast pypi --quiet --reverse
     uv lock {{args}}
     @just deps --frozen
 
 [unix]
 lock *args:
     @just uv_lock {{args}}
+    @if test -e pdm.lock; then pdm lock -G :all; fi
 [windows]
 lock *args:
     if (-Not (Test-Path '~/AppData/Roaming/uv/tools/rust-just')) { echo 'Using pdm ...'; pdm lock -G :all {{ args }} } else { echo 'uv lock...'; just uv_lock {{ args }} }
@@ -62,6 +65,7 @@ lock *args:
 
 up:
     @just lock --upgrade
+    @if test -e pdm.lock; then pdm update -G :all --no-sync; fi
 
 uv_clear *args:
     {{ UV_DEPS }} {{args}}
@@ -77,7 +81,7 @@ run *args: venv
     .venv/{{BIN_DIR}}/{{args}}
 
 _lint *args:
-    pdm run fast lint {{args}}
+    pdm run fast lint --ty {{args}}
 
 lint *args: deps
     @just _lint {{args}}
@@ -91,7 +95,7 @@ style *args: deps
     @just fmt {{args}}
 
 _check *args:
-    pdm run fast check {{args}}
+    pdm run fast check --ty {{args}}
 
 check *args: deps
     @just _check {{args}}
