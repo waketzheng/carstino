@@ -133,6 +133,7 @@ version part="patch":
     pdm run fast bump {{part}}
 
 bump *args:
+    pdm run python edit_pip_conf_updated_at.py
     pdm run fast bump patch --commit {{args}}
 
 tag *args:
