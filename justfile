@@ -63,9 +63,14 @@ lock *args:
     if (-Not (Test-Path '~/AppData/Roaming/uv/tools/rust-just')) { echo 'Using pdm ...'; pdm lock -G :all {{ args }} } else { echo 'uv lock...'; just uv_lock {{ args }} }
 
 
-up:
-    @just lock --upgrade
+[unix]
+up *args:
+    @just uv_lock --upgrade {{args}}
     @if test -e pdm.lock; then pdm update -G :all --no-sync; fi
+[windows]
+up *args:
+    if (-Not (Test-Path '~/AppData/Roaming/uv/tools/rust-just')) { echo 'Using pdm ...'; pdm update -G :all {{ args }} } else { echo 'uv lock...'; just uv_lock {{ args }} }
+    if (Test-Path 'pdm.lock') { pdm update -G :all --no-sync }
 
 uv_clear *args:
     {{ UV_DEPS }} {{args}}
@@ -122,8 +127,8 @@ pipi *args: venv
 pipi *args: venv
     @if (-Not (Test-Path '.venv/Scripts/pip.exe')) { UV_PIP_I {{args}} } else { @just run pip install {{args}} }
 
-install_me:
-    @just pipi -e .
+install_me *args:
+    @just pipi -e . {{args}}
 
 start:
     pre-commit install

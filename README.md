@@ -18,6 +18,10 @@ Usage:
 ```bash
 curl https://raw.githubusercontent.com/waketzheng/carstino/main/pip_conf.py|python
 ```
+Or use uvx:
+```
+uvx pip-conf-mirror --pip
+```
 Or install `pip_conf.py` by pip/pipx:
 ```bash
 pip install --user pip-conf-mirror
@@ -29,10 +33,10 @@ pip install --user pip-conf-mirror
 #pip install --user "pip-conf-mirror @git+https://github.com/waketzheng/carstino"
 
 # Set pip mirror
-pip-conf
+pip-conf-mirror
 
 # Set pip mirror to qinghua source
-#pip-conf qh
+#pip-conf-mirror qh
 ```
 
 - Change apt source of ubuntu16/18/19/20/22/24 to tencent cloud.
