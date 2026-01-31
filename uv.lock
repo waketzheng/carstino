@@ -35,14 +35,14 @@ wheels = [
 
 [[package]]
 name = "asynctor"
-version = "0.12.0"
+version = "0.12.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio", marker = "python_full_version >= '3.10'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/19/4b/70fd49ad280c88553b91acf4ae30ea694ffaf9917b4cba9f07567424dbc1/asynctor-0.12.0.tar.gz", hash = "sha256:b1c3703d3b4b836c46a6e9b2259c8e535df347a35ea712963b74bc045eb8727c" }
+sdist = { url = "https://files.pythonhosted.org/packages/57/d2/c03b2e4686cf4150155fb79b7ebdff00f020850df2b1415f9ac92d519403/asynctor-0.12.2.tar.gz", hash = "sha256:0c5ef4dd82e9edc90e55a1bd324524a7b120cabc3b56a69552d80d969fe40675" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/79/f9/e66a4ff64d370a1c7876fc2b740dd74219ba6d92b6462e5b3825b9a1be51/asynctor-0.12.0-py3-none-any.whl", hash = "sha256:cd4b3493d19f811695fa28d814d1d10fa5d97ed7201aa4b046410abd81ecfc33" },
+    { url = "https://files.pythonhosted.org/packages/da/f7/ffb32c11a40cc4da52bc10cb5a0c5eb694b04fff84875fe2358667e901c1/asynctor-0.12.2-py3-none-any.whl", hash = "sha256:93fa94f38605524af407b24fd50d3d8992929e0605fcda3284a674f31201e327" },
 ]
 
 [package.optional-dependencies]
@@ -408,14 +408,14 @@ wheels = [
 
 [[package]]
 name = "tqdm"
-version = "4.67.1"
+version = "4.67.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama", marker = "python_full_version >= '3.10' and sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a8/4b/29b4ef32e036bb34e4ab51796dd745cdba7ed47ad142a9f4a1eb8e0c744d/tqdm-4.67.1.tar.gz", hash = "sha256:f8aef9c52c08c13a65f30ea34f4e5aac3fd1a34959879d7e59e63027286627f2" }
+sdist = { url = "https://files.pythonhosted.org/packages/27/89/4b0001b2dab8df0a5ee2787dcbe771de75ded01f18f1f8d53dedeea2882b/tqdm-4.67.2.tar.gz", hash = "sha256:649aac53964b2cb8dec76a14b405a4c0d13612cb8933aae547dd144eacc99653" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d0/30/dc54f88dd4a2b5dc8a0279bdd7270e735851848b762aeb1c1184ed1f6b14/tqdm-4.67.1-py3-none-any.whl", hash = "sha256:26445eca388f82e72884e0d580d5464cd801a3ea01e63e5601bdff9ba6a48de2" },
+    { url = "https://files.pythonhosted.org/packages/f5/e2/31eac96de2915cf20ccaed0225035db149dfb9165a9ed28d4b252ef3f7f7/tqdm-4.67.2-py3-none-any.whl", hash = "sha256:9a12abcbbff58b6036b2167d9d3853042b9d436fe7330f06ae047867f2f8e0a7" },
 ]
 
 [[package]]

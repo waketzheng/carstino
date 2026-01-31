@@ -40,7 +40,7 @@ uv_deps *args:
     @uv run --no-sync fast pypi --quiet --reverse
     {{ UV_DEPS }} {{args}}
     @just install_me
-    @uv run --no-sync fast pypi --quiet
+    @uv run --no-sync fast pypi --quiet --slim
 
 [unix]
 deps *args: venv
