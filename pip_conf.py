@@ -30,7 +30,7 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2025.11.26"
+__updated_at__ = "2026.01.31"
 __version__ = "0.8.9"
 import contextlib
 import functools
