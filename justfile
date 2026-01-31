@@ -85,8 +85,12 @@ clear *args:
 run *args: venv
     .venv/{{BIN_DIR}}/{{args}}
 
+mypy:
+    uvx mypy pip_conf.py
+
 _lint *args:
     pdm run fast lint --ty {{args}}
+    @just mypy
 
 lint *args: deps
     @just _lint {{args}}
@@ -101,6 +105,7 @@ style *args: deps
 
 _check *args:
     pdm run fast check --ty {{args}}
+    @just mypy
 
 check *args: deps
     @just _check {{args}}

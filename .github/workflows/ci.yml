@@ -48,7 +48,6 @@ jobs:
       - name: Check code style and Type Hint
         run: |
           just _check
-          uvx mypy pip_conf.py
       - name: Verify pip conf script
         run: |
           ./pip_conf.py

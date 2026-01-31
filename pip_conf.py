@@ -574,7 +574,7 @@ def get_conf_path(is_windows, at_etc):
 class PdmMirror:
     @staticmethod
     def set(url, verify_ssl=False, extra_info=None):
-        # type: (str, bool) -> int
+        # type: (str, bool, Optional[tuple[str,str]]) -> int
         cmd = "pdm config pypi.url " + url
         if not verify_ssl:
             cmd = "pdm config pypi.verify_ssl false && " + cmd
@@ -953,7 +953,7 @@ def init_pip_conf(
     set_python_mirror=False,
     extra_info=None,
 ):
-    # type: (str, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, Option[tuple[str,str]]) -> Optional[int]
+    # type: (str, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, Optional[tuple[str,str]]) -> Optional[int]
     if poetry:
         return PoetryMirror(url, is_windows, replace, extra_info=extra_info).set()
     poetry_set_env = "SET_POETRY"
