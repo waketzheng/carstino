@@ -228,8 +228,7 @@ def ensure_domain_name(host):
     # type: (str) -> str
     if "/" not in host:
         return host
-    domain = host.split("://", 1)[-1].split("/", 1)[0]
-    return domain
+    return parse_host(host)
 
 
 def is_pip_ready(py="python"):
@@ -368,6 +367,8 @@ def run_and_echo(cmd, dry=False):
     # type: (str, bool) -> int
     printf("--> " + cmd)
     if dry:
+        if "--verbose" in sys.argv:
+            print("Exit without actually run the shell command!")
         return 1
     return os.system(cmd)
 
@@ -385,59 +386,75 @@ def capture_output(cmd, verbose=False):
         return r.stdout.decode(errors="ignore").strip()
 
 
-def config_by_cmd(url, is_windows=False, verbose=False):
-    # type: (str, bool, bool) -> None
-    if is_windows:
-        _config_by_cmd(url, is_windows=True, verbose=verbose)
-    elif System.is_mac():
-        # MacOS need sudo to avoid PermissionError
-        _config_by_cmd(url, sudo=True, verbose=verbose)
-    else:
-        _config_by_cmd(url, is_windows=is_windows, verbose=verbose)
+def config_by_cmd(url, is_windows=False, verbose=False, extra_info=None):
+    # type: (str, bool, bool, Optional[tuple[str,str]]) -> None
+    sudo = load_bool("PIP_CONF_SUDO")
+    _config_by_cmd(
+        url,
+        sudo=sudo,
+        is_windows=is_windows,
+        verbose=verbose,
+        extra_info=extra_info,
+    )
 
 
 class ExtraIndex:
     caching = {}  # type: dict[str, Optional[tuple[str, str]]]
 
-    def __init__(self, host):
+    def __init__(self, host, force=False):
         self._host = host
+        self._force = force
 
     def get(self):
         # type: () -> Optional[tuple[str, str]]
         host = self._host
+        if not host:
+            return None
         if host in self.caching:
             return self.caching[host]
-        value = self.caching[host] = self.get_extra_index(host)
+        value = self.caching[host] = self.get_extra_index(host, self._force)
         return value
 
     @staticmethod
-    def get_extra_index(host):
-        # type: (str) -> Optional[tuple[str, str]]
-        if host not in _hw_inner_source:
-            return None
-        extra_host = host.replace("mirrors", "socapi").replace("tools", "cloudbu")
-        try:
-            socket.gethostbyname(ensure_domain_name(extra_host))
-        except socket.gaierror:
-            print("Ignore {} as it's not pingable".format(extra_host))
-            return None
-        extra_index = _hw_inner_source.replace(host, extra_host)
-        extra_index_url = INDEX_URL.replace("https", "http").format(extra_index)
+    def get_extra_index(host, force=False):
+        # type: (str, bool) -> Optional[tuple[str, str]]
+        extra_host = ensure_domain_name(host)
+        if not force:
+            try:
+                socket.gethostbyname(extra_host)
+            except socket.gaierror:
+                print("Ignore {} as it's not pingable".format(extra_host))
+                return None
+        if "/" not in host:
+            extra_index_url = INDEX_URL.format(host)
+        else:
+            if not host.startswith("http"):
+                host = "https://" + host
+            if host.endswith("/pypi"):
+                host += "/simple"
+            extra_index_url = host
         return extra_host, extra_index_url
 
 
-def _config_by_cmd(url, sudo=False, is_windows=False, verbose=False):
-    # type: (str, bool, bool, bool) -> int
+def _config_by_cmd(url, sudo=False, is_windows=False, verbose=False, extra_info=None):
+    # type: (str, bool, bool, bool, Optional[tuple[str,str]]) -> int
     cmd = CONF_PIP + url
+    trusted_host = ""
+    if extra_info is not None:
+        extra_host, extra_index_url = extra_info
+        cmd += " && pip config set global.extra-index-url " + extra_index_url
+        if not extra_index_url.startswith("https"):
+            trusted_host = extra_host
     if not url.startswith("https"):
         if verbose:
             print("cmd = {}".format(repr(cmd)))
         host = parse_host(url)
-        extra_info = ExtraIndex(host).get()
-        if extra_info is not None:
-            extra_host, extra_index_url = extra_info
-            cmd += " && pip config set global.extra-index-url " + extra_index_url
-            host = '"{host} {extra_host}"'.format(host=host, extra_host=extra_host)
+        trusted_host = (
+            '"{host} {extra_host}"'.format(host=host, extra_host=trusted_host)
+            if trusted_host
+            else host
+        )
+    if trusted_host:
         cmd += " && pip config set global.trusted-host " + host
     if sudo:
         cmd = " && ".join("sudo " + i.strip() for i in cmd.split("&&"))
@@ -556,13 +573,11 @@ def get_conf_path(is_windows, at_etc):
 
 class PdmMirror:
     @staticmethod
-    def set(url, verify_ssl=False):
+    def set(url, verify_ssl=False, extra_info=None):
         # type: (str, bool) -> int
         cmd = "pdm config pypi.url " + url
-        host = parse_host(url)
         if not verify_ssl:
             cmd = "pdm config pypi.verify_ssl false && " + cmd
-        extra_info = ExtraIndex(host).get()
         if extra_info is not None:
             extra_host, extra_index_url = extra_info
             cmd += " && pdm config pypi.extra.url " + extra_index_url
@@ -572,12 +587,14 @@ class PdmMirror:
 
 
 class Mirror:
-    def __init__(self, url, is_windows, replace):
-        # type: (str, bool, bool) -> None
+    def __init__(self, url, is_windows, replace, extra_info=None, verbose=False):
+        # type: (str, bool, bool, Optional[tuple[str, str]], bool) -> None
         self.url = url
         self.is_windows = is_windows
         self.replace = replace
         self._version = ""
+        self._extra_info = extra_info
+        self.verbose = verbose
 
     @property
     def tool(self):
@@ -597,18 +614,25 @@ class Mirror:
         else:
             not_install = run_and_echo(self.tool + " --version") != 0
         if not_install:
+            setup_pipx = "pip install --user --upgrade pipx"
+            if System.is_linux():
+                for command in ("apt", "yum"):
+                    if is_command_exists(command):
+                        setup_pipx = "sudo {} install -y pipx".format(command)
+                        break
             msg = (
                 "{0} not found!\n"
                 "You can install it by:\n"
-                "    pip install --user --upgrade pipx\n"
+                "    {1}\n"
                 "    pipx install {0}\n"
             )
-            print(msg.format(self.tool))
+            print(msg.format(self.tool, setup_pipx))
             return True
 
 
 class UvMirror(Mirror):
-    GITHUB_PROXY = "https://hk.gh-proxy.org/"
+    GITHUB_PROXY = "https://ghfast.top/"
+    # PROXY = "https://hk.gh-proxy.org/"
     PYTHON_DOWNLOAD_URL = (
         "https://github.com/astral-sh/python-build-standalone/releases/download"
     )
@@ -663,10 +687,8 @@ class UvMirror(Mirror):
         text = '[[index]]\nurl = "{}"\ndefault = true'.format(
             url
         ) + self.allow_insecure(url)
-        if extra_index is None:
-            extra_info = ExtraIndex(parse_host(url)).get()
-            if extra_info is not None:
-                _, extra_index = extra_info
+        if extra_index is None and self._extra_info is not None:
+            _, extra_index = self._extra_info
         if extra_index:
             text += '\n[[index]]\nurl = "{}"'.format(extra_index) + self.allow_insecure(
                 extra_index
@@ -676,11 +698,22 @@ class UvMirror(Mirror):
     def set_python(self, text):
         # type: (str) -> str
         if self._python:
-            text = self.python_install_mirror() + "\n\n" + text
+            py_mirror = self.python_install_mirror()
+            if py_mirror not in text:
+                item_key = self.TEMPLATE.split("=")[0].strip()
+                lines = text.splitlines()
+                for idx, line in enumerate(lines):
+                    if line.startswith(item_key):
+                        lines[idx] = py_mirror
+                        text = "\n".join(lines)
+                        break
+                else:
+                    text = py_mirror + "\n\n" + text
         return text
 
     def set(self, set_python_mirror=False):
         # type: (bool) -> Optional[int]
+        verbose = self.verbose
         self._python = set_python_mirror
         filename = "uv.toml"
         dirpath = self.get_dirpath(self.is_windows, self.url, filename)
@@ -710,15 +743,28 @@ class UvMirror(Mirror):
                 if m:
                     already = m.group(1)
                     if not self.replace:
+                        if verbose:
+                            print("\nExpected config:\n```\n{}\n```\n".format(text))
                         self.prompt_y(filename, m.group())
                         return None
-                    if self.url.startswith("https"):
+                    if content.count("[[index]]") == text.count("[[index]]") == 1:
                         text = self.set_python(content.replace(already, self.url))
+                    else:
+                        py_mirror_key = self.TEMPLATE.split("=")[0].strip()
+                        if py_mirror_key not in text and py_mirror_key in content:
+                            for line in content.splitlines():
+                                if line.startswith(py_mirror_key):
+                                    text = line + "\n\n" + text
+                                    break
         elif not os.path.exists(dirpath):
             parent = get_parent_path(dirpath)
             if not os.path.exists(parent):
                 os.mkdir(parent)
+                if verbose:
+                    print("{} created.".format(parent))
             os.mkdir(dirpath)
+            if verbose:
+                print("{} created.".format(dirpath))
         do_write(config_toml_path, text)
 
     def _get_dirpath(self, is_windows, filename, is_etc=False):
@@ -905,10 +951,11 @@ def init_pip_conf(
     is_windows=False,
     verify_ssl=False,
     set_python_mirror=False,
+    extra_info=None,
 ):
-    # type: (str, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool) -> Optional[int]
+    # type: (str, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, Option[tuple[str,str]]) -> Optional[int]
     if poetry:
-        return PoetryMirror(url, is_windows, replace).set()
+        return PoetryMirror(url, is_windows, replace, extra_info=extra_info).set()
     poetry_set_env = "SET_POETRY"
     if load_bool(poetry_set_env):
         env_name = "PIP_CONF_POETRY_MIRROR"
@@ -923,14 +970,16 @@ def init_pip_conf(
         elif verbose:
             tip = "Going to configure poetry mirror source, because {} was set to {}"
             print(tip.format(repr(poetry_set_env), os.getenv(poetry_set_env)))
-        return PoetryMirror(url, is_windows, replace).set()
+        return PoetryMirror(url, is_windows, replace, extra_info=extra_info).set()
     if pdm or load_bool("PIP_CONF_SET_PDM"):
-        return PdmMirror.set(url, verify_ssl)
+        return PdmMirror.set(url, verify_ssl, extra_info=extra_info)
     if uv or load_bool("PIP_CONF_SET_UV"):
         set_python_mirror = set_python_mirror or load_bool("PIP_CONF_PYTHON_MIRROR")
-        return UvMirror(url, is_windows, replace).set(set_python_mirror)
+        return UvMirror(
+            url, is_windows, replace, extra_info=extra_info, verbose=verbose
+        ).set(set_python_mirror)
     if not write and (not at_etc or is_windows) and can_set_global():
-        config_by_cmd(url, is_windows, verbose=verbose)
+        config_by_cmd(url, is_windows, verbose=verbose, extra_info=extra_info)
         return None
     text = TEMPLATE.format(url, parse_host(url))
     conf_file = get_conf_path(is_windows, at_etc)
@@ -1041,6 +1090,12 @@ def main():
     parser.add_argument("-y", action="store_true", help="whether replace existing file")
     parser.add_argument("--etc", action="store_true", help="Set conf file to /etc")
     parser.add_argument("-f", action="store_true", help="Force to skip ecs cloud check")
+    parser.add_argument(
+        "-e",
+        "--extra",
+        default="",
+        help="Extra index url, e.g.: 'https://pypi.org/simple' (if not provided, will try to read env 'PIP_CONF_EXTRA')",
+    )
     parser.add_argument("--write", action="store_true", help="Conf by write file")
     parser.add_argument("--poetry", action="store_true", help="Set mirrors for poetry")
     parser.add_argument("--pdm", action="store_true", help="Set pypi.url for pdm")
@@ -1089,12 +1144,32 @@ def main():
     else:
         source = args.name or args.source
         is_windows = System.is_win()
-        url = build_index_url(
-            source, args.f, verbose=args.verbose, is_windows=is_windows
-        )
+        verbose = args.verbose
+        url = build_index_url(source, args.f, verbose=verbose, is_windows=is_windows)
         if args.url:  # Only display prefer source url, but not config
+            if verbose:
+                print("Prefer to use the following index url:")
             print(url)
             return None
+        extra_env_name = "PIP_CONF_EXTRA"
+        extra_info = ExtraIndex(args.extra or os.getenv(extra_env_name), args.f).get()
+        if verbose:
+            if args.extra:
+                print("Get extra url from args with value: {}".format(args.extra))
+            elif os.getenv(extra_env_name):
+                print("Detected extra url from os env {}".format(extra_env_name))
+            if extra_info is not None:
+                print("Parse extra_info to be {}".format(extra_info))
+        set_conf = functools.partial(
+            init_pip_conf,
+            url,
+            replace=args.y,
+            at_etc=args.etc,
+            write=args.write,
+            verbose=verbose,
+            is_windows=is_windows,
+            extra_info=extra_info,
+        )
         if not args.poetry and not args.pdm and not args.uv and not args.pip:
             args = auto_detect_tool(args)
             if (
@@ -1103,24 +1178,11 @@ def main():
                 and ("index-url" not in capture_output("pip config list"))
             ):
                 # Config mirror for pip before configure mirror of manage tool
-                init_pip_conf(
-                    url,
-                    replace=args.y,
-                    at_etc=args.etc,
-                    write=args.write,
-                    verbose=args.verbose,
-                    is_windows=is_windows,
-                )
-        if init_pip_conf(
-            url,
-            replace=args.y,
-            at_etc=args.etc,
-            write=args.write,
+                set_conf()
+        if set_conf(
             poetry=args.poetry,
             pdm=args.pdm,
-            verbose=args.verbose,
             uv=args.uv,
-            is_windows=is_windows,
             verify_ssl=args.verify_ssl,
             set_python_mirror=args.python,
         ):
