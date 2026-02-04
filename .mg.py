@@ -64,6 +64,10 @@ def uvx_ipython(not_windows=True):
             print("virtual environment found: " + venv_dir)
             print("python version: " + version)
         argument = " --no-python-downloads --python " + version
+        print("You may want to load virtual environment libs by:")
+        print("```py")
+        print("from ensure_import import *;EnsureImport.activate(verbose=True)")
+        print("```")
     elif not os.path.exists(toml):
         if os.path.exists(os.path.join("..", toml)):
             argument = get_argument(not_windows, "..", verbose)
