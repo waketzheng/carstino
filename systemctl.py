@@ -35,6 +35,7 @@ class Engine(StrEnum):
 
 
 class Create(StrEnum):
+    VERSION = "latest"
     mysql = (
         "docker run -d -p 3306:3306 --name mysql_latest"
         " -e MYSQL_ROOT_PASSWORD=123456 mysql:latest"
@@ -84,8 +85,19 @@ def run_shell(cmd: str) -> None:
 
 
 @cli.command()
-def enable(db: Engine):
-    run_shell(Create[db])
+def enable(
+    db: Engine,
+    version: str = typer.Option(Create.VERSION, "-v", "--version"),
+    image: str | None = None,
+):
+    cmd = Create[db]
+    if image:
+        parts = cmd.split()
+        parts[-1] = image
+        cmd = " ".join(parts)
+    elif version != Create.VERSION:
+        cmd = cmd.replace(":" + Create.VERSION, ":" + version)
+    run_shell(cmd)
 
 
 @cli.command()
