@@ -71,6 +71,7 @@ python-version = "3.10"
 
 [tool.ty.rules]
 unused-ignore-comment = "ignore"
+unused-type-ignore-comment = "ignore"
 
 [tool.mypy]
 ignore_missing_imports = true

@@ -85,8 +85,15 @@ clear *args:
 run *args: venv
     .venv/{{BIN_DIR}}/{{args}}
 
-mypy:
-    uvx mypy pip_conf.py
+[unix]
+uvx_mypy *args:
+    uvx --python=.venv/bin/python mypy --python-executable=.venv/bin/python {{args}}
+[windows]
+uvx_mypy *args:
+    uvx  --python=.venv/Scripts/python mypy --python-executable=.venv/Scripts/python {{args}}
+
+mypy *args:
+    @just uvx_mypy pip_conf.py {{args}}
 
 _lint *args:
     pdm run fast lint --ty {{args}}
