@@ -3,6 +3,7 @@ import os
 import platform
 import re
 import shutil
+import subprocess
 import sys
 
 
@@ -16,6 +17,19 @@ def run_shell(cmd, verbose=True):
             # if rc > 255, sys.exit will raise error
             return 1
     return 0
+
+
+def capture_output(cmd, verbose=False):
+    # type: (str,bool) -> str
+    if verbose:
+        print(f"--> {cmd}")
+    try:
+        r = subprocess.run(cmd, shell=True, capture_output=True)
+    except (TypeError, AttributeError):  # For python<=3.6
+        with os.popen(cmd) as p:
+            return p.read().strip()
+    else:
+        return r.stdout.decode(errors="ignore").strip()
 
 
 def get_python_version(not_windows, parent=".venv"):
@@ -38,22 +52,23 @@ def get_python_version(not_windows, parent=".venv"):
     return "3.12"
 
 
-def get_argument(not_windows, directory, verbose):
-    # type: (bool, str, bool) -> str
+def get_argument(not_windows, directory, verbose, version=""):
+    # type: (bool, str, bool, str) -> str
     venv_dir = os.path.join(directory, ".venv")
     if os.path.exists(venv_dir):
-        version = get_python_version(not_windows, venv_dir)
-        argument = " --directory " + directory
-        if verbose:
-            print("virtual environment found: " + venv_dir)
-            print("python version: " + version)
-            print("Add {argument} to argument")
+        argument = "" if directory == "." else (" --directory " + directory)
+        if not version:
+            version = get_python_version(not_windows, venv_dir)
+            if verbose:
+                print("virtual environment found: " + venv_dir)
+                print("python version: " + version)
+                print("Add {argument} to argument")
         return argument + " --no-python-downloads --python " + version
     return ""
 
 
-def uvx_ipython(not_windows=True):
-    # type: (bool) -> str
+def uvx_ipython(not_windows=True, version=""):
+    # type: (bool, str) -> str
     verbose = "--verbose" in sys.argv
     toml = "pyproject.toml"
     venv_dir = ".venv"
@@ -70,10 +85,10 @@ def uvx_ipython(not_windows=True):
         print("```")
     elif not os.path.exists(toml):
         if os.path.exists(os.path.join("..", toml)):
-            argument = get_argument(not_windows, "..", verbose)
+            argument = get_argument(not_windows, "..", verbose, version=version)
         elif os.path.exists(os.path.join("..", "..", toml)):
             directory = os.path.join("..", "..")
-            argument = get_argument(not_windows, directory, verbose)
+            argument = get_argument(not_windows, directory, verbose, version=version)
     return "uvx --with ensure-import" + argument + " ipython"
 
 
@@ -96,6 +111,7 @@ def without_manage_py():
             except ImportError:
                 offline = "--offline" in sys.argv
                 not_windows = platform.system() != "Windows"
+                prefer_uvx = not_windows or "fast" in capture_output("uvx tool list")
                 if is_venv():
                     msg = "ipython not installed. "
                     if offline or (
@@ -108,7 +124,12 @@ def without_manage_py():
                             tip = "uv " + tip
                         print("  " + tip)
                         raise
-                    command = uvx_ipython(not_windows) if not_windows else "ipython"
+                    version = "" if not_windows else sys.executable
+                    command = (
+                        uvx_ipython(not_windows, version=version)
+                        if prefer_uvx
+                        else "ipython"
+                    )
                     prompt = msg + "Do you want to run it by `" + command + "`?[Y/n] "
                     a = input(prompt).strip().lower()
                     if a in ("n", "0", "no"):
