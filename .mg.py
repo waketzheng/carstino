@@ -109,14 +109,19 @@ def without_manage_py():
             try:
                 from IPython import start_ipython  # ty:ignore[unresolved-import]
             except ImportError:
-                offline = "--offline" in sys.argv
+                offline = "--offline" in args
                 not_windows = platform.system() != "Windows"
-                prefer_uvx = not_windows or "fast" in capture_output("uvx tool list")
+                prefer_uvx = (
+                    not_windows
+                    or "--uv" in args
+                    or "--uvx" in args
+                    or "fast" in capture_output("uvx tool list")
+                )
                 if is_venv():
                     msg = "ipython not installed. "
                     if offline or (
                         (not_windows and shutil.which("uvx") is None)
-                        or (not not_windows and shutil.which("ipython") is None)
+                        or (not prefer_uvx and shutil.which("ipython") is None)
                     ):
                         print(msg + "You may need to install it by:\n")
                         tip = "pip install ipython"
