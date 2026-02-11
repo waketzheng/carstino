@@ -74,10 +74,11 @@ def uvx_ipython(not_windows=True, version=""):
     venv_dir = ".venv"
     argument = ""
     if os.path.exists(venv_dir):
-        version = get_python_version(not_windows, venv_dir)
-        if verbose:
-            print("virtual environment found: " + venv_dir)
-            print("python version: " + version)
+        if not version:
+            version = get_python_version(not_windows, venv_dir)
+            if verbose:
+                print("virtual environment found: " + venv_dir)
+                print("python version: " + version)
         argument = " --no-python-downloads --python " + version
         print("You may want to load virtual environment libs by:")
         print("```py")
@@ -115,7 +116,7 @@ def without_manage_py():
                     not_windows
                     or "--uv" in args
                     or "--uvx" in args
-                    or "fast" in capture_output("uvx tool list")
+                    or "fast" in capture_output("uv tool list")
                 )
                 if is_venv():
                     msg = "ipython not installed. "
@@ -129,7 +130,17 @@ def without_manage_py():
                             tip = "uv " + tip
                         print("  " + tip)
                         raise
-                    version = "" if not_windows else sys.executable
+                    if not_windows:
+                        version = ""
+                    else:
+                        version = sys.executable
+                        cwd = os.getcwd()
+                        try:
+                            version = os.path.relpath(version, cwd)
+                        except ValueError:
+                            if "--verbose" in args:
+                                msg = "{version} is not relative path of {cwd}"
+                                print(msg.format(version=version, cwd=cwd))
                     command = (
                         uvx_ipython(not_windows, version=version)
                         if prefer_uvx
