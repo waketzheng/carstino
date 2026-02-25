@@ -4,6 +4,10 @@
 
 Usage::
     $ python crop.py /path/to/image
+
+NOTE: 执行时会
+    print("请输入要裁剪的左上角坐标")
+    print("请输入要裁剪的右下角坐标")
 """
 
 from __future__ import annotations
@@ -92,14 +96,32 @@ def ask_point(name: str, default: tuple[float, float]) -> tuple[float, float]:
     return point
 
 
-def crop_pil(p: Path, filename=None) -> None:
+def calc_points(
+    width: int, height: int, target_width: int, target_height: int
+) -> tuple[float, ...]:
+    left = (width - target_width) / 2
+    upper = (height - target_height) / 2
+    right = width - left
+    bottom = height - upper
+    return left, upper, right, bottom
+
+
+def crop_pil(
+    p: Path, filename=None, target_size: tuple[int, int] | None = None
+) -> None:
     img = Image.open(p)
     print("Image Shape:", img.size)
     zero_point, end_point = (0, 0), img.size
-    print("请输入要裁剪的左上角坐标")
-    left, upper = ask_point("left-upper", zero_point)
-    print("请输入要裁剪的右下角坐标")
-    right, bottom = ask_point("right-bottom", end_point)
+    if target_size is None:
+        print("请输入要裁剪的左上角坐标")
+        left, upper = ask_point("left-upper", zero_point)
+        print("请输入要裁剪的右下角坐标")
+        right, bottom = ask_point("right-bottom", end_point)
+    else:
+        left, upper, right, bottom = calc_points(
+            end_point[0], end_point[1], *target_size
+        )
+
     if right == 0:
         height = bottom - upper
         if height <= 0:
@@ -119,21 +141,32 @@ def crop_pil(p: Path, filename=None) -> None:
     cropped = img.crop(dest)
     if filename is None:
         filename = "new" + p.suffix
+    if Path(filename).exists():
+        msg = "文件已存在({})! 是否直接覆盖它？[Y/n] "
+        if input(msg.format(filename)).strip().lower() in ("n", "no"):
+            return
     cropped.save(filename)
     print(f"Save to {filename} with {dest=}")
 
 
 def main() -> None:
-    if not sys.argv[1:]:
+    if not sys.argv[1:] or ({"-h", "--help"} & set(sys.argv)):
         print(__doc__)
         return
     p = Path(sys.argv[1])
     stat = p.stat()
     print(f"File Size: {naturalsize(stat.st_size, False, True)}")
-    print(f"File Created: {datetime.fromtimestamp(stat.st_ctime)}")
+    print(f"File Created At: {datetime.fromtimestamp(stat.st_ctime)}")
     if stat.st_mtime - stat.st_ctime > 10:
-        print(f"File Updated: {datetime.fromtimestamp(stat.st_mtime)}")
-    crop_pil(p)
+        print(f"File Updated At: {datetime.fromtimestamp(stat.st_mtime)}")
+    try:
+        # 按尺寸裁剪，如：python crop.py mypic.jpg 128*128
+        width, height = [int(i) for i in re.findall(r"\d+", sys.argv[2])]
+    except (TypeError, IndexError, ValueError):
+        target_size = None
+    else:
+        target_size = width, height
+    crop_pil(p, target_size=target_size)
 
 
 if __name__ == "__main__":
