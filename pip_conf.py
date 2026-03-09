@@ -154,8 +154,7 @@ def show_func_result(func):
 
 
 @show_func_result
-def get_python(check_download_command=False):
-    # type: (bool) -> str
+def get_python(check_download_command=False, *, verbose=False):
     if not System.is_linux():
         return "python"
     py = "/usr/bin/python"
@@ -455,7 +454,7 @@ def _config_by_cmd(url, sudo=False, is_windows=False, verbose=False, extra_info=
             else host
         )
     if trusted_host:
-        cmd += " && pip config set global.trusted-host " + host
+        cmd += " && pip config set global.trusted-host " + trusted_host
     if sudo:
         cmd = " && ".join("sudo " + i.strip() for i in cmd.split("&&"))
     return run_and_echo(cmd, dry="--dry" in sys.argv)
@@ -860,7 +859,7 @@ class PoetryMirror(Mirror):
         config_path = self._get_dirpath(is_windows)
         if not os.path.exists(os.path.join(config_path, "pyproject.toml")):
             try:
-                from poetry.console.commands.self.self_command import (  # ty: ignore[unresolved-import]
+                from poetry.console.commands.self.self_command import (  # type:ignore
                     SelfCommand,
                 )
             except ImportError:

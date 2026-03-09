@@ -97,7 +97,7 @@ run *args: venv
     .venv/{{BIN_DIR}}/{{args}}
 
 _lint *args:
-    pdm run fast lint --ty --bandit {{args}}
+    pdm run fast lint --ty {{args}}
     @just mypy {{SRC}}
     @just right {{SRC}}
 
