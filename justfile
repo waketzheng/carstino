@@ -11,66 +11,77 @@ system-info:
 
 # Use powershell for Windows so that 'Git Bash' and 'PyCharm Terminal' get the same result
 set windows-powershell := true
-VENV_CREATE := "pdm venv create --with uv --with-pip"
-UV_PIP := "uv pip"
-UV_PIP_I := UV_PIP + " install"
-UV_PIP_L := UV_PIP + " list"
-UV_SYNC := "uv sync --all-extras"
-UV_PROD := UV_SYNC + " --no-dev"
-UV_DEPS := UV_SYNC + " --all-groups"
-PDM_SYNC := "pdm install --frozen"
-PDM_PROD := PDM_SYNC + " --prod"
-PDM_DEPS := PDM_SYNC + " -G :all"
-PROD_DEPS := if os_family() == "windows" { PDM_PROD } else { UV_PROD }
-INSTALL_DEPS := if os_family() == "windows" { PDM_DEPS } else { UV_DEPS }
+VENV_CREATE := "pdm venv create --with-pip"
+PDM_DEPS := "pdm install --frozen -G :all"
+UV_DEPS := "uv sync --all-extras --all-groups"
+UV_PIP_I := "uv pip install"
 BIN_DIR := if os_family() == "windows" { "Scripts" } else { "bin" }
-WARN_OS := "echo 'WARNING: This command only support Linux!'"
+PY_EXEC := if os_family() == "windows" { ".venv/Scripts/python.exe" } else { ".venv/bin/python" }
+SRC := "pip_conf.py"
+
+uv_venv *args:
+    {{ VENV_CREATE }} --with uv {{ args }}
+
+win_venv *args:
+    if (Test-Path '~/AppData/Roaming/uv/tools/rust-just') { just uv_venv {{args}}} else { {{VENV_CREATE}} {{ args }}}
 
 [unix]
 venv *args:
-    @if test ! -e .venv; then {{ VENV_CREATE }} {{ args }}; fi
+    @if test ! -e .venv; then just uv_venv {{ args }}; fi
 [windows]
 venv *args:
-    @if (-Not (Test-Path '.venv')) { {{ VENV_CREATE }} {{ args }} }
+    @if (-Not (Test-Path '.venv')) { just win_venv {{ args }}}
 
-venv313:
-    {{ VENV_CREATE }} 3.13
+venv313 *args:
+    {{ VENV_CREATE }} 3.13 {{args}}
+
+pypi *args:
+    @uv run --no-sync fast pypi --quiet {{args}}
+
+pypi_reverse *args:
+    @just pypi --reverse {{args}}
 
 uv_deps *args:
-    @uv run --no-sync fast pypi --quiet --reverse
-    {{ UV_DEPS }} {{args}}
-    @just install_me
-    @uv run --no-sync fast pypi --quiet --slim
+    @just pypi_reverse
+    {{ UV_DEPS }} --reinstall-package={{SRC}} {{args}}
+    @just pypi
 
 [unix]
 deps *args: venv
     @just uv_deps {{args}}
 [windows]
 deps *args: venv
-    if (-Not (Test-Path '~/AppData/Roaming/uv/tools/rust-just')) { echo 'Using pdm ...'; {{ PDM_DEPS }} {{ args }} } else { echo 'uv sync...'; just uv_deps {{ args }} }
+    if (Test-Path '~/AppData/Roaming/uv/tools/rust-just') { echo 'uv sync ...'; just uv_deps {{ args }} } else { echo 'Using pdm ...'; {{PDM_DEPS}} {{ args }} }
 
 uv_lock *args:
-    @uv run --no-sync fast pypi --quiet --reverse
+    @just pypi_reverse
     uv lock {{args}}
-    @just deps --frozen
+    @just uv_deps --frozen
+
+win_lock *args:
+    @if (-Not (Test-Path 'pdm.lock')) { echo 'No pdm lock file, skip locking!' } else { pdm lock -G :all {{args}} }
 
 [unix]
-lock *args:
+lock *args: venv
     @just uv_lock {{args}}
-    @if test -e pdm.lock; then pdm lock -G :all; fi
 [windows]
-lock *args:
-    if (-Not (Test-Path '~/AppData/Roaming/uv/tools/rust-just')) { echo 'Using pdm ...'; pdm lock -G :all {{ args }} } else { echo 'uv lock...'; just uv_lock {{ args }} }
+lock *args: venv
+    if (Test-Path '~/AppData/Roaming/uv/tools/rust-just') { echo 'uv lock...'; just uv_lock {{ args }} } else { just win_lock {{args}}}
 
+add *args: venv
+    @just pypi_reverse
+    uv add {{args}}
+    @just pypi
+
+win_up *args:
+    @if (-Not (Test-Path 'pdm.lock')) { echo 'No pdm lock file, only install deps without update lock...'; {{PDM_DEPS}} {{args}}  } else { pdm update -G :all {{args}} }
 
 [unix]
-up *args:
+up *args: venv
     @just uv_lock --upgrade {{args}}
-    @if test -e pdm.lock; then pdm update -G :all --no-sync; fi
 [windows]
-up *args:
-    if (-Not (Test-Path '~/AppData/Roaming/uv/tools/rust-just')) { echo 'Using pdm ...'; pdm update -G :all {{ args }} } else { echo 'uv lock...'; just uv_lock {{ args }} }
-    if (Test-Path 'pdm.lock') { pdm update -G :all --no-sync }
+up *args: venv
+    if (Test-Path '~/AppData/Roaming/uv/tools/rust-just') { echo 'uv lock...'; just uv_lock --upgrade {{ args }} } else { just win_up {{args}} }
 
 uv_clear *args:
     {{ UV_DEPS }} {{args}}
@@ -85,19 +96,23 @@ clear *args:
 run *args: venv
     .venv/{{BIN_DIR}}/{{args}}
 
-[unix]
-uvx_mypy *args:
-    uvx --python=.venv/bin/python mypy --python-executable=.venv/bin/python {{args}}
-[windows]
-uvx_mypy *args:
-    uvx  --python=.venv/Scripts/python mypy --python-executable=.venv/Scripts/python {{args}}
+_lint *args:
+    pdm run fast lint --ty --bandit {{args}}
+    @just mypy {{SRC}}
+    @just right {{SRC}}
+
+uvx_py *args:
+    uvx --python={{PY_EXEC}} {{args}}
 
 mypy *args:
-    @just uvx_mypy pip_conf.py {{args}}
+    @just uvx_py mypy --python-executable={{PY_EXEC}} {{args}}
 
-_lint *args:
-    pdm run fast lint --ty {{args}}
-    @just mypy
+mypy310 *args:
+    uv export --python=3.10 --no-hashes --all-extras --all-groups --no-group test --frozen -o dev_requirements.txt
+    uvx --python=3.10 --with-requirements=dev_requirements.txt mypy --cache-dir=.mypy310_cache {{SRC}} {{args}}
+
+right *args:
+    @just uvx_py pyright --pythonpath={{PY_EXEC}} {{args}}
 
 lint *args: deps
     @just _lint {{args}}
@@ -112,16 +127,16 @@ style *args: deps
 
 _check *args:
     pdm run fast check --ty {{args}}
-    @just mypy
+    @just mypy {{SRC}}
 
 check *args: deps
     @just _check {{args}}
 
 _build *args:
-    pdm build {{args}}
+    uv build --offline {{args}}
 
 build *args: deps
-    @just _build {{args}}
+    pdm build {{args}}
 
 _test *args:
     pdm run fast test {{args}}
@@ -130,7 +145,7 @@ test *args: deps
     @just _test {{args}}
 
 prod *args: venv
-    {{ PROD_DEPS }} {{args}}
+    uv sync --no-dev {{args}}
 
 [unix]
 pipi *args: venv
@@ -139,22 +154,27 @@ pipi *args: venv
 pipi *args: venv
     @if (-Not (Test-Path '.venv/Scripts/pip.exe')) { UV_PIP_I {{args}} } else { @just run pip install {{args}} }
 
-install_me *args:
-    @just pipi -e . {{args}}
+install_me:
+    @just pipi -e .
 
 start:
     pre-commit install
     @just deps
 
-version part="patch":
-    pdm run fast bump {{part}}
+version part="patch" *args:
+    pdm run fast bump {{part}} {{args}}
 
 bump *args:
-    pdm run python edit_pip_conf_updated_at.py
-    pdm run fast bump patch --commit {{args}}
+    @just version patch --commit {{args}}
 
 tag *args:
     pdm run fast tag {{args}}
 
+# Bump version with patch part(0.1.1->0.1.2) and auto mark tag
 release: venv bump tag
+    git --no-pager log -1
+
+# Bump version with minor part(0.1.1->0.2.0) and auto mark tag
+minor *args:
+    @just version minor --commit {{args}}
     git --no-pager log -1
