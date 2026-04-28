@@ -37,7 +37,7 @@ jobs:
           pdm config use_uv true
       - name: Install the fast/ty command
         run: |
-          uv tool install --python 3.11 fastdevcli-slim
+          uv tool install --python 3.11 fast-dev-cli
           uv tool install --python 3.11 ty
       - uses: extractions/setup-just@v3  # Or: uv tool install rust-just
       - name: Install dependencies

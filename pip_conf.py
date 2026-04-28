@@ -30,7 +30,7 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2026.01.31"
+__updated_at__ = "2026.04.28"
 __version__ = "0.9.0"
 import contextlib
 import functools
@@ -154,7 +154,7 @@ def show_func_result(func):
 
 
 @show_func_result
-def get_python(check_download_command=False, *, verbose=False):
+def get_python(check_download_command=False, verbose=False):
     if not System.is_linux():
         return "python"
     py = "/usr/bin/python"

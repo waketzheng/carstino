@@ -126,7 +126,7 @@ def main():
     if os.path.exists(path) and "--no-input" not in sys.argv:
         tip = "Directory '{}' exists! Do you want to override it?[y/N] ".format(path)
         try:
-            a = raw_input(tip)  # type:ignore[name-defined]
+            a = raw_input(tip)  # type:ignore
         except NameError:
             a = input(tip)
         if not (a.strip() and a.lower().startswith("y")):

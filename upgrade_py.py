@@ -124,7 +124,7 @@ def fetch_html(url):
     try:
         from urllib.request import urlopen
     except ImportError:  # For python2
-        from urllib import urlopen  # type:ignore[attr-defined,no-redef]
+        from urllib import urlopen  # type:ignore
     html = urlopen(url).read().strip()
     if not isinstance(html, str):
         return html.decode()  # For python3
