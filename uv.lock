@@ -3,11 +3,7 @@ revision = 3
 requires-python = ">=2.7"
 resolution-markers = [
     "python_full_version >= '3.10'",
-    "python_full_version == '3.9.*'",
-    "python_full_version == '3.8.*'",
-    "python_full_version == '3.7.*'",
-    "python_full_version >= '3.5' and python_full_version < '3.7'",
-    "python_full_version < '3.5'",
+    "python_full_version < '3.10'",
 ]
 
 [[package]]
@@ -35,16 +31,16 @@ wheels = [
 
 [[package]]
 name = "asynctor"
-version = "0.12.7"
+version = "0.12.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio", marker = "python_full_version >= '3.10'" },
     { name = "exceptiongroup", marker = "python_full_version == '3.10.*'" },
     { name = "typing-extensions", marker = "python_full_version == '3.10.*'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9c/52/f41ad43c062b61a2883d4f22a7758e095ba9d34b49e5f8dbef02a509d2da/asynctor-0.12.7.tar.gz", hash = "sha256:5abc59b67a57f3dcd9e27fe2ce91ecacafd8cf085d60d9a70d312ff50554c4a4", size = 44190, upload-time = "2026-04-16T09:41:48.552Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/1a/21/8ef3d1b7559d65e7fa00bcb1d39505cef11aa0045ebb9374d89a074706b1/asynctor-0.12.8.tar.gz", hash = "sha256:39fa6175f7199fdda948d50c7f1ff86f96fb217144307c3067280f0c740d97b9", size = 44319, upload-time = "2026-04-28T06:28:45.2Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/be/b6/915e316bd2ad1f25cedcce39e184070fc4b6b1a1ffd493556d778b370e7a/asynctor-0.12.7-py3-none-any.whl", hash = "sha256:4e5336488c934fe2c6cdb65a82f58b2a3ca4e8b8841df436cb0565a7a9f0d7e2", size = 48699, upload-time = "2026-04-16T09:41:47.578Z" },
+    { url = "https://files.pythonhosted.org/packages/0e/52/a1f59772ee6729f106f635720cffc590706efbc52a4354890ad215780195/asynctor-0.12.8-py3-none-any.whl", hash = "sha256:af537447ec3a5b276dc373f2a96a9f8cfc4b0f7a2f13edf7a2a0515b6810036b", size = 48814, upload-time = "2026-04-28T06:28:43.865Z" },
 ]
 
 [package.optional-dependencies]
@@ -223,12 +219,7 @@ dev = [
     { name = "coverage", marker = "python_full_version >= '3.10'" },
     { name = "pymysql", marker = "python_full_version >= '3.10'" },
     { name = "pytest", marker = "python_full_version >= '3.10'" },
-    { name = "python-dotenv", version = "0.18.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.5'" },
-    { name = "python-dotenv", version = "0.20.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.5' and python_full_version < '3.7'" },
-    { name = "python-dotenv", version = "0.21.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.7.*'" },
-    { name = "python-dotenv", version = "1.0.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.8.*'" },
-    { name = "python-dotenv", version = "1.2.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.9.*'" },
-    { name = "python-dotenv", version = "1.2.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+    { name = "python-dotenv", marker = "python_full_version >= '3.10'" },
     { name = "tqdm", marker = "python_full_version >= '3.10'" },
     { name = "types-pymysql", marker = "python_full_version >= '3.10'" },
     { name = "types-tqdm", marker = "python_full_version >= '3.10'" },
@@ -242,7 +233,7 @@ dev = [
     { name = "coverage", marker = "python_full_version >= '3.10'", specifier = ">=7.13.0" },
     { name = "pymysql", marker = "python_full_version >= '3.10'", specifier = ">=1.1.1" },
     { name = "pytest", marker = "python_full_version >= '3.10'", specifier = ">=9.0.0" },
-    { name = "python-dotenv", specifier = ">=0.18.0" },
+    { name = "python-dotenv", marker = "python_full_version >= '3.10'", specifier = ">=1.2.2" },
     { name = "tqdm", marker = "python_full_version >= '3.10'", specifier = ">=4.67.1" },
     { name = "types-pymysql", marker = "python_full_version >= '3.10'", specifier = ">=1.1.0.20241103" },
     { name = "types-tqdm", marker = "python_full_version >= '3.10'", specifier = ">=4.67.0.20241221" },
@@ -295,74 +286,8 @@ wheels = [
 
 [[package]]
 name = "python-dotenv"
-version = "0.18.0"
-source = { registry = "https://pypi.org/simple" }
-resolution-markers = [
-    "python_full_version < '3.5'",
-]
-dependencies = [
-    { name = "typing", marker = "python_full_version < '3.5'" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/7a/1c/4dbbae00fc9a3bc605fc2d92dc0e197fcf0b6e0357d217d1819afe8206af/python-dotenv-0.18.0.tar.gz", hash = "sha256:effaac3c1e58d89b3ccb4d04a40dc7ad6e0275fda25fd75ae9d323e2465e202d", size = 32242, upload-time = "2021-06-20T16:52:19.336Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/5c/0c/9c5d5dd254e9e7a32d34777cc6fd33cbeb174744061458b88470aecbd1d6/python_dotenv-0.18.0-py2.py3-none-any.whl", hash = "sha256:dd8fe852847f4fbfadabf6183ddd4c824a9651f02d51714fa075c95561959c7d", size = 18595, upload-time = "2021-06-20T16:52:17.876Z" },
-]
-
-[[package]]
-name = "python-dotenv"
-version = "0.20.0"
-source = { registry = "https://pypi.org/simple" }
-resolution-markers = [
-    "python_full_version >= '3.5' and python_full_version < '3.7'",
-]
-sdist = { url = "https://files.pythonhosted.org/packages/02/ee/43e1c862a3e7259a1f264958eaea144f0a2fac9f175c1659c674c34ea506/python-dotenv-0.20.0.tar.gz", hash = "sha256:b7e3b04a59693c42c36f9ab1cc2acc46fa5df8c78e178fc33a8d4cd05c8d498f", size = 32069, upload-time = "2022-03-24T21:32:37.509Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/30/5f/2e5c564bd86349fe6b82ca840f46acf6f4bb76d79ba9057fce3d3e008864/python_dotenv-0.20.0-py3-none-any.whl", hash = "sha256:d92a187be61fe482e4fd675b6d52200e7be63a12b724abbf931a40ce4fa92938", size = 17840, upload-time = "2022-03-24T21:32:35.896Z" },
-]
-
-[[package]]
-name = "python-dotenv"
-version = "0.21.1"
-source = { registry = "https://pypi.org/simple" }
-resolution-markers = [
-    "python_full_version == '3.7.*'",
-]
-sdist = { url = "https://files.pythonhosted.org/packages/f5/d7/d548e0d5a68b328a8d69af833a861be415a17cb15ce3d8f0cd850073d2e1/python-dotenv-0.21.1.tar.gz", hash = "sha256:1c93de8f636cde3ce377292818d0e440b6e45a82f215c3744979151fa8151c49", size = 35930, upload-time = "2023-01-21T10:22:47.277Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/64/62/f19d1e9023aacb47241de3ab5a5d5fedf32c78a71a9e365bb2153378c141/python_dotenv-0.21.1-py3-none-any.whl", hash = "sha256:41e12e0318bebc859fcc4d97d4db8d20ad21721a6aa5047dd59f090391cb549a", size = 19284, upload-time = "2023-01-21T10:22:45.958Z" },
-]
-
-[[package]]
-name = "python-dotenv"
-version = "1.0.1"
-source = { registry = "https://pypi.org/simple" }
-resolution-markers = [
-    "python_full_version == '3.8.*'",
-]
-sdist = { url = "https://files.pythonhosted.org/packages/bc/57/e84d88dfe0aec03b7a2d4327012c1627ab5f03652216c63d49846d7a6c58/python-dotenv-1.0.1.tar.gz", hash = "sha256:e324ee90a023d808f1959c46bcbc04446a10ced277783dc6ee09987c37ec10ca", size = 39115, upload-time = "2024-01-23T06:33:00.505Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/6a/3e/b68c118422ec867fa7ab88444e1274aa40681c606d59ac27de5a5588f082/python_dotenv-1.0.1-py3-none-any.whl", hash = "sha256:f7b63ef50f1b690dddf550d03497b66d609393b40b564ed0d674909a68ebf16a", size = 19863, upload-time = "2024-01-23T06:32:58.246Z" },
-]
-
-[[package]]
-name = "python-dotenv"
-version = "1.2.1"
-source = { registry = "https://pypi.org/simple" }
-resolution-markers = [
-    "python_full_version == '3.9.*'",
-]
-sdist = { url = "https://files.pythonhosted.org/packages/f0/26/19cadc79a718c5edbec86fd4919a6b6d3f681039a2f6d66d14be94e75fb9/python_dotenv-1.2.1.tar.gz", hash = "sha256:42667e897e16ab0d66954af0e60a9caa94f0fd4ecf3aaf6d2d260eec1aa36ad6", size = 44221, upload-time = "2025-10-26T15:12:10.434Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/14/1b/a298b06749107c305e1fe0f814c6c74aea7b2f1e10989cb30f544a1b3253/python_dotenv-1.2.1-py3-none-any.whl", hash = "sha256:b81ee9561e9ca4004139c6cbba3a238c32b03e4894671e181b671e8cb8425d61", size = 21230, upload-time = "2025-10-26T15:12:09.109Z" },
-]
-
-[[package]]
-name = "python-dotenv"
 version = "1.2.2"
 source = { registry = "https://pypi.org/simple" }
-resolution-markers = [
-    "python_full_version >= '3.10'",
-]
 sdist = { url = "https://files.pythonhosted.org/packages/82/ed/0301aeeac3e5353ef3d94b6ec08bbcabd04a72018415dcb29e588514bba8/python_dotenv-1.2.2.tar.gz", hash = "sha256:2c371a91fbd7ba082c2c1dc1f8bf89ca22564a087c2c287cd9b662adde799cf3", size = 50135, upload-time = "2026-03-01T16:00:26.196Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/0b/d7/1959b9648791274998a9c3526f6d0ec8fd2233e4d4acce81bbae76b44b2a/python_dotenv-1.2.2-py3-none-any.whl", hash = "sha256:1d8214789a24de455a8b8bd8ae6fe3c6b69a5e3d64aa8a8e5d68e694bbcb285a", size = 22101, upload-time = "2026-03-01T16:00:25.09Z" },
@@ -477,15 +402,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/43/42/2e2968e68a694d3dac3a47aa0df06e46be1a6eef498e5bd15f4c54674eb9/types_tqdm-4.67.3.20260408.tar.gz", hash = "sha256:fd849a79891ae7136ed47541aface15c35bd9a13160fa8a93e42e10f60cf4c8d", size = 18119, upload-time = "2026-04-08T04:36:52.488Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/14/5d/7dedddc32ab7bc2344ece772b5e0f03ec63a1d47ad259696689713c1cf50/types_tqdm-4.67.3.20260408-py3-none-any.whl", hash = "sha256:3b9ed74ebef04df8f53d470ffdc84348e93496d8acafa08bf79fafce0f2f5b5d", size = 24561, upload-time = "2026-04-08T04:36:51.538Z" },
-]
-
-[[package]]
-name = "typing"
-version = "3.10.0.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/b0/1b/835d4431805939d2996f8772aca1d2313a57e8860fec0e48e8e7dfe3a477/typing-3.10.0.0.tar.gz", hash = "sha256:13b4ad211f54ddbf93e5901a9967b1e07720c1d1b78d596ac6a439641aa1b130", size = 78962, upload-time = "2021-05-01T18:03:58.186Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/f2/5d/865e17349564eb1772688d8afc5e3081a5964c640d64d1d2880ebaed002d/typing-3.10.0.0-py3-none-any.whl", hash = "sha256:12fbdfbe7d6cca1a42e485229afcb0b0c8259258cfb919b8a5e2a5c953742f89", size = 26320, upload-time = "2021-05-01T18:03:56.398Z" },
 ]
 
 [[package]]
