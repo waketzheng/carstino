@@ -101,6 +101,68 @@ def is_venv():
     )
 
 
+class MgShell:
+    @staticmethod
+    def check_environment(msg, offline, prefer_uvx, not_windows):
+        # type: (str, bool) -> None
+        if offline or (
+            (not_windows and shutil.which("uvx") is None)
+            or (not prefer_uvx and shutil.which("ipython") is None)
+        ):
+            print(msg + "You may need to install it by:\n")
+            tip = "pip install ipython"
+            if not_windows:
+                tip = "uv " + tip
+            print("  " + tip)
+            raise
+
+    @classmethod
+    def run_in_venv(cls, offline, prefer_uvx, not_windows, args):
+        # type: (bool, bool, list[str]) -> int
+        msg = "ipython not installed. "
+        cls.check_environment(msg, offline, prefer_uvx, not_windows)
+        if not_windows:
+            version = ""
+        else:
+            version = sys.executable
+            cwd = os.getcwd()
+            try:
+                version = os.path.relpath(version, cwd)
+            except ValueError:
+                if "--verbose" in args:
+                    msg = "{version} is not relative path of {cwd}"
+                    print(msg.format(version=version, cwd=cwd))
+        command = uvx_ipython(not_windows, version=version) if prefer_uvx else "ipython"
+        prompt = msg + "Do you want to run it by `" + command + "`?[Y/n] "
+        a = input(prompt).strip().lower()
+        if a in ("n", "0", "no"):
+            print("Abort!")
+            sys.exit(1)
+        return run_shell(command)
+
+    @classmethod
+    def ipython_not_installed(cls, args):
+        # type: (list[str]) -> int
+        offline = "--offline" in args
+        not_windows = platform.system() != "Windows"
+        prefer_uvx = (
+            not_windows
+            or "--uv" in args
+            or "--uvx" in args
+            or "fast" in capture_output("uv tool list")
+        )
+        if is_venv():
+            return cls.run_in_venv(offline, prefer_uvx, not_windows, args)
+        if not offline and not_windows:
+            return run_shell(uvx_ipython(not_windows))
+        elif hasattr(shutil, "which"):  # For Python3
+            if shutil.which("ipython") is not None:
+                return run_shell("ipython")
+            return run_shell("python3 -m IPython")
+        else:
+            return run_shell("python3.11 -m IPython")  # For my mac
+
+
 def without_manage_py():
     # type: () -> int
     args = sys.argv[1:]
@@ -110,56 +172,7 @@ def without_manage_py():
             try:
                 from IPython import start_ipython  # ty:ignore[unresolved-import]
             except ImportError:
-                offline = "--offline" in args
-                not_windows = platform.system() != "Windows"
-                prefer_uvx = (
-                    not_windows
-                    or "--uv" in args
-                    or "--uvx" in args
-                    or "fast" in capture_output("uv tool list")
-                )
-                if is_venv():
-                    msg = "ipython not installed. "
-                    if offline or (
-                        (not_windows and shutil.which("uvx") is None)
-                        or (not prefer_uvx and shutil.which("ipython") is None)
-                    ):
-                        print(msg + "You may need to install it by:\n")
-                        tip = "pip install ipython"
-                        if not_windows:
-                            tip = "uv " + tip
-                        print("  " + tip)
-                        raise
-                    if not_windows:
-                        version = ""
-                    else:
-                        version = sys.executable
-                        cwd = os.getcwd()
-                        try:
-                            version = os.path.relpath(version, cwd)
-                        except ValueError:
-                            if "--verbose" in args:
-                                msg = "{version} is not relative path of {cwd}"
-                                print(msg.format(version=version, cwd=cwd))
-                    command = (
-                        uvx_ipython(not_windows, version=version)
-                        if prefer_uvx
-                        else "ipython"
-                    )
-                    prompt = msg + "Do you want to run it by `" + command + "`?[Y/n] "
-                    a = input(prompt).strip().lower()
-                    if a in ("n", "0", "no"):
-                        print("Abort!")
-                        sys.exit(1)
-                    return run_shell(command)
-                if not offline and not_windows:
-                    return run_shell(uvx_ipython(not_windows))
-                elif hasattr(shutil, "which"):  # For Python3
-                    if shutil.which("ipython") is not None:
-                        return run_shell("ipython")
-                    return run_shell("python3 -m IPython")
-                else:
-                    return run_shell("python3.11 -m IPython")  # For my mac
+                return MgShell.ipython_not_installed(args)
             else:
                 sys.argv[0] = re.sub(r"(-script\.pyw|\.exe)?$", "", sys.argv[0])
                 for index in list(range(len(sys.argv)))[::-1]:
