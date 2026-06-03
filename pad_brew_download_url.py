@@ -12,8 +12,8 @@ import os
 import subprocess
 import sys
 
-# PROXY = "https://ghfast.top/"
-PROXY = "https://hub.gitmirror.com/"
+PROXY = "https://ghfast.top/"
+# PROXY = "https://hub.gitmirror.com/"
 PY_HOST = "https://mirrors.huaweicloud.com/python/"
 PAD = """
 elsif (url.start_with?("https://cdn.") || url.start_with?("https://desktop.docker.com") || url.start_with?("https://nodejs.org"))
@@ -111,7 +111,7 @@ def parse_endpoint(text, file):
     ohai = s.splitlines()[-1].strip()
     try:
         index = text.index(ohai)
-    except IndexError:
+    except ValueError:
         index = 0
     for idx in range(index - 1, -1, -1):
         c = text[idx]
@@ -121,7 +121,7 @@ def parse_endpoint(text, file):
     ohai = "end" + ohai
     try:
         index = text.index(ohai)
-    except IndexError:
+    except ValueError:
         index = 0
     if index == 0:
         raise ValueError("Failed to find {} in {}".format(repr(ohai), file))
