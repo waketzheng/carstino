@@ -2,17 +2,23 @@
 import os
 import platform
 import re
+import shlex
 import shutil
 import subprocess
 import sys
 
 
-def run_shell(cmd, verbose=True):
-    # type: (str, bool) -> int
+def _echo(verbose, cmd):
+    # type: (bool, str) -> None
     if verbose:
         print("--> " + str(cmd))
+
+
+def run_shell(cmd, verbose=True):
+    # type: (str, bool) -> int
+    _echo(verbose, cmd)
     if "--dry" not in sys.argv:
-        rc = os.system(cmd)
+        rc = subprocess.call(shlex.split(cmd))
         if rc != 0:
             # if rc > 255, sys.exit will raise error
             return 1
@@ -21,12 +27,11 @@ def run_shell(cmd, verbose=True):
 
 def capture_output(cmd, verbose=False):
     # type: (str,bool) -> str
-    if verbose:
-        print(f"--> {cmd}")
+    _echo(verbose, cmd)
     try:
         r = subprocess.run(cmd, shell=True, capture_output=True)
     except (TypeError, AttributeError):  # For python<=3.6
-        with os.popen(cmd) as p:
+        with os.popen(cmd) as p:  # ty:ignore[deprecated]
             return p.read().strip()
     else:
         return r.stdout.decode(errors="ignore").strip()
