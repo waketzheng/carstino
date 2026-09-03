@@ -18,9 +18,10 @@ import pprint
 import re
 import shutil
 import socket
+import subprocess
 import sys
 import time
-from datetime import date
+from datetime import datetime
 
 try:
     from enum import StrEnum  # ty: ignore[unresolved-import]
@@ -101,6 +102,11 @@ SHORTCUTS = {
 }
 
 
+def os_system(cmd):
+    # type: (str) -> int
+    return subprocess.call(cmd)
+
+
 def get_full_version(shortcut):
     # type: (str) -> str
     if "." in shortcut:
@@ -114,7 +120,7 @@ def is_pingable(domain):
         domain = domain.split("/")[0]
     try:
         socket.gethostbyname(domain)
-    except Exception:
+    except Exception:  # NOQA:BLE001
         return False
     return True
 
@@ -131,6 +137,11 @@ def fetch_html(url):
     return html
 
 
+def date_today(tzinfo=None):
+    # type: () -> str:
+    return str(datetime.now(tz=tzinfo).date())
+
+
 def update_versions_by_http():
     # type: () -> None
     global VERSION
@@ -140,7 +151,7 @@ def update_versions_by_http():
     )
     if is_pingable(domain):
         HOST = "http://" + domain + "/python/"
-    filename = "pyversions_{}.html".format(date.today())
+    filename = "pyversions_{}.html".format(date_today())
     for _ in range(1):
         if os.path.exists(filename):
             with open(filename) as f:
@@ -176,7 +187,7 @@ def default_python_version():
 
 def silently_run(cmd):
     # type: (str) -> str
-    with os.popen(cmd) as fp:
+    with os.popen(cmd) as fp:  # ty:ignore[deprecated]
         if not hasattr(fp, "_stream"):  # For python2
             return fp.read().strip()
         buffer = getattr(fp._stream, "buffer", None)
@@ -192,7 +203,7 @@ def silently_run(cmd):
 def run_and_echo(cmd):
     # type: (str) -> int
     print("--> " + cmd)
-    return os.system(cmd)
+    return os_system(cmd)
 
 
 class Options(StrEnum):
@@ -354,7 +365,7 @@ def is_command_exists(tool):
         return shutil.which(tool) is not None
     except AttributeError:  # For Python2
         if tool.startswith("python"):
-            return os.system(tool + " --version") == 0
+            return os_system(tool + " --version") == 0
         return detect_command(tool)
 
 
@@ -432,7 +443,7 @@ def main():
         return
     if not is_root_user:
         print("They need sudo permission.")
-        if os.system("sudo echo going on ............") != 0:
+        if os_system("sudo echo going on ............") != 0:
             sys.exit()
     start = time.time()
     if run_and_echo("&&".join(cmds)) != 0:

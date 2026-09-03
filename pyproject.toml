@@ -25,6 +25,7 @@ dev = [
     "types-pymysql>=1.1.0.20241103; python_version >= '3.10'",
     "types-tqdm>=4.67.0.20241221; python_version >= '3.10'",
     "python-dotenv>=1.2.2; python_version >= '3.10'",
+    "imp2importlib>=0.1.1; python_version >= '3.10'"
 ]
 
 [project.urls]

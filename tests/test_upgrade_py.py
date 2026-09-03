@@ -14,6 +14,7 @@ def run_by_subprocess(
         cwd=cwd,
         capture_output=True,
         encoding="utf-8",
+        check=False,
     )
 
 

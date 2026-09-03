@@ -34,11 +34,15 @@ from pathlib import Path
 def run_and_echo(cmd: str, cwd: Path | None = None) -> bool:
     print("-->", cmd)
     r = (
-        subprocess.run(cmd, shell=True, cwd=cwd)
+        subprocess.run(cmd, shell=True, cwd=cwd, check=False)
         if "&&" in cmd
-        else subprocess.run(shlex.split(cmd), cwd=cwd)
+        else subprocess.run(shlex.split(cmd), cwd=cwd, check=False)
     )
     return r.returncode == 0
+
+
+def date_today(tzinfo=None) -> str:
+    return str(datetime.now(tz=tzinfo).date())
 
 
 def main() -> int:
@@ -72,7 +76,7 @@ def main() -> int:
             cmd = f"tar --use-compress-program=zstd -xf {target}"
             if platform.system() == "Darwin":
                 # 2025.11.22 MacOS not support decompress zstd by tar
-                day = datetime.now().date()
+                day = date_today()
                 tmpfile = f"{src.stem}.{day}.tmp"
                 cmd = (
                     f"zstd -d {target} -o {tmpfile} && tar xf {tmpfile} && rm {tmpfile}"

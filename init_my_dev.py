@@ -26,13 +26,13 @@ def no_input() -> bool:
 
 
 def get_cmd_output(cmd: str) -> str:
-    ret = subprocess.run(cmd, shell=True, capture_output=True)
+    ret = subprocess.run(cmd, shell=True, capture_output=True, check=False)
     return ret.stdout.decode().strip()
 
 
 def run_cmd(command: str) -> int:
     print("-->", command)
-    return subprocess.run(command, shell=True).returncode
+    return subprocess.run(command, shell=True, check=False).returncode
 
 
 def get_shell() -> str:
@@ -64,7 +64,7 @@ def _git_dog():
         "%an%C(reset)%C(bold yellow)%d%C(reset)"
     )
     dog = f"log --graph --abbrev-commit --decorate --format=format:{fmt!r} --all"
-    run_cmd(f"git config --global alias.dog {repr(dog)}")
+    run_cmd(f"git config --global alias.dog {dog!r}")
 
 
 def configure_aliases(rc: Path, txt: str | None = None) -> None:
@@ -94,7 +94,7 @@ def get_dirpath() -> Path:
     try:
         return Path(__file__).parent.resolve()
     except NameError:
-        return Path(".").resolve()
+        return Path.cwd()
 
 
 def update_aliases(repo: Path, aliases_path: Path, home) -> str:

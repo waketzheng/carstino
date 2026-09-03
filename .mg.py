@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+"""
+Make it easy to start ipython interaction.
+
+Usage::
+    $ python <me> shell
+
+"""
+
 import os
 import platform
 import re
@@ -26,10 +34,10 @@ def run_shell(cmd, verbose=True):
 
 
 def capture_output(cmd, verbose=False):
-    # type: (str,bool) -> str
+    # type: (str, bool) -> str
     _echo(verbose, cmd)
     try:
-        r = subprocess.run(cmd, shell=True, capture_output=True)
+        r = subprocess.run(cmd, shell=True, capture_output=True, check=False)
     except (TypeError, AttributeError):  # For python<=3.6
         with os.popen(cmd) as p:  # ty:ignore[deprecated]
             return p.read().strip()
@@ -37,33 +45,33 @@ def capture_output(cmd, verbose=False):
         return r.stdout.decode(errors="ignore").strip()
 
 
-def get_python_version(not_windows, parent=".venv"):
+def get_python_version(is_windows, parent=".venv"):
     # type: (bool, str) -> str
-    exec_dir = "bin" if not_windows else "Scripts"
+    exec_dir = "Scripts" if is_windows else "bin"
     folder = os.path.join(parent, exec_dir)
     files = os.listdir(folder)
     pattern = re.compile(r"python(\d\.\d+)$")
-    if not_windows:
+    if is_windows:
         for f in files:
-            m = pattern.match(f)
+            stem, _ext = os.path.splitext(f)
+            m = pattern.match(stem)
             if m:
                 return m.group(1)
     else:
         for f in files:
-            stem, ext = os.path.splitext(f)
-            m = pattern.match(stem)
+            m = pattern.match(f)
             if m:
                 return m.group(1)
     return "3.12"
 
 
-def get_argument(not_windows, directory, verbose, version=""):
+def get_argument(is_windows, directory, verbose, version=""):
     # type: (bool, str, bool, str) -> str
     venv_dir = os.path.join(directory, ".venv")
     if os.path.exists(venv_dir):
         argument = "" if directory == "." else (" --directory " + directory)
         if not version:
-            version = get_python_version(not_windows, venv_dir)
+            version = get_python_version(is_windows, venv_dir)
             if verbose:
                 print("virtual environment found: " + venv_dir)
                 print("python version: " + version)
@@ -72,15 +80,14 @@ def get_argument(not_windows, directory, verbose, version=""):
     return ""
 
 
-def uvx_ipython(not_windows=True, version=""):
-    # type: (bool, str) -> str
-    verbose = "--verbose" in sys.argv
+def uvx_ipython(is_windows=False, version="", verbose=False):
+    # type: (bool, str, bool) -> str
     toml = "pyproject.toml"
     venv_dir = ".venv"
     argument = ""
     if os.path.exists(venv_dir):
         if not version:
-            version = get_python_version(not_windows, venv_dir)
+            version = get_python_version(is_windows, venv_dir)
             if verbose:
                 print("virtual environment found: " + venv_dir)
                 print("python version: " + version)
@@ -91,10 +98,10 @@ def uvx_ipython(not_windows=True, version=""):
         print("```")
     elif not os.path.exists(toml):
         if os.path.exists(os.path.join("..", toml)):
-            argument = get_argument(not_windows, "..", verbose, version=version)
+            argument = get_argument(is_windows, "..", verbose, version=version)
         elif os.path.exists(os.path.join("..", "..", toml)):
             directory = os.path.join("..", "..")
-            argument = get_argument(not_windows, directory, verbose, version=version)
+            argument = get_argument(is_windows, directory, verbose, version=version)
     return "uvx --with ensure-import" + argument + " ipython"
 
 
@@ -108,64 +115,61 @@ def is_venv():
 
 class MgShell:
     @staticmethod
-    def check_environment(msg, offline, prefer_uvx, not_windows):
-        # type: (str, bool) -> None
+    def check_environment(msg, offline, prefer_uvx):
+        # type: (str, bool, bool) -> None
         if offline or (
-            (not_windows and shutil.which("uvx") is None)
+            shutil.which("uvx") is None
             or (not prefer_uvx and shutil.which("ipython") is None)
         ):
             print(msg + "You may need to install it by:\n")
-            tip = "pip install ipython"
-            if not_windows:
-                tip = "uv " + tip
+            tip = "uv pip install ipython"
             print("  " + tip)
-            raise
+            raise SystemExit(1)
 
     @classmethod
-    def run_in_venv(cls, offline, prefer_uvx, not_windows, args):
-        # type: (bool, bool, list[str]) -> int
+    def run_in_venv(cls, offline, prefer_uvx, is_windows, verbose):
+        # type: (bool, bool, bool, bool) -> int
         msg = "ipython not installed. "
-        cls.check_environment(msg, offline, prefer_uvx, not_windows)
-        if not_windows:
-            version = ""
-        else:
+        cls.check_environment(msg, offline, prefer_uvx)
+        version = ""
+        if is_windows:
             version = sys.executable
             cwd = os.getcwd()
             try:
-                version = os.path.relpath(version, cwd)
+                version = os.path.relpath(version, cwd).replace(os.path.sep, "/")
             except ValueError:
-                if "--verbose" in args:
+                if verbose:
                     msg = "{version} is not relative path of {cwd}"
                     print(msg.format(version=version, cwd=cwd))
-        command = uvx_ipython(not_windows, version=version) if prefer_uvx else "ipython"
+        command = uvx_ipython(is_windows, version, verbose) if prefer_uvx else "ipython"
         prompt = msg + "Do you want to run it by `" + command + "`?[Y/n] "
         a = input(prompt).strip().lower()
         if a in ("n", "0", "no"):
             print("Abort!")
-            sys.exit(1)
+            raise SystemExit(1)
         return run_shell(command)
 
     @classmethod
     def ipython_not_installed(cls, args):
         # type: (list[str]) -> int
         offline = "--offline" in args
-        not_windows = platform.system() != "Windows"
-        prefer_uvx = (
-            not_windows
-            or "--uv" in args
-            or "--uvx" in args
-            or "fast" in capture_output("uv tool list")
-        )
+        is_windows = platform.system() == "Windows"
+        prefer_uvx = "--no-uvx" not in args
+        verbose = "--verbose" in args
         if is_venv():
-            return cls.run_in_venv(offline, prefer_uvx, not_windows, args)
-        if not offline and not_windows:
-            return run_shell(uvx_ipython(not_windows))
-        elif hasattr(shutil, "which"):  # For Python3
+            return cls.run_in_venv(offline, prefer_uvx, is_windows, verbose)
+        if not offline:
+            return run_shell(uvx_ipython(is_windows, verbose=verbose))
+        if hasattr(shutil, "which"):  # For Python3
             if shutil.which("ipython") is not None:
-                return run_shell("ipython")
-            return run_shell("python3 -m IPython")
+                cmd = "ipython"
+            elif is_windows:
+                cmd = "python -m IPython"
+            else:
+                cmd = "python3 -m IPython"
         else:
-            return run_shell("python3.11 -m IPython")  # For my mac
+            cmd = "python3.11 -m IPython"  # For my mac
+        return run_shell(cmd)
 
 
 def without_manage_py():
@@ -207,6 +211,9 @@ def main():
             break
         fn = "../" + fn
     else:
+        if set(sys.argv[1:]) & {"-h", "--help"}:
+            print(__doc__.replace("<me>", sys.argv[0]))
+            return 1
         return without_manage_py()
     cmd = "python {} {}".format(fn, " ".join(sys.argv[1:]))
     return run_shell(cmd, verbose=False)
