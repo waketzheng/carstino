@@ -407,7 +407,7 @@ class ExtraIndex:
         # type: () -> dict[str, Optional[tuple[str, str]]]
         if self.__class__._caching is None:
             self.__class__._caching = {}
-        return self._caching
+        return self.__class__._caching
 
     def __init__(self, host, force=False):
         self._host = host
