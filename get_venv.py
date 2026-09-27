@@ -13,6 +13,7 @@ import functools
 import os
 import platform
 import shutil
+import subprocess
 import sys
 
 try:
@@ -34,7 +35,7 @@ except ImportError:
 
 def capture_output(command):
     # type: (str) -> str
-    with os.popen(command) as fp:
+    with os.popen(command) as fp:  # ty:ignore
         if not hasattr(fp, "_stream"):  # For python2
             return fp.read().strip()
         buffer = getattr(fp._stream, "buffer", None)
@@ -70,7 +71,7 @@ def is_poetry_installed():
     try:
         return shutil.which("poetry") is not None
     except AttributeError:  # For Python2
-        return os.system("poetry check --quiet") == 0
+        return subprocess.call(["poetry", "check", "--quiet"]) == 0
 
 
 def is_controlled_by_ssh():

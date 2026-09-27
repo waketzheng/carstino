@@ -34,15 +34,15 @@ def run_and_echo(cmd):
     # type: (str) -> int
     print("--> " + cmd)
     sys.stdout.flush()
-    return os.system(cmd)
+    return subprocess.call(cmd, shell=True)
 
 
 def capture_output(cmd):
     # type: (str) -> str
     try:
-        r = subprocess.run(cmd, shell=True, capture_output=True)
+        r = subprocess.run(cmd, shell=True, capture_output=True, check=False)
     except (TypeError, AttributeError):  # For python<=3.6
-        with os.popen(cmd) as p:
+        with os.popen(cmd) as p:  # ty:ignore
             return p.read().strip()
     else:
         return r.stdout.decode().strip()

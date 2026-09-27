@@ -28,12 +28,17 @@ def secho(*args, **kw):
         secho(" ".join(map(str, args)), **kw)
 
 
+def os_system(cmd):
+    # type: (str) -> int
+    return subprocess.call(cmd, shell=True)
+
+
 def capture_output(cmd):
     # type: (str) -> str
     try:
-        r = subprocess.run(cmd, shell=True, capture_output=True)
+        r = subprocess.run(cmd, shell=True, capture_output=True, check=False)
     except (TypeError, AttributeError):  # For python<=3.6
-        with os.popen(cmd) as p:
+        with os.popen(cmd) as p:  # ty:ignore
             return p.read().strip()
     else:
         return r.stdout.decode().strip()
@@ -47,10 +52,12 @@ def configure_settings():
             break
         p = Path(f"../{p}")
     else:
-        raise Exception('`manage.py` not found at "." or ".."')
+        raise FileNotFoundError('`manage.py` not found at "." or ".."')
     s = p.read_text()
-    conf_line = [i for i in s.split("\n") if SETTINGS_ENV in i][0]
-    exec(conf_line.strip())
+    conf_line = next(i for i in s.split("\n") if SETTINGS_ENV in i)
+    code = conf_line.strip()
+    print("Found code:\n```py\n{code}\n```\n")
+    exec(code)  # NOQA:S102
     return p
 
 
@@ -63,7 +70,7 @@ def get_db(alias="default", all_=False):
     try:
         return dbs[alias]
     except KeyError:
-        raise Exception(f"database NAME ``{alias}`` not found at settings.") from None
+        raise ValueError(f"database NAME ``{alias}`` not found at settings.") from None
 
 
 def getconf(dbconf):
@@ -90,7 +97,7 @@ def creat_db(config, db_name, engine, drop=False):
     elif "sqlite" in engine:
         sqlite(config, db_name, drop)
     else:
-        raise Exception(f"Not handle database engine ``{engine}`` yet..")
+        raise ValueError(f"Not handle database engine ``{engine}`` yet..")
 
 
 def mysql(config, db_name, drop=False):
@@ -109,7 +116,7 @@ def mysql(config, db_name, drop=False):
         conn.commit()
         cur.close()
         conn.close()
-    except Exception as e:
+    except Exception as e:  # NOQA:BLE001
         secho(f"SQL Error: {e}")
 
 
@@ -133,8 +140,8 @@ def prompt_mysql_create_db(name, user, drop_db=False):
     if using_docker("mysql"):
         connect_db = "docker exec -it mysql_latest " + connect_db
     secho("\n-->", connect_db)
-    if os.system("which expect") != 0:
-        os.system(connect_db)
+    if os_system("which expect") != 0:
+        os_system(connect_db)
     else:
         p = Path(__file__).parent / ".create_db_in_docker_mysql.exp"
         if p.exists():
@@ -145,7 +152,7 @@ def prompt_mysql_create_db(name, user, drop_db=False):
             else:
                 sql_1, sql_2 = sqls
             cmd = f'{p} "{connect_db}" "{password}" "{sql_1}" "{sql_2}"'
-            if os.system(cmd) == 0:
+            if os_system(cmd) == 0:
                 print("\nDone.")
 
 
@@ -160,10 +167,10 @@ def postgres(config, db_name, drop=False):
     if drop:
         cmd = f'{who}"drop database if exists {db_name};"'
         secho("\n-->", cmd, "...")
-        os.system(f"cd /tmp && {cmd}")
+        os_system(f"cd /tmp && {cmd}")
     cmd = f'{who}"create database {db_name} {option};"'
     secho("\n-->", cmd, "...")
-    os.system(f"cd /tmp && {cmd}")
+    os_system(f"cd /tmp && {cmd}")
 
 
 def sqlite(config, db_name, drop=False):
@@ -227,7 +234,7 @@ def main():
         choices=("mysql", "postgres", "sqlite"),
         help="What's the database engine(default:postgres)",
     )
-    args, unknown = parser.parse_known_args()
+    args, _unknown = parser.parse_known_args()
     if args.db_name and args.name == "auto":
         args.name = args.db_name
     if args.name != "auto":
@@ -249,11 +256,11 @@ def main():
     if args.migrate:
         cmd = f"python {manage_path} makemigrations"
         secho("\n-->", cmd, "...")
-        os.system(cmd)
+        os_system(cmd)
         for alias in aliases:
             cmd = f"python {manage_path} migrate --database={alias}"
             secho("\n-->", cmd, "...")
-            os.system(cmd)
+            os_system(cmd)
 
 
 if __name__ == "__main__":

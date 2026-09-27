@@ -67,8 +67,9 @@ def run_and_echo(cmd: str, dry=False, **kw) -> int:
     typer.echo(f"--> Executing shell command:\n {cmd}")
     if dry:
         return 0
+    check = kw.pop("check", False)
     kw.setdefault("shell", True)
-    return subprocess.run(cmd, **kw).returncode
+    return subprocess.run(cmd, check=check, **kw).returncode
 
 
 def exit_if_run_failed(cmd: str, env=None, _exit=False, dry=False, **kw) -> None:

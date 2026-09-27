@@ -42,12 +42,17 @@ def say_done():
         console.log("[bold magenta]Done.[/bold magenta]", ":vampire:")
 
 
+def os_system(cmd):
+    # type: (str) -> int
+    return subprocess.call(cmd, shell=True)
+
+
 def capture_output(cmd):
     # type: (str) -> str
     try:
-        r = subprocess.run(cmd, shell=True, capture_output=True)
+        r = subprocess.run(cmd, shell=True, capture_output=True, check=False)
     except (TypeError, AttributeError):  # For python<=3.6
-        with os.popen(cmd) as p:
+        with os.popen(cmd) as p:  # ty:ignore
             return p.read().strip()
     else:
         return r.stdout.decode().strip()
@@ -86,9 +91,9 @@ def remove_old_pad(text, s):
     return text, indent, updated
 
 
-def backup_it(file, text):
-    # type: (str, str) -> None
-    bak_file = file + ".{}.bak".format(datetime.date.today())
+def backup_it(file, text, tzinfo=None):
+    # type: (str, str, datetime.timezone) -> None
+    bak_file = file + ".{}.bak".format(datetime.datetime.now(tz=tzinfo).date())
     if os.path.exists(bak_file):
         return
     with open(bak_file, "w") as fp:
@@ -174,7 +179,7 @@ def main():
         url = PROXY + args[0]
         cmd = "wget " + url
         print("--> {}".format(cmd))
-        os.system(cmd)
+        os_system(cmd)
     else:
         with open(file, "w") as f:
             f.write(new_text)

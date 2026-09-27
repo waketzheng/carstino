@@ -149,6 +149,10 @@ def crop_pil(
     print(f"Save to {filename} with {dest=}")
 
 
+def datetime_fromtimestamp(ts: float, tzinfo=None) -> datetime:
+    return datetime.fromtimestamp(ts, tz=tzinfo)
+
+
 def main() -> None:
     if not sys.argv[1:] or ({"-h", "--help"} & set(sys.argv)):
         print(__doc__)
@@ -156,9 +160,9 @@ def main() -> None:
     p = Path(sys.argv[1])
     stat = p.stat()
     print(f"File Size: {naturalsize(stat.st_size, False, True)}")
-    print(f"File Created At: {datetime.fromtimestamp(stat.st_ctime)}")
+    print(f"File Created At: {datetime_fromtimestamp(stat.st_ctime)}")
     if stat.st_mtime - stat.st_ctime > 10:
-        print(f"File Updated At: {datetime.fromtimestamp(stat.st_mtime)}")
+        print(f"File Updated At: {datetime_fromtimestamp(stat.st_mtime)}")
     try:
         # 按尺寸裁剪，如：python crop.py mypic.jpg 128*128
         width, height = [int(i) for i in re.findall(r"\d+", sys.argv[2])]

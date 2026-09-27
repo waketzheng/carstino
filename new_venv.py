@@ -31,6 +31,8 @@ Usage::
 import functools
 import os
 import re
+import shlex
+import subprocess
 import sys
 
 __version__ = "0.1.1"
@@ -131,7 +133,7 @@ def main():
             a = input(tip)
         if not (a.strip() and a.lower().startswith("y")):
             return 1
-    rc = os.system(cmd)
+    rc = subprocess.call(shlex.split(cmd))
     return 1 if rc else None
 
 

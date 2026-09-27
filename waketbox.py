@@ -3,7 +3,7 @@
 Waket Box
 
 Usage::
-    FIX_ZWJ=xxx python <me>.py <path-to-file>.txt
+    FIX_ZWJ=xxx python <me> <path-to-file>.txt
 
 """
 
@@ -13,6 +13,7 @@ import base64
 import os
 import random
 import string
+import subprocess
 import sys
 import zlib
 from functools import cached_property
@@ -81,9 +82,9 @@ class DigitGame:
 def main():
     if len(sys.argv) < 2:
         if __doc__:
-            print(__doc__.replace("<me>", Path(__file__).stem))
+            print(__doc__.replace("<me>", sys.argv[0]))
         else:
-            os.system("cat " + __file__)
+            subprocess.call(["cat", __file__])
         return
     file = Path(sys.argv[1])
     text = file.read_text()

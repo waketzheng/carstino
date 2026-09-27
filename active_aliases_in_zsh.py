@@ -28,7 +28,7 @@ def main() -> int:
         print("Already in, skip.")
         cmd = f'grep -rn "{NAME}" "{home / ZSHRC}"'
         print("-->", cmd)
-        return subprocess.run(shlex.split(cmd)).returncode
+        return subprocess.call(shlex.split(cmd))
 
 
 if __name__ == "__main__":

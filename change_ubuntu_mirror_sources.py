@@ -35,9 +35,9 @@ def parse_argv(args):
     for arg in args:
         if arg.startswith("http"):
             return arg
-        for k in SOURCES:
+        for k, v in SOURCES.items():
             if k in arg:
-                return SOURCES[k]
+                return v
     return DEFAULT
 
 

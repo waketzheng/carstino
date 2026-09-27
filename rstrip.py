@@ -122,7 +122,7 @@ def get_filepaths(args):
     if args.dir:
         parent = Path(args.dir)
         if not parent.exists():
-            raise Exception("Directory `{}` not exists!".format(args.dir))
+            raise FileNotFoundError("Directory `{}` not exists!".format(args.dir))
     else:
         parent = Path()
     # to be optimize
@@ -145,7 +145,7 @@ def get_filepaths(args):
                     i = i.lstrip("*").lstrip("/") or "*"
                     fpaths += list(Path().rglob(i))
                 else:
-                    if i.endswith("**") or i.endswith("**/"):
+                    if i.endswith(("**", "**/")):
                         i = i.rstrip("/").rstrip("*")
                         fpaths += list(Path(i).rglob("*"))
                     else:
@@ -224,7 +224,7 @@ def main():
 
 
 if __name__ == "__main__":
-    if sys.version < "3":
+    if sys.version_info < (3,):
         os.system("python3 " + " ".join(sys.argv))
     else:
         main()

@@ -30,8 +30,8 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2026.04.28"
-__version__ = "0.9.1"
+__updated_at__ = "2026.09.27"
+__version__ = "0.9.2.dev1"
 import contextlib
 import functools
 import os
@@ -50,7 +50,7 @@ except ImportError:
 else:
     if typing.TYPE_CHECKING:
         from argparse import Namespace  # NOQA:F401
-        from typing import Literal, Optional  # NOQA:F401
+        from typing import ClassVar, Literal, Optional  # NOQA:F401
 
 """
 A sample of the pip.conf/pip.ini:
@@ -138,7 +138,7 @@ def is_command_exists(tool):
     try:
         return shutil.which(tool) is not None
     except AttributeError:  # For Python2
-        return os.system(tool + " --version --no-ansi") == 0
+        return subprocess.call([tool, "--version", "--no-ansi"]) == 0
 
 
 def show_func_result(func):
@@ -213,7 +213,7 @@ def check_mirror_by_pip_download(domain, tmp=False, verbose=False):
     print("Checking whether {} reachable...".format(repr(domain)))
     if verbose:
         print("Command: {}".format(cmd))
-    if os.system(cmd) == 0:
+    if subprocess.call(cmd, shell=True) == 0:
         if not cmd.startswith("ping"):
             dirname = "/tmp" if tmp else "."
             for name in os.listdir(dirname):
@@ -243,17 +243,20 @@ def is_pip_ready(py="python"):
             return False
         else:
             return True
-    return os.system("{py} -m pip --version".format(py=py)) == 0
+    return subprocess.call([py, "-m", "pip", "--version"]) == 0
 
 
 def check_url_reachable(url, verbose=False):
     # type: (str,bool) -> bool
     try:
+        from urllib.error import HTTPError, URLError
         from urllib.request import urlopen as _urlopen
 
         urlopen = functools.partial(_urlopen, timeout=5)
     except ImportError:
         from urllib import urlopen as _urlopen  # type:ignore
+
+        from urllib2 import HTTPError, URLError  # type:ignore
 
         class Response(object):
             def __init__(self, status):
@@ -270,11 +273,10 @@ def check_url_reachable(url, verbose=False):
         with urlopen(url) as response:
             if response.status == 200:
                 return True
-    except Exception as e:
+    except (URLError, HTTPError, ValueError) as e:
         if verbose:
             print(e)
             print("URL {} is not readable.".format(url))
-        pass
     return False
 
 
@@ -314,7 +316,7 @@ def is_pingable(host="", is_windows=False, domain="", verbose=False):
     domain = ensure_domain_name(host)
     try:
         socket.gethostbyname(domain)
-    except Exception:
+    except socket.gaierror:
         return False
     else:
         py = get_python(verbose=verbose)
@@ -369,7 +371,7 @@ def run_and_echo(cmd, dry=False):
         if "--verbose" in sys.argv:
             print("Exit without actually run the shell command!")
         return 1
-    return os.system(cmd)
+    return subprocess.call(cmd, shell=True)
 
 
 def capture_output(cmd, verbose=False):
@@ -377,9 +379,9 @@ def capture_output(cmd, verbose=False):
     if verbose:
         print("--> {}".format(cmd))
     try:
-        r = subprocess.run(cmd, shell=True, capture_output=True)
+        r = subprocess.run(cmd, shell=True, capture_output=True, check=False)
     except (TypeError, AttributeError):  # For python<=3.6
-        with os.popen(cmd) as p:
+        with os.popen(cmd) as p:  # ty:ignore[deprecated]
             return p.read().strip()
     else:
         return r.stdout.decode(errors="ignore").strip()
@@ -398,7 +400,14 @@ def config_by_cmd(url, is_windows=False, verbose=False, extra_info=None):
 
 
 class ExtraIndex:
-    caching = {}  # type: dict[str, Optional[tuple[str, str]]]
+    _caching = None  # type: ClassVar[Optional[dict[str, Optional[tuple[str, str]]]]]
+
+    @property
+    def caching(self):
+        # type: () -> dict[str, Optional[tuple[str, str]]]
+        if self.__class__._caching is None:
+            self.__class__._caching = {}
+        return self._caching
 
     def __init__(self, host, force=False):
         self._host = host
@@ -578,7 +587,7 @@ class PdmMirror:
         if not verify_ssl:
             cmd = "pdm config pypi.verify_ssl false && " + cmd
         if extra_info is not None:
-            extra_host, extra_index_url = extra_info
+            _extra_host, extra_index_url = extra_info
             cmd += " && pdm config pypi.extra.url " + extra_index_url
             if extra_index_url.startswith("https:") and not verify_ssl:
                 cmd += " && pdm config pypi.extra.verify_ssl false"
@@ -728,7 +737,7 @@ class UvMirror(Mirror):
                 return None
             if "index-url" in content:
                 pattern = r'index-url\s*=\s*"([^"]*)"'
-                m = re.search(pattern, content, re.S)
+                m = re.search(pattern, content, re.DOTALL)
                 if m:
                     already = m.group(1)
                     if not self.replace:
@@ -738,7 +747,7 @@ class UvMirror(Mirror):
                         text = self.set_python(content.replace(already, self.url))
             elif "[[index]]" in content:
                 pattern = r'url\s*=\s*"([^"]*)"'
-                m = re.search(pattern, content, re.S)
+                m = re.search(pattern, content, re.DOTALL)
                 if m:
                     already = m.group(1)
                     if not self.replace:
@@ -789,11 +798,11 @@ class UvMirror(Mirror):
 
 class PoetryMirror(Mirror):
     plugin_name = "poetry-plugin-pypi-mirror"
-    extra_plugins = [  # You can set PIP_CONF_NO_EXTRA_POETRY_PLUGINS=1 to skip install extra plugins
+    extra_plugins = (  # You can set PIP_CONF_NO_EXTRA_POETRY_PLUGINS=1 to skip install extra plugins
         "poetry-dotenv-plugin",
         "poetry-plugin-i",
         "poetry-plugin-version",
-    ]
+    )
 
     def fix_poetry_v1_6_error(self, version):
         # type: (str) -> None
@@ -921,7 +930,7 @@ class PoetryMirror(Mirror):
                 return None
             if item in content:
                 pattern = r'\[plugins\.pypi_mirror\].url = "([^"]*)"'
-                m = re.search(pattern, content, re.S)
+                m = re.search(pattern, content, re.DOTALL)
                 if m:
                     already = m.group(1)
                     if not self.replace:
@@ -1035,7 +1044,7 @@ def auto_detect_tool(args):
         pyproject = "pyproject.toml"
         locks = {"uv.lock", "poetry.lock", "pdm.lock"} & set(files)
         if len(locks) == 1:
-            lock_file = list(locks)[0]
+            lock_file = next(iter(locks))
             tool = lock_file.split(".")[0]
             if args.verbose:
                 printf("Only {} exists, use tool={}".format(lock_file, tool))
@@ -1059,7 +1068,7 @@ def auto_detect_tool(args):
                     if m:
                         tools.add(m.group(1))
             if len(tools) == 1:
-                tool = list(tools)[0]
+                tool = next(iter(tools))
                 if args.verbose:
                     printf("Pick {} as tool in favor of pyproject.toml".format(tool))
             else:  # Can't determine which tool, change pip mirror only.

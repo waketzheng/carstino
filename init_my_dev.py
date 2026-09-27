@@ -204,7 +204,7 @@ def run_init(home: Path, aliases_path: Path) -> None:
     rc = get_rc_file(home)
     configure_aliases(rc)
     # Install some useful python modules
-    if "--prod" not in sys.argv and PACKAGES:
+    if "--prod" not in sys.argv:
         for pkg in PACKAGES.split():
             if run_cmd(f"{pipx} install {pkg}") != 0:
                 if IS_WINDOWS:

@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-import os
-from pathlib import Path
-
 """
 Use for Nginx deployment.
 After add new file in /etc/nginx/sites-avaliable/,
 run this script to create soft link into ../sites-enabled/
 """
 
+import subprocess
+from pathlib import Path
+
 
 def run_and_echo(cmd: str) -> int:
     print("-->", cmd)
-    return os.system(cmd)
+    return subprocess.call(cmd, shell=True)
 
 
 def main():
@@ -25,7 +25,7 @@ def main():
     count = linked = 0
     for i in pwd.glob("*.*"):
         name = i.name
-        if name.endswith(".bak") or name.endswith(".py"):
+        if name.endswith((".bak", ".py")):
             continue
         count += 1
         p = target.joinpath(name)

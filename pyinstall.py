@@ -16,6 +16,7 @@ Or just::
 import functools
 import os
 import re
+import shlex
 import subprocess
 import sys
 import time
@@ -70,7 +71,7 @@ def pyinstall(version: str) -> subprocess.CompletedProcess[str]:
     cmd += "pyenv install {0};cd -)".format(version)
     print("Start running ...")
     print("-->", cmd)
-    return subprocess.run(cmd, shell=True, text=True)
+    return subprocess.run(cmd, shell=True, text=True, check=False)
 
 
 def main() -> int:
@@ -81,7 +82,7 @@ def main() -> int:
             if version.count(".") > 1:
                 return pyinstall(version).returncode
             cmd = "pyenv install " + version
-    return os.system(cmd)
+    return subprocess.call(shlex.split(cmd))
 
 
 if __name__ == "__main__":

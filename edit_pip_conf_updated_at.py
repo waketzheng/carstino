@@ -3,12 +3,12 @@ import re
 from datetime import datetime
 
 
-def main():
+def main(tzinfo=None):
     file = "pip_conf.py"
     with open(file, "rb") as f:
         s = f.read().decode("utf-8")
     r = re.compile(r'(__updated_at__ = )"([\d.]+)"')
-    now = datetime.now()
+    now = datetime.now(tz=tzinfo)
     day = str(now.date()).replace("-", ".")
     m = r.search(s)
     assert m
