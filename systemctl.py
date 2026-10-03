@@ -90,7 +90,7 @@ def enable(
     db: Engine,
     version: str = typer.Option(Create.VERSION, "-v", "--version"),
     image: str | None = None,
-):
+) -> None:
     cmd = Create[db]
     if image:
         parts = cmd.split()
@@ -102,24 +102,30 @@ def enable(
 
 
 @cli.command()
-def start(db: Engine):
+def start(db: Engine) -> None:
     run_shell(Start[db])
 
 
 @cli.command()
-def stop(db: Engine):
+def stop(db: Engine) -> None:
     run_shell(Start[db].replace(" start", " stop"))
 
 
 @cli.command()
-def status(db: Engine):
-    if db == Engine.docker:
-        run_shell("colima status")
-    else:
-        run_shell(f"docker ps |grep {db}")
+def status(db: Engine) -> None:
+    cmd = "colima status" if db == Engine.docker else f"docker ps |grep {db}"
+    run_shell(cmd)
 
 
-def main():
+@cli.command()
+def restart(db: Engine) -> None:
+    cmd = (
+        "colima restart" if db == Engine.docker else f"docker restart {db.name}_latest"
+    )
+    run_shell(cmd)
+
+
+def main() -> None:
     if (f := "--dry") in sys.argv:
         global DRY
         DRY = True
