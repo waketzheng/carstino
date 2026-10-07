@@ -30,8 +30,8 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2026.09.27"
-__version__ = "0.9.2.dev1"
+__updated_at__ = "2026.10.07"
+__version__ = "0.9.2"
 import contextlib
 import functools
 import os
@@ -75,6 +75,8 @@ SOURCES = {
     "tx_ecs": "mirrors.tencentyun.com/pypi",
     "hw": "repo.huaweicloud.com/repository/pypi",
     "ali_ecs": "mirrors.cloud.aliyuncs.com/pypi",
+    "cer": "mirrors.cernet.edu.cn/pypi/web",
+    "dx": "mirrors.ctyun.cn/pypi",
     "pypi": "pypi.org",
 }
 SOURCES["tencent"] = SOURCES["tengxun"] = SOURCES["tx"]
@@ -82,6 +84,8 @@ SOURCES["aliyun"] = SOURCES["ali"]
 SOURCES["douban"] = SOURCES["db"]
 SOURCES["qinghua"] = SOURCES["qh"]
 SOURCES["huawei"] = SOURCES["hw"]
+SOURCES["dianxin"] = SOURCES["dx"]
+SOURCES["cernet"] = SOURCES["cer"]
 _hw_inner_source = (
     SOURCES["hw"]
     .replace("cloud", "")
