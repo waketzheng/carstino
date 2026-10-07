@@ -104,7 +104,10 @@ SHORTCUTS = {
 
 def os_system(cmd):
     # type: (str) -> int
-    return subprocess.call(cmd)
+    try:
+        return subprocess.call(cmd)
+    except OSError:
+        return 1
 
 
 def get_full_version(shortcut):
