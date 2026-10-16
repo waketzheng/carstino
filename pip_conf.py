@@ -30,8 +30,8 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2026.10.07"
-__version__ = "0.9.2"
+__updated_at__ = "2026.10.16"
+__version__ = "0.9.3"
 import contextlib
 import functools
 import os
@@ -649,7 +649,7 @@ class UvMirror(Mirror):
         "https://github.com/astral-sh/python-build-standalone/releases/download"
     )
     TEMPLATE = 'python-install-mirror = "{}"'
-    _python = False
+    _python = ""
 
     @staticmethod
     def allow_insecure(url):
@@ -659,8 +659,21 @@ class UvMirror(Mirror):
         return '\nallow-insecure-host=["{}"]'.format(parse_host(url))
 
     @classmethod
-    def _get_python_mirror(cls, default):
+    def _get_python_mirror(cls, default, provided=""):
         # type: (str) -> str
+        if provided:
+            if provided == "github":
+                return cls.PYTHON_DOWNLOAD_URL
+            elif provided == "proxy":
+                return cls.GITHUB_PROXY + cls.PYTHON_DOWNLOAD_URL
+            else:
+                if not provided.startswith("http"):
+                    provided = "http://" + provided
+                if not provided.split("://")[-1].split("/")[1:]:
+                    provided += (
+                        "/" + cls.PYTHON_DOWNLOAD_URL.split("://")[-1].split("/", 1)[-1]
+                    )
+                return provided
         choices = {"default": default}
         for name in ("PIP_CONF_PYTHON_MIRROR", "UV_PYTHON_INSTALL_MIRROR"):
             value = os.getenv(name)
@@ -687,10 +700,10 @@ class UvMirror(Mirror):
         return default
 
     @classmethod
-    def python_install_mirror(cls):
+    def python_install_mirror(cls, provided=""):
         # type: () -> str
-        default = cls.GITHUB_PROXY + cls.PYTHON_DOWNLOAD_URL
-        return cls.TEMPLATE.format(cls._get_python_mirror(default))
+        default = cls.PYTHON_DOWNLOAD_URL
+        return cls.TEMPLATE.format(cls._get_python_mirror(default, provided))
 
     def build_content(self, url=None, extra_index=None):
         # type: (Optional[str], Optional[str]) -> str
@@ -710,7 +723,7 @@ class UvMirror(Mirror):
     def set_python(self, text):
         # type: (str) -> str
         if self._python:
-            py_mirror = self.python_install_mirror()
+            py_mirror = self.python_install_mirror(self._python)
             if py_mirror not in text:
                 item_key = self.TEMPLATE.split("=")[0].strip()
                 lines = text.splitlines()
@@ -723,7 +736,7 @@ class UvMirror(Mirror):
                     text = py_mirror + "\n\n" + text
         return text
 
-    def set(self, set_python_mirror=False):
+    def set(self, set_python_mirror=""):
         # type: (bool) -> Optional[int]
         verbose = self.verbose
         self._python = set_python_mirror
@@ -1114,7 +1127,7 @@ def main():
     parser.add_argument("--verify_ssl", action="store_true", help="Verify ssl for pdm")
     parser.add_argument("--uv", action="store_true", help="Set index url for uv")
     parser.add_argument(
-        "--python", action="store_true", help="Set python download mirror url for uv"
+        "--python", nargs="?", help="Set python download mirror url for uv"
     )
     parser.add_argument("--pip", action="store_true", help="Set index url for pip")
     parser.add_argument(
