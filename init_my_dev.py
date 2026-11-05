@@ -8,15 +8,16 @@ And python3.6+ is required.
 from __future__ import annotations
 
 import re
+import shutil
 import subprocess
 import sys
 from functools import lru_cache
 from pathlib import Path
 from platform import platform
 
-FILES = ALIAS_FILE, *_ = [".bash_aliases", ".vimrc", ".mg.py"]
+FILES = ALIAS_FILE, *_ = [".bash_aliases", ".vimrc"]
 
-PACKAGES = "fastdevcli-slim ruff poetry"
+PACKAGES = "fast-dev-cli ruff ty rust-just httpie"
 IS_WINDOWS = platform().lower().startswith("win")
 
 
@@ -156,8 +157,8 @@ def upgrade_pip_and_install_pipx(home: Path) -> str:
             r = run_cmd("python3 -m pip install --upgrade --user pipx")
             if r == 0 and pipx_file.exists():
                 pipx = pipx_file.as_posix()
-    if run_cmd("which poetry") != 0 and run_cmd(f"{pipx} install poetry") == 0:
-        run_cmd("python pip_conf.py --poetry")
+    if run_cmd("which uv") != 0 and run_cmd(f"{pipx} install uv") == 0:
+        run_cmd("python pip_conf.py --uv")
     return pipx
 
 
@@ -183,7 +184,7 @@ def main() -> None:
 def run_init(home: Path, aliases_path: Path) -> None:
     repo = get_dirpath()
     init_pip_source(home, repo)
-    pipx = upgrade_pip_and_install_pipx(home)
+    _pipx = upgrade_pip_and_install_pipx(home)
     user_special_files = FILES[:2]
     general_files = FILES[2:]
     if not IS_WINDOWS:
@@ -205,14 +206,20 @@ def run_init(home: Path, aliases_path: Path) -> None:
     configure_aliases(rc)
     # Install some useful python modules
     if "--prod" not in sys.argv:
+        py = "3.15"
+        uv = "uv"
+        if shutil.which("uv") is None:
+            uv = (Path.home() / ".local/bin/uv").as_posix()
+        if shutil.which(f"python{py}") is None:
+            run_cmd(f"{uv} python install --verbose {py}")
         for pkg in PACKAGES.split():
-            if run_cmd(f"{pipx} install {pkg}") != 0:
+            if run_cmd(f"{uv} tool install --python {py} {pkg}") != 0:
                 if IS_WINDOWS:
                     a = input(f"Failed to install {PACKAGES}. Continue?[(y)/n] ")
                     if not no_input() and a.lower().strip().startswith("n"):
                         sys.exit(1)
-                elif run_cmd(f"pip3 install --upgrade --user {PACKAGES}") != 0:
-                    print("Please install python3-pip and then rerun this script.")
+                elif run_cmd(f"uv tool install {PACKAGES}") != 0:
+                    print("Please enable uv and then rerun this script.")
                     sys.exit(1)
     # Activate installed python package scripts, such as: ipython, ruff
     configure_path(rc)
