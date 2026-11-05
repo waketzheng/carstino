@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3.11
+#!/Users/mac10.12/archives/carstino/.venv/bin/python
 """
 For MacOS to manage databases/docker service
 """

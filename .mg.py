@@ -171,6 +171,18 @@ class MgShell:
             cmd = "python3.11 -m IPython"  # For my mac
         return run_shell(cmd)
 
+    @staticmethod
+    def prefer_tortoise_shell(args):
+        # type: (list[str]) -> bool
+        if "--no-tortoise" in args:
+            return False
+        file = "pyproject.toml"
+        if not os.path.exists(file):
+            return False
+        with open(file, encoding="utf-8") as f:
+            text = f.read()
+        return "[tool.tortoise]" in text
+
 
 def without_manage_py():
     # type: () -> int
@@ -178,6 +190,8 @@ def without_manage_py():
     if args:
         command = args[0]
         if command == "shell":
+            if MgShell.prefer_tortoise_shell(args):
+                return run_shell("pdm run tortoise shell")
             try:
                 from IPython import start_ipython  # ty:ignore[unresolved-import]
             except ImportError:
