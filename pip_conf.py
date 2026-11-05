@@ -30,7 +30,7 @@ If there is any bug or feature request, report it to:
 """
 
 __author__ = "waketzheng@gmail.com"
-__updated_at__ = "2026.10.16"
+__updated_at__ = "2026.11.05"
 __version__ = "0.9.3"
 import contextlib
 import functools
@@ -660,7 +660,7 @@ class UvMirror(Mirror):
 
     @classmethod
     def _get_python_mirror(cls, default, provided=""):
-        # type: (str) -> str
+        # type: (str, str) -> str
         if provided:
             if provided == "github":
                 return cls.PYTHON_DOWNLOAD_URL
@@ -701,7 +701,7 @@ class UvMirror(Mirror):
 
     @classmethod
     def python_install_mirror(cls, provided=""):
-        # type: () -> str
+        # type: (str) -> str
         default = cls.PYTHON_DOWNLOAD_URL
         return cls.TEMPLATE.format(cls._get_python_mirror(default, provided))
 
@@ -737,7 +737,7 @@ class UvMirror(Mirror):
         return text
 
     def set(self, set_python_mirror=""):
-        # type: (bool) -> Optional[int]
+        # type: (str) -> Optional[int]
         verbose = self.verbose
         self._python = set_python_mirror
         filename = "uv.toml"
@@ -975,10 +975,10 @@ def init_pip_conf(
     uv=False,
     is_windows=False,
     verify_ssl=False,
-    set_python_mirror=False,
+    set_python_mirror="",
     extra_info=None,
 ):
-    # type: (str, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, Optional[tuple[str,str]]) -> Optional[int]
+    # type: (str, bool, bool, bool, bool, bool, bool, bool, bool, bool, str, Optional[tuple[str,str]]) -> Optional[int]
     if poetry:
         return PoetryMirror(url, is_windows, replace, extra_info=extra_info).set()
     poetry_set_env = "SET_POETRY"
@@ -999,7 +999,10 @@ def init_pip_conf(
     if pdm or load_bool("PIP_CONF_SET_PDM"):
         return PdmMirror.set(url, verify_ssl, extra_info=extra_info)
     if uv or load_bool("PIP_CONF_SET_UV"):
-        set_python_mirror = set_python_mirror or load_bool("PIP_CONF_PYTHON_MIRROR")
+        if not set_python_mirror:
+            _python_mirror = os.getenv("PIP_CONF_PYTHON_MIRROR")
+            if _python_mirror and _python_mirror.startswith("http"):
+                set_python_mirror = _python_mirror
         return UvMirror(
             url, is_windows, replace, extra_info=extra_info, verbose=verbose
         ).set(set_python_mirror)
