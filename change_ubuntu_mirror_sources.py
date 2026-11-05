@@ -25,13 +25,14 @@ SOURCES = {
 _default = "tencent"
 DEFAULT = SOURCES[_default]
 SOURCE_FILE = "/etc/apt/sources.list"
-RE_SOURCE = re.compile(r"https*://[^/]+/")
+RE_SOURCE = re.compile(r"https?://[^/]+/")
 
 if sys.version_info < (3,):
     input = raw_input  # NOQA:F821 type:ignore
 
 
 def parse_argv(args):
+    # type: (list[str]) -> str
     for arg in args:
         if arg.startswith("http"):
             return arg
@@ -42,21 +43,40 @@ def parse_argv(args):
 
 
 def show_choices():
+    # type: () -> None
     print("There are several mirrors can be used for ubuntu:")
     pprint.pprint(SOURCES)
 
 
+def _read_text(fname):
+    # type: (str) -> str:
+    with open(fname) as fp:
+        return fp.read()
+
+
 def main(fname=SOURCE_FILE):
+    # type: (str) -> None
     args = sys.argv[1:]
     if "-l" in args or "--list" in args:
         show_choices()
         sys.exit()
+    new_name = "/etc/apt/sources.list.d/ubuntu.sources"
     if "-h" in args or "--help" in args:
         show_choices()
-        tip = "\nThis script is to modify mirrors url in {filepath}\n\nUsage::"
-        print(tip.format(filepath=SOURCE_FILE))
-        print("    $ ./{} {}".format(sys.argv[0], _default))
+        tip = "\nThis script is to modify mirrors url in {filepath} (Or: {name})\n\nUsage::"
+        print(tip.format(filepath=fname, name=new_name))
+        print("    $ python {} {}".format(sys.argv[0], _default))
         sys.exit()
+    s = _read_text(fname)
+    if all(not i.strip() or i.strip().startswith("#") for i in s.splitlines()):
+        fname = "/etc/apt/sources.list.d/ubuntu.sources"
+        try:
+            s = _read_text(fname)
+        except FileNotFoundError:
+            print("Exit! As " + fname + " not exist.")
+            parent = os.path.dirname(fname)
+            print("Please run the following command to confirm:\nls " + parent)
+            sys.exit(1)
     use_http = False
     if "--http" in args:
         use_http = True
@@ -64,8 +84,6 @@ def main(fname=SOURCE_FILE):
     target = parse_argv(args).rstrip("/")
     if use_http:
         target = target.replace("https:", "http:")
-    with open(fname) as fp:
-        s = fp.read()
     if target in s:
         msg = "Sources of `{}` already set to `{}`\nSkip."
         print(msg.format(fname, target))
