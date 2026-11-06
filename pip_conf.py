@@ -169,7 +169,7 @@ def get_python(check_download_command=False, verbose=False):
         return "python"
     is_py3 = sys.version_info >= (3,)
     try:
-        import pip  # ty: ignore[unresolved-import]
+        import pip  # ty: ignore[import-not-found]
     except ImportError:
         # Virtual environment created by uv/pdm may no include pip module
         return "python"
@@ -242,7 +242,7 @@ def is_pip_ready(py="python"):
         == sys.executable
     ):
         try:
-            import pip  # ty: ignore[unresolved-import] # NOQA:F401
+            import pip  # ty: ignore[import-not-found] # NOQA:F401
         except ImportError:
             return False
         else:

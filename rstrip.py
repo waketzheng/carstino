@@ -24,7 +24,7 @@ import re
 import sys
 
 try:
-    from enum import StrEnum  # ty: ignore[unresolved-import]
+    from enum import StrEnum  # ty: ignore[import-not-found]
 except ImportError:
     try:
         from enum import Enum
@@ -116,7 +116,7 @@ def get_filepaths(args):
     try:
         from pathlib import Path
     except ImportError:
-        from pathlib2 import Path  # ty: ignore[unresolved-import]
+        from pathlib2 import Path  # ty: ignore[import-not-found]
 
     fpaths = []
     if args.dir:

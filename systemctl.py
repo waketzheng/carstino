@@ -6,20 +6,20 @@ For MacOS to manage databases/docker service
 import os
 import subprocess
 import sys
-from enum import StrEnum  # ty: ignore[unresolved-import]
+from enum import StrEnum  # ty: ignore[import-not-found]
 
 try:
-    from ensure_import import EnsureImport as _EI  # ty: ignore[unresolved-import]
+    from ensure_import import EnsureImport as _EI  # ty: ignore[import-not-found]
 except ImportError:
     try:
-        import typer  # ty: ignore[unresolved-import]
+        import typer  # ty: ignore[import-not-found]
     except ImportError:
         subprocess.check_call([sys.executable, "-m", "pip", "install", "typer"])
-        import typer  # ty: ignore[unresolved-import]
+        import typer  # ty: ignore[import-not-found]
 else:
     while _ei := _EI(_no_venv=True):
         with _ei:
-            import typer  # ty: ignore[unresolved-import]
+            import typer  # ty: ignore[import-not-found]
 
 cli = typer.Typer()
 

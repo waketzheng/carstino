@@ -34,7 +34,7 @@ elsif !url.start_with?("https://mirror") && !url.start_with?("%s")
 def say_done():
     # type: () -> None
     try:
-        from rich.console import Console  # ty: ignore[unresolved-import]
+        from rich.console import Console  # ty:ignore[import-not-found]
     except ImportError:
         print("\nDone~\n")
     else:

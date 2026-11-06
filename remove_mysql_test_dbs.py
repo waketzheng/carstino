@@ -50,7 +50,7 @@ def run(cur, conn):
 
 
 def main():
-    import MySQLdb  # ty: ignore[unresolved-import]
+    import MySQLdb  # ty: ignore[import-not-found]
 
     conn = MySQLdb.connect(user="root", passwd="123456")
     cur = conn.cursor()

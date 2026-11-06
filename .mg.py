@@ -193,7 +193,7 @@ def without_manage_py():
             if MgShell.prefer_tortoise_shell(args):
                 return run_shell("pdm run tortoise shell")
             try:
-                from IPython import start_ipython  # ty:ignore[unresolved-import]
+                from IPython import start_ipython  # ty:ignore[import-not-found]
             except ImportError:
                 return MgShell.ipython_not_installed(args)
             else:

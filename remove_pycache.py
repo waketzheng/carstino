@@ -5,7 +5,7 @@ import subprocess
 try:
     from pathlib import Path
 except ImportError:
-    from pathlib2 import Path  # ty:ignore[unresolved-import]
+    from pathlib2 import Path  # ty:ignore[import-not-found]
 
 
 def remove_one(i):

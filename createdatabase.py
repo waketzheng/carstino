@@ -21,7 +21,7 @@ SQL = "create database {} CHARACTER SET {}"
 
 def secho(*args, **kw):
     try:
-        from click import secho  # ty:ignore[unresolved-import]
+        from click import secho  # ty:ignore[import-not-found]
     except ImportError:
         print(*args, **kw)
     else:
@@ -62,7 +62,7 @@ def configure_settings():
 
 
 def get_db(alias="default", all_=False):
-    from django.conf import settings  # ty:ignore[unresolved-import]
+    from django.conf import settings  # ty:ignore[import-not-found]
 
     dbs = settings.DATABASES
     if all_:
@@ -101,7 +101,7 @@ def creat_db(config, db_name, engine, drop=False):
 
 
 def mysql(config, db_name, drop=False):
-    import MySQLdb  # ty:ignore[unresolved-import]
+    import MySQLdb  # ty:ignore[import-not-found]
 
     try:
         conn = MySQLdb.connect(**config)

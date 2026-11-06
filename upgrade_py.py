@@ -24,7 +24,7 @@ import time
 from datetime import datetime
 
 try:
-    from enum import StrEnum  # ty: ignore[unresolved-import]
+    from enum import StrEnum  # ty: ignore[import-not-found]
 except ImportError:
 
     class StrEnum(object):
